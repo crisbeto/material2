@@ -123,8 +123,8 @@ export class MdDialog {
     state.hasBackdrop = true;
     state.positionStrategy = this._overlay.position()
         .global()
-        .centerHorizontally()
-        .centerVertically();
+        .centerVertically()
+        .centerHorizontally();
 
     return state;
   }

@@ -19,7 +19,8 @@ export class DomPortalHost extends BasePortalHost {
       private _hostDomElement: Element,
       private _componentFactoryResolver: ComponentFactoryResolver,
       private _appRef: ApplicationRef,
-      private _defaultInjector: Injector) {
+      private _defaultInjector: Injector,
+      private _hostWrapper?: Element) {
     super();
   }
 
@@ -101,8 +102,14 @@ export class DomPortalHost extends BasePortalHost {
 
   dispose(): void {
     super.dispose();
-    if (this._hostDomElement.parentNode != null) {
-      this._hostDomElement.parentNode.removeChild(this._hostDomElement);
+    this._removeNode(this._hostWrapper);
+    this._removeNode(this._hostDomElement);
+  }
+
+  /** Safely removes a node from the DOM. */
+  private _removeNode(node: Element) {
+    if (node && node.parentNode != null) {
+      node.parentNode.removeChild(node);
     }
   }
 

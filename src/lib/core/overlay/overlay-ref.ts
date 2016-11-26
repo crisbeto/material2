@@ -17,7 +17,7 @@ export class OverlayRef implements PortalHost {
       private _portalHost: PortalHost,
       private _pane: HTMLElement,
       private _state: OverlayState,
-      private _ngZone: NgZone) { }
+      private _ngZone: NgZone) {}
 
   attach(portal: Portal<any>): any {
     if (this._state.hasBackdrop) {

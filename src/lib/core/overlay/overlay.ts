@@ -42,7 +42,16 @@ export class Overlay {
    * @returns A reference to the created overlay.
    */
   create(state: OverlayState = defaultState): OverlayRef {
-    return this._createOverlayRef(this._createPaneElement(), state);
+    let elements = this._createPaneElements();
+    let portalHost = new DomPortalHost(
+      elements.host,
+      this._componentFactoryResolver,
+      this._appRef,
+      this._injector,
+      elements.wrapper
+    );
+
+    return new OverlayRef(portalHost, elements.host, state, this._ngZone);
   }
 
   /**
@@ -57,33 +66,22 @@ export class Overlay {
    * Creates the DOM element for an overlay and appends it to the overlay container.
    * @returns Promise resolving to the created element.
    */
-  private _createPaneElement(): HTMLElement {
+  private _createPaneElements(): { wrapper: HTMLElement, host: HTMLElement } {
+    let paneWrapper = document.createElement('div');
     let pane = document.createElement('div');
-    pane.id = `md-overlay-${nextUniqueId++}`;
+
+    paneWrapper.classList.add('md-overlay-pane-wrapper');
     pane.classList.add('md-overlay-pane');
 
-    this._overlayContainer.getContainerElement().appendChild(pane);
+    paneWrapper.id = `md-overlay-${nextUniqueId++}`;
+    paneWrapper.appendChild(pane);
 
-    return pane;
-  }
+    this._overlayContainer.getContainerElement().appendChild(paneWrapper);
 
-  /**
-   * Create a DomPortalHost into which the overlay content can be loaded.
-   * @param pane The DOM element to turn into a portal host.
-   * @returns A portal host for the given DOM element.
-   */
-  private _createPortalHost(pane: HTMLElement): DomPortalHost {
-    return new DomPortalHost(pane, this._componentFactoryResolver, this._appRef, this._injector);
-  }
-
-  /**
-   * Creates an OverlayRef for an overlay in the given DOM element.
-   * @param pane DOM element for the overlay
-   * @param state
-   * @returns {OverlayRef}
-   */
-  private _createOverlayRef(pane: HTMLElement, state: OverlayState): OverlayRef {
-    return new OverlayRef(this._createPortalHost(pane), pane, state, this._ngZone);
+    return {
+      wrapper: paneWrapper,
+      host: pane
+    };
   }
 }
 
