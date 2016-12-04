@@ -293,13 +293,6 @@ export class MdSelect implements AfterContentInit, ControlValueAccessor, OnDestr
     return this._dir ? this._dir.value === 'rtl' : false;
   }
 
-  /** The width of the trigger element. This is necessary to match
-   * the overlay width to the trigger width.
-   */
-  _getWidth(): number {
-    return this._getTriggerRect().width;
-  }
-
   /** The animation state of the placeholder. */
   _getPlaceholderState(): string {
     if (this.panelOpen || this.selected) {

@@ -34,6 +34,7 @@ let defaultPositionList = [
       {overlayX: 'start', overlayY: 'bottom'}),
 ];
 
+const MATCH_ORIGIN = 'match-origin';
 
 /**
  * Directive applied to an element to make it usable as an origin for an Overlay using a
@@ -171,13 +172,27 @@ export class ConnectedOverlayDirective implements OnDestroy {
   /** Builds the overlay config based on the directive's inputs */
   private _buildConfig(): OverlayState {
     let overlayConfig = new OverlayState();
+    let width = this.width;
+    let height = this.height;
 
-    if (this.width || this.width === 0) {
-      overlayConfig.width = this.width;
+    if (width === MATCH_ORIGIN || height === MATCH_ORIGIN) {
+      let clientRect: ClientRect = this.origin.elementRef.nativeElement.getBoundingClientRect();
+
+      if (width === MATCH_ORIGIN) {
+        width = clientRect.width;
+      }
+
+      if (height === MATCH_ORIGIN) {
+        height = clientRect.height;
+      }
     }
 
-    if (this.height || this.height === 0) {
-      overlayConfig.height = this.height;
+    if (width || width === 0) {
+      overlayConfig.width = width;
+    }
+
+    if (height || height === 0) {
+      overlayConfig.height = height;
     }
 
     overlayConfig.hasBackdrop = this.hasBackdrop;

@@ -5,7 +5,7 @@
 </div>
 
 <template connected-overlay [origin]="origin"  [open]="panelOpen" hasBackdrop (backdropClick)="close()"
-  backdropClass="md-overlay-transparent-backdrop" [positions]="_positions" [width]="_getWidth()"
+  backdropClass="md-overlay-transparent-backdrop" [positions]="_positions" width="match-origin"
   [offsetY]="_offsetY" [offsetX]="_offsetX" (attach)="_setScrollTop()">
   <div class="md-select-panel" [@transformPanel]="'showing'" (@transformPanel.done)="_onPanelDone()"
     (keydown)="_keyManager.onKeydown($event)" [style.transformOrigin]="_transformOrigin">
