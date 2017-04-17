@@ -14,7 +14,8 @@ import {
   QueryList,
   Renderer,
   Self,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ViewChild
 } from '@angular/core';
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {coerceBooleanProperty} from '../core';
@@ -26,6 +27,9 @@ import {
   MdInputContainerPlaceholderConflictError,
   MdInputContainerUnsupportedTypeError
 } from './input-container-errors';
+import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/operator/first';
 
 
 // Invalid input type. Using one of these will throw an MdInputContainerUnsupportedTypeError.
@@ -299,13 +303,16 @@ export class MdInputContainer implements AfterViewInit, AfterContentInit {
   set dividerColor(value) { this.color = value; }
 
   /** Whether the floating label should always float or not. */
-  get _shouldAlwaysFloat() { return this._floatPlaceholder === 'always'; }
+  get _shouldAlwaysFloat() { return this._floatPlaceholder === 'always' && !this._showAlwaysAnimate; }
 
   /** Whether the placeholder can float or not. */
   get _canPlaceholderFloat() { return this._floatPlaceholder !== 'never'; }
 
   /** State of the md-hint and md-error animations. */
   _subscriptAnimationState: string = '';
+
+  private _showAlwaysAnimate = false;
+  @ViewChild('placeholder') private _placeholder: ElementRef;
 
   /** Text for the input hint. */
   @Input()
@@ -367,6 +374,18 @@ export class MdInputContainer implements AfterViewInit, AfterContentInit {
   _shouldForward(prop: string): boolean {
     let control = this._mdInputChild ? this._mdInputChild._ngControl : null;
     return control && (control as any)[prop];
+  }
+
+  _animatePlaceholderAndLock(): void {
+    this._showAlwaysAnimate = true;
+    this._floatPlaceholder = 'always';
+
+    Observable
+      .fromEvent(this._placeholder.nativeElement, 'transitionend')
+      .first((event: TransitionEvent) => event.propertyName === 'transform')
+      .subscribe(() => this._showAlwaysAnimate = false);
+
+    this._changeDetectorRef.markForCheck();
   }
 
   /** Whether the input has a placeholder. */

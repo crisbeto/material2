@@ -234,7 +234,9 @@ export class MdAutocompleteTrigger implements ControlValueAccessor, OnDestroy {
    */
   private _floatPlaceholder(shouldAnimate = false): void {
     if (this._inputContainer && this._inputContainer.floatPlaceholder === 'auto') {
-      if (!shouldAnimate) {
+      if (shouldAnimate) {
+        this._inputContainer._animatePlaceholderAndLock();
+      } else {
         this._inputContainer.floatPlaceholder = 'always';
       }
 

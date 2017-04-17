@@ -10,6 +10,7 @@
 
       <span class="mat-input-placeholder-wrapper">
         <label class="mat-input-placeholder"
+               #placeholder
                [attr.for]="_mdInputChild.id"
                [class.mat-empty]="_mdInputChild.empty && !_shouldAlwaysFloat"
                [class.mat-float]="_canPlaceholderFloat"
