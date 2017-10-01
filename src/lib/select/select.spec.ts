@@ -3,7 +3,12 @@ import {DOWN_ARROW, END, ENTER, HOME, SPACE, TAB, UP_ARROW} from '@angular/cdk/k
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {Platform} from '@angular/cdk/platform';
 import {ScrollDispatcher, ViewportRuler} from '@angular/cdk/scrolling';
-import {dispatchFakeEvent, dispatchKeyboardEvent, wrappedErrorMessage} from '@angular/cdk/testing';
+import {
+  dispatchFakeEvent,
+  dispatchMouseEvent,
+  dispatchKeyboardEvent,
+  wrappedErrorMessage,
+} from '@angular/cdk/testing';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -185,10 +190,7 @@ describe('MatSelect', () => {
       trigger.click();
       fixture.detectChanges();
 
-      const backdrop =
-          overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
-
-      backdrop.click();
+      dispatchMouseEvent(document, 'click');
       fixture.detectChanges();
 
       fixture.whenStable().then(() => {
@@ -665,9 +667,7 @@ describe('MatSelect', () => {
       expect(fixture.componentInstance.control.touched)
         .toEqual(false, `Expected the control to stay untouched when menu opened.`);
 
-      const backdrop =
-        overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
-      backdrop.click();
+      dispatchMouseEvent(document, 'click');
       dispatchFakeEvent(trigger, 'blur');
       fixture.detectChanges();
       expect(fixture.componentInstance.control.touched)
@@ -1000,9 +1000,7 @@ describe('MatSelect', () => {
       expect(formField.classList.contains('mat-form-field-should-float'))
           .toBe(true, 'Expected placeholder to animate up to floating position.');
 
-      const backdrop =
-        overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
-      backdrop.click();
+      fixture.componentInstance.select.close();
       fixture.detectChanges();
 
       expect(formField.classList.contains('mat-form-field-should-float'))
@@ -2191,9 +2189,7 @@ describe('MatSelect', () => {
         expect(selects[0].nativeElement.getAttribute('aria-owns'))
             .toContain(options[1].id, `Expected aria-owns to contain IDs of its child options.`);
 
-        const backdrop =
-            overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
-        backdrop.click();
+        dispatchMouseEvent(document, 'click');
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
@@ -2217,9 +2213,7 @@ describe('MatSelect', () => {
             .toContain('mat-option', `Expected option ID to have the correct prefix.`);
         expect(options[0].id).not.toEqual(options[1].id, `Expected option IDs to be unique.`);
 
-        const backdrop =
-            overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
-        backdrop.click();
+        dispatchMouseEvent(document, 'click');
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {

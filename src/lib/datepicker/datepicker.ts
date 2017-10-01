@@ -328,15 +328,13 @@ export class MatDatepicker<D> implements OnDestroy {
       });
     }
 
-    this._popupRef.backdropClick().subscribe(() => this.close());
+    this._popupRef.outsideClick().subscribe(() => this.close());
   }
 
   /** Create the popup. */
   private _createPopup(): void {
     const overlayConfig = new OverlayConfig({
       positionStrategy: this._createPopupPositionStrategy(),
-      hasBackdrop: true,
-      backdropClass: 'mat-overlay-transparent-backdrop',
       direction: this._dir ? this._dir.value : 'ltr',
       scrollStrategy: this._scrollStrategy()
     });

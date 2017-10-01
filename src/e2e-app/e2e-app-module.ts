@@ -19,6 +19,7 @@ import {SlideToggleE2E} from './slide-toggle/slide-toggle-e2e';
 import {InputE2E} from './input/input-e2e';
 import {SidenavE2E} from './sidenav/sidenav-e2e';
 import {BlockScrollStrategyE2E} from './block-scroll-strategy/block-scroll-strategy-e2e';
+import {OverlayE2E} from './overlay/overlay-e2e';
 import {
   MatButtonModule,
   MatCheckboxModule,
@@ -96,7 +97,8 @@ export class E2eMaterialModule {}
     SlideToggleE2E,
     TestDialog,
     TestDialogFullScreen,
-    BlockScrollStrategyE2E
+    BlockScrollStrategyE2E,
+    OverlayE2E,
   ],
   bootstrap: [E2EApp],
   providers: [

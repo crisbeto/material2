@@ -15,6 +15,7 @@ import {FullscreenE2E} from '../fullscreen/fullscreen-e2e';
 import {InputE2E} from '../input/input-e2e';
 import {SidenavE2E} from '../sidenav/sidenav-e2e';
 import {BlockScrollStrategyE2E} from '../block-scroll-strategy/block-scroll-strategy-e2e';
+import {OverlayE2E} from '../overlay/overlay-e2e';
 import {
   CardFancyExample,
   ListOverviewExample,
@@ -47,4 +48,5 @@ export const E2E_APP_ROUTES: Routes = [
   {path: 'tabs', component: BasicTabs},
   {path: 'cards', component: CardFancyExample},
   {path: 'toolbar', component: ToolbarMultirowExample},
+  {path: 'overlay', component: OverlayE2E},
 ];

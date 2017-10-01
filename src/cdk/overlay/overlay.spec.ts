@@ -15,6 +15,7 @@ import {
   PositionStrategy,
   ScrollStrategy,
 } from './index';
+import {dispatchMouseEvent} from '@angular/cdk/testing';
 
 
 describe('Overlay', () => {
@@ -319,6 +320,40 @@ describe('Overlay', () => {
     });
   });
 
+  describe('clicking outside', () => {
+    let config: OverlayConfig;
+
+    beforeEach(() => {
+      config = new OverlayConfig();
+      config.hasBackdrop = false;
+    });
+
+    it('should close the overlay when clicking outside', () => {
+      const overlayRef = overlay.create(config);
+      overlayRef.attach(componentPortal);
+      viewContainerFixture.detectChanges();
+
+      const outsideClickHandler = jasmine.createSpy('outslideClickHandler');
+      overlayRef.outsideClick().subscribe(outsideClickHandler);
+
+      dispatchMouseEvent(document, 'click');
+      expect(outsideClickHandler).toHaveBeenCalled();
+    });
+
+    it('should complete the outside click stream once the overlay is destroyed', () => {
+      const overlayRef = overlay.create(config);
+      overlayRef.attach(componentPortal);
+      viewContainerFixture.detectChanges();
+
+      const completeHandler = jasmine.createSpy('outsideClick complete handler');
+      overlayRef.outsideClick().subscribe(undefined, undefined, completeHandler);
+      overlayRef.dispose();
+
+      expect(completeHandler).toHaveBeenCalled();
+    });
+
+  });
+
   describe('backdrop', () => {
     let config: OverlayConfig;
 
@@ -336,11 +371,11 @@ describe('Overlay', () => {
       expect(backdrop).toBeTruthy();
       expect(backdrop.classList).not.toContain('cdk-overlay-backdrop-showing');
 
-      let backdropClickHandler = jasmine.createSpy('backdropClickHander');
-      overlayRef.backdropClick().subscribe(backdropClickHandler);
+      let outsideClickHandler = jasmine.createSpy('outslideClickHandler');
+      overlayRef.outsideClick().subscribe(outsideClickHandler);
 
       backdrop.click();
-      expect(backdropClickHandler).toHaveBeenCalled();
+      expect(outsideClickHandler).toHaveBeenCalled();
     });
 
     it('should complete the backdrop click stream once the overlay is destroyed', () => {
@@ -351,7 +386,7 @@ describe('Overlay', () => {
 
       let completeHandler = jasmine.createSpy('backdrop complete handler');
 
-      overlayRef.backdropClick().subscribe(undefined, undefined, completeHandler);
+      overlayRef.outsideClick().subscribe(undefined, undefined, completeHandler);
       overlayRef.dispose();
 
       expect(completeHandler).toHaveBeenCalled();

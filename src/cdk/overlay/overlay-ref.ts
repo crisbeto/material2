@@ -10,7 +10,10 @@ import {NgZone} from '@angular/core';
 import {PortalHost, Portal} from '@angular/cdk/portal';
 import {OverlayConfig} from './overlay-config';
 import {Observable} from 'rxjs/Observable';
+import {fromEvent} from 'rxjs/observable/fromEvent';
 import {Subject} from 'rxjs/Subject';
+import {RxChain, takeUntil, filter, pairwise, map} from '@angular/cdk/rxjs';
+import {merge} from 'rxjs/observable/merge';
 
 
 /**
@@ -19,7 +22,7 @@ import {Subject} from 'rxjs/Subject';
  */
 export class OverlayRef implements PortalHost {
   private _backdropElement: HTMLElement | null = null;
-  private _backdropClick: Subject<any> = new Subject();
+  private _outsideClick: Observable<null>;
   private _attachments = new Subject<void>();
   private _detachments = new Subject<void>();
 
@@ -66,12 +69,14 @@ export class OverlayRef implements PortalHost {
 
     if (this._config.hasBackdrop) {
       this._attachBackdrop();
+    } else {
+      this._attachDocumentClick();
     }
 
     if (this._config.panelClass) {
       // We can't do a spread here, because IE doesn't support setting multiple classes.
       if (Array.isArray(this._config.panelClass)) {
-        this._config.panelClass.forEach(cls => this._pane.classList.add(cls));
+        this._config.panelClass.forEach(cssClass => this._pane.classList.add(cssClass));
       } else {
         this._pane.classList.add(this._config.panelClass);
       }
@@ -122,7 +127,6 @@ export class OverlayRef implements PortalHost {
     this.detachBackdrop();
     this._portalHost.dispose();
     this._attachments.complete();
-    this._backdropClick.complete();
     this._detachments.next();
     this._detachments.complete();
   }
@@ -135,10 +139,10 @@ export class OverlayRef implements PortalHost {
   }
 
   /**
-   * Returns an observable that emits when the backdrop has been clicked.
+   * Returns an observable that emits when the user clicks outside the overlay.
    */
-  backdropClick(): Observable<void> {
-    return this._backdropClick.asObservable();
+  outsideClick(): Observable<null> {
+    return this._outsideClick;
   }
 
   /** Returns an observable that emits when the overlay has been attached. */
@@ -217,7 +221,8 @@ export class OverlayRef implements PortalHost {
 
     // Forward backdrop clicks such that the consumer of the overlay can perform whatever
     // action desired when such a click occurs (usually closing the overlay).
-    this._backdropElement.addEventListener('click', () => this._backdropClick.next(null));
+    this._outsideClick =
+        takeUntil.call(fromEvent(this._backdropElement, 'click'), this._detachments);
 
     // Add class to fade-in the backdrop after one frame.
     requestAnimationFrame(() => {
@@ -225,6 +230,35 @@ export class OverlayRef implements PortalHost {
         this._backdropElement.classList.add('cdk-overlay-backdrop-showing');
       }
     });
+  }
+
+  /** Attaches a global click handler that emits whenever the user clicks outside the overlay. */
+  private _attachDocumentClick() {
+    const eventStream = this._ngZone.runOutsideAngular(() => {
+      // iOS won't fire click events on anything that doesn't have a `cursor: pointer`, which is why
+      // we need to listen to taps as well. We define a tap as a touchend event that was preceeded
+      // by a touchstart.
+      const tapOutside = RxChain.from(merge(
+        fromEvent<TouchEvent>(document, 'touchstart', true),
+        fromEvent<TouchEvent>(document, 'touchmove', true),
+        fromEvent<TouchEvent>(document, 'touchend', true)
+      ))
+      .call(pairwise)
+      .call(filter, calls => calls[0].type === 'touchstart' && calls[1].type === 'touchend')
+      .call(map, () => null)
+      .result();
+
+      return merge(fromEvent(document, 'click', true), tapOutside);
+    });
+
+    this._outsideClick = RxChain.from(eventStream)
+      .call(takeUntil, this._detachments)
+      .call(filter, (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        return target !== this.overlayElement && !this.overlayElement.contains(target);
+      })
+      .call(map, () => null)
+      .result();
   }
 
   /**

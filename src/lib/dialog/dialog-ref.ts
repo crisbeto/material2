@@ -111,8 +111,8 @@ export class MatDialogRef<T> {
   /**
    * Gets an observable that emits when the overlay's backdrop has been clicked.
    */
-  backdropClick(): Observable<void> {
-    return this._overlayRef.backdropClick();
+  backdropClick(): Observable<null> {
+    return this._overlayRef.outsideClick();
   }
 
   /**

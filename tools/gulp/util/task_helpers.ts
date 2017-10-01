@@ -134,6 +134,7 @@ export function serverTask(packagePath: string, livereload = true) {
     gulpConnect.server({
       root: projectDir,
       livereload: livereload,
+      host: '192.168.1.46',
       port: 4200,
       middleware: () => {
         return [httpRewrite.getMiddleware([

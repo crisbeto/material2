@@ -247,7 +247,7 @@ describe('Overlay directives', () => {
   });
 
   describe('outputs', () => {
-    it('should emit backdropClick appropriately', () => {
+    it('should emit outsideClick appropriately', () => {
       fixture.componentInstance.hasBackdrop = true;
       fixture.componentInstance.isOpen = true;
       fixture.detectChanges();
@@ -257,7 +257,7 @@ describe('Overlay directives', () => {
       backdrop.click();
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.backdropClicked).toBe(true);
+      expect(fixture.componentInstance.clickedOutside).toBe(true);
     });
 
     it('should emit positionChange appropriately', () => {
@@ -300,7 +300,7 @@ describe('Overlay directives', () => {
   <ng-template cdk-connected-overlay [open]="isOpen" [width]="width" [height]="height"
             [origin]="trigger"
             [hasBackdrop]="hasBackdrop" backdropClass="mat-test-class"
-            (backdropClick)="backdropClicked=true" [offsetX]="offsetX" [offsetY]="offsetY"
+            (outsideClick)="clickedOutside=true" [offsetX]="offsetX" [offsetY]="offsetY"
             (positionChange)="positionChangeHandler($event)" (attach)="attachHandler()"
             (detach)="detachHandler()" [minWidth]="minWidth" [minHeight]="minHeight">
     <p>Menu content</p>
@@ -315,7 +315,7 @@ class ConnectedOverlayDirectiveTest {
   offsetX: number = 0;
   offsetY: number = 0;
   hasBackdrop: boolean;
-  backdropClicked = false;
+  clickedOutside = false;
   positionChangeHandler = jasmine.createSpy('positionChangeHandler');
   attachHandler = jasmine.createSpy('attachHandler').and.callFake(() => {
     this.attachResult =

@@ -1,0 +1,13 @@
+<p>
+  <button id="regular-button">Regular button</button>
+  <button id="stops-propagation" (click)="$event.stopPropagation()">Stops propagation</button>
+</p>
+
+<button #origin id="connected-overlay-button" (click)="open()">Open connected overlay</button>
+
+<ng-template #connectedOverlay>
+  <div id="connected-overlay">
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, unde.</p>
+    <button id="connected-overlay-inner-button">Does nothing</button>
+  </div>
+</ng-template>

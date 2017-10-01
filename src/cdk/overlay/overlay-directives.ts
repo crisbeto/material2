@@ -95,7 +95,7 @@ export class ConnectedOverlayDirective implements OnDestroy, OnChanges {
   private _overlayRef: OverlayRef;
   private _templatePortal: TemplatePortal<any>;
   private _hasBackdrop = false;
-  private _backdropSubscription = Subscription.EMPTY;
+  private _outsideClickSubscription = Subscription.EMPTY;
   private _positionSubscription = Subscription.EMPTY;
   private _offsetX: number = 0;
   private _offsetY: number = 0;
@@ -217,8 +217,8 @@ export class ConnectedOverlayDirective implements OnDestroy, OnChanges {
   get _deprecatedHasBackdrop() { return this.hasBackdrop; }
   set _deprecatedHasBackdrop(_hasBackdrop: any) { this.hasBackdrop = _hasBackdrop; }
 
-  /** Event emitted when the backdrop is clicked. */
-  @Output() backdropClick = new EventEmitter<void>();
+  /** Event emitted when the user clicks outside the overlay. */
+  @Output() outsideClick = new EventEmitter<void>();
 
   /** Event emitted when the position has changed. */
   @Output() positionChange = new EventEmitter<ConnectedOverlayPositionChange>();
@@ -330,7 +330,7 @@ export class ConnectedOverlayDirective implements OnDestroy, OnChanges {
         strategy.onPositionChange.subscribe(pos => this.positionChange.emit(pos));
   }
 
-  /** Attaches the overlay and subscribes to backdrop clicks if backdrop exists */
+  /** Attaches the overlay. */
   private _attachOverlay() {
     if (!this._overlayRef) {
       this._createOverlay();
@@ -345,21 +345,19 @@ export class ConnectedOverlayDirective implements OnDestroy, OnChanges {
       this.attach.emit();
     }
 
-    if (this.hasBackdrop) {
-      this._backdropSubscription = this._overlayRef.backdropClick().subscribe(() => {
-        this.backdropClick.emit();
-      });
-    }
+    this._outsideClickSubscription = this._overlayRef.outsideClick().subscribe(() => {
+      this.outsideClick.emit();
+    });
   }
 
-  /** Detaches the overlay and unsubscribes to backdrop clicks if backdrop exists */
+  /** Detaches the overlay. */
   private _detachOverlay() {
     if (this._overlayRef) {
       this._overlayRef.detach();
       this.detach.emit();
     }
 
-    this._backdropSubscription.unsubscribe();
+    this._outsideClickSubscription.unsubscribe();
     this._escapeListener();
   }
 
@@ -369,7 +367,7 @@ export class ConnectedOverlayDirective implements OnDestroy, OnChanges {
       this._overlayRef.dispose();
     }
 
-    this._backdropSubscription.unsubscribe();
+    this._outsideClickSubscription.unsubscribe();
     this._positionSubscription.unsubscribe();
     this._escapeListener();
   }

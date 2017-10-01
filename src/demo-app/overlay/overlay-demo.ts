@@ -95,13 +95,12 @@ export class OverlayDemo {
   openPanelWithBackdrop() {
     let config = new OverlayConfig({
       hasBackdrop: true,
-      backdropClass: 'cdk-overlay-transparent-backdrop',
       positionStrategy: this.overlay.position().global().centerHorizontally()
     });
 
     let overlayRef = this.overlay.create(config);
     overlayRef.attach(this.templatePortals.first);
-    overlayRef.backdropClick().subscribe(() => overlayRef.detach());
+    overlayRef.outsideClick().subscribe(() => overlayRef.detach());
   }
 
 }

@@ -235,7 +235,7 @@ export class MatDialog {
 
     // When the dialog backdrop is clicked, we want to close it.
     if (config.hasBackdrop) {
-      overlayRef.backdropClick().subscribe(() => {
+      overlayRef.outsideClick().subscribe(() => {
         if (!dialogRef.disableClose) {
           dialogRef.close();
         }

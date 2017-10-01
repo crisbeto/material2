@@ -20,7 +20,7 @@
 </button>
 
 <ng-template cdk-connected-overlay [origin]="trigger" [width]="500" hasBackdrop [open]="isMenuOpen"
-  (backdropClick)="isMenuOpen=false">
+  (outsideClick)="isMenuOpen=false">
   <div style="background-color: mediumpurple" >
     This is the menu panel.
   </div>
