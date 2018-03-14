@@ -1,0 +1,19 @@
+<div class="list">
+  <h2>To do</h2>
+  <cdk-drop #one="cdkDrop" [connectedTo]="[two]">
+    <ng-container *ngFor="let item of todo">
+      <div *cdkDrag>{{item}}</div>
+    </ng-container>
+  </cdk-drop>
+</div>
+
+<div class="list">
+  <h2>Done</h2>
+  <cdk-drop #two [connectedTo]="[one]">
+    <ng-container *ngFor="let item of done">
+      <div *cdkDrag>{{item}}</div>
+    </ng-container>
+  </cdk-drop>
+</div>
+
+

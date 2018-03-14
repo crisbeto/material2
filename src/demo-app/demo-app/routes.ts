@@ -53,6 +53,7 @@ import {DemoApp, Home} from './demo-app';
 import {TableDemoPage} from '../table/table-demo-page';
 import {TABLE_DEMO_ROUTES} from '../table/routes';
 import {BadgeDemo} from '../badge/badge-demo';
+import {DragAndDropDemo} from '../drag-and-drop/drag-and-drop-demo';
 
 export const DEMO_APP_ROUTES: Routes = [
   {path: '', component: DemoApp, children: [
@@ -69,6 +70,7 @@ export const DEMO_APP_ROUTES: Routes = [
     {path: 'datepicker', component: DatepickerDemo},
     {path: 'dialog', component: DialogDemo},
     {path: 'drawer', component: DrawerDemo},
+    {path: 'drag-and-drop', component: DragAndDropDemo},
     {path: 'expansion', component: ExpansionDemo},
     {path: 'focus-origin', component: FocusOriginDemo},
     {path: 'gestures', component: GesturesDemo},

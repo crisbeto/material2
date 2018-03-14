@@ -63,6 +63,12 @@ import {DEMO_APP_ROUTES} from './routes';
 import {TableDemoModule} from '../table/table-demo-module';
 import {BadgeDemo} from '../badge/badge-demo';
 import {TreeDemoModule} from '../tree/tree-demo-module';
+import {
+  DragAndDropDemo,
+  CdkDrag,
+  CdkDrop,
+  CdkDropPlaceholder,
+} from '../drag-and-drop/drag-and-drop-demo';
 
 @NgModule({
   imports: [
@@ -76,6 +82,10 @@ import {TreeDemoModule} from '../tree/tree-demo-module';
     TreeDemoModule,
   ],
   declarations: [
+    CdkDrag,
+    CdkDrop,
+    CdkDropPlaceholder,
+
     AutocompleteDemo,
     BottomSheetDemo,
     BaselineDemo,
@@ -90,6 +100,7 @@ import {TreeDemoModule} from '../tree/tree-demo-module';
     DemoApp,
     DialogDemo,
     DrawerDemo,
+    DragAndDropDemo,
     ExpansionDemo,
     FocusOriginDemo,
     FoggyTabContent,

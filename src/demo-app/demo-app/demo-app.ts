@@ -59,6 +59,7 @@ export class DemoApp {
     {name: 'Datepicker', route: '/datepicker'},
     {name: 'Dialog', route: '/dialog'},
     {name: 'Drawer', route: '/drawer'},
+    {name: 'Drag and drop', route: '/drag-and-drop'},
     {name: 'Expansion Panel', route: '/expansion'},
     {name: 'Focus Origin', route: '/focus-origin'},
     {name: 'Gestures', route: '/gestures'},
