@@ -1003,7 +1003,10 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
     if (option.value == null && !this._multiple) {
       option.deselect();
       this._selectionModel.clear();
-      this._propagateChanges(option.value);
+
+      if (this.value != null) {
+        this._propagateChanges(option.value);
+      }
     } else {
       if (wasSelected !== option.selected) {
         option.selected ? this._selectionModel.select(option) :

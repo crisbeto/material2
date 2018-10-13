@@ -3181,6 +3181,63 @@ describe('MatSelect', () => {
           .toBeFalsy('Expected no value after tabbing away.');
     }));
 
+    it('should emit once when a reset value is selected', fakeAsync(() => {
+      const fixture = TestBed.createComponent(BasicSelectWithoutForms);
+      const instance = fixture.componentInstance;
+      const spy = jasmine.createSpy('change spy');
+
+      instance.selectedFood = 'sandwich-2';
+      instance.foods[0].value = null;
+      fixture.detectChanges();
+
+      const subscription = instance.select.selectionChange.subscribe(spy);
+
+      fixture.debugElement.query(By.css('.mat-select-trigger')).nativeElement.click();
+      fixture.detectChanges();
+      flush();
+
+      (overlayContainerElement.querySelector('mat-option') as HTMLElement).click();
+      fixture.detectChanges();
+      flush();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+
+      subscription.unsubscribe();
+    }));
+
+    it('should not emit the change event multiple times when a reset option is ' +
+      'selected twice in a row', fakeAsync(() => {
+        const fixture = TestBed.createComponent(BasicSelectWithoutForms);
+        const instance = fixture.componentInstance;
+        const spy = jasmine.createSpy('change spy');
+
+        instance.foods[0].value = null;
+        fixture.detectChanges();
+
+        const subscription = instance.select.selectionChange.subscribe(spy);
+
+        fixture.debugElement.query(By.css('.mat-select-trigger')).nativeElement.click();
+        fixture.detectChanges();
+        flush();
+
+        (overlayContainerElement.querySelector('mat-option') as HTMLElement).click();
+        fixture.detectChanges();
+        flush();
+
+        expect(spy).not.toHaveBeenCalled();
+
+        fixture.debugElement.query(By.css('.mat-select-trigger')).nativeElement.click();
+        fixture.detectChanges();
+        flush();
+
+        (overlayContainerElement.querySelector('mat-option') as HTMLElement).click();
+        fixture.detectChanges();
+        flush();
+
+        expect(spy).not.toHaveBeenCalled();
+
+        subscription.unsubscribe();
+      }));
 
   });
 
