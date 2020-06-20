@@ -1,3 +1,4 @@
+import {OverlayModule} from '@angular/cdk/overlay';
 import {Platform, PlatformModule, _supportsShadowDom} from '@angular/cdk/platform';
 import {
   createFakeEvent,
@@ -14,7 +15,7 @@ import {
   NgZone,
   Directive,
   ViewEncapsulation,
-  ElementRef,
+  ElementRef, InjectionToken,
 } from '@angular/core';
 import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {
@@ -34,7 +35,8 @@ import {
 } from '@angular/material/core';
 import {
   getMatFormFieldDuplicatedHintError,
-  getMatFormFieldMissingControlError,
+  getMatFormFieldMissingControlError
+  ,
   getMatFormFieldPlaceholderConflictError,
   MAT_FORM_FIELD_DEFAULT_OPTIONS,
   MatFormField,
@@ -49,6 +51,7 @@ import {Directionality, Direction} from '@angular/cdk/bidi';
 import {Subject} from 'rxjs';
 import {MatInputModule, MatInput, MAT_INPUT_VALUE_ACCESSOR} from './index';
 import {MatTextareaAutosize} from './autosize';
+import {ComponentFixtureAutoDetect} from '@angular/core/testing';
 
 describe('MatInput without forms', () => {
   it('should default to floating labels', fakeAsync(() => {
@@ -303,6 +306,21 @@ describe('MatInput without forms', () => {
     expect(() => fixture.detectChanges()).toThrowError(
         wrappedErrorMessage(getMatFormFieldMissingControlError()));
   }));
+
+
+  fit('MatFormField throws an error', () => {
+    // Error is thrown but caught due to a lack of error handling from RXJS.
+    // In Google, we still throw synchronous errors instead of the new RXJS
+    // way. The Subscriber config value useDeprecatedSynchronousErrorHandling is set
+    // to true by default. Also, they use `ComponentFixtureAutoDetect` as true.
+    // If you run this test, you will find that the form field is throwing an error, but
+    // someone is not catching it properly due to being a part of an RXJS stream.
+    createComponent(
+        MatInputWithOverlay,
+        [{provide: ComponentFixtureAutoDetect, useValue: true}],
+        [OverlayModule],
+        [CompWithOverlay]);
+  });
 
   it('validates the type', fakeAsync(() => {
     let fixture = createComponent(MatInputInvalidTypeTestController);
@@ -2220,4 +2238,56 @@ class CustomMatInputAccessor {
   get value() { return this._value; }
   set value(_value: any) {}
   private _value = null;
+}
+
+@Component({
+  selector: 'comp-with-overlay',
+  template: `
+    <div cdk-overlay-origin
+         #origin="cdkOverlayOrigin"
+         #trigger>
+      Trigger
+    </div>
+
+    <ng-template cdkConnectedOverlay
+                 [cdkConnectedOverlayOrigin]="origin"
+                 [cdkConnectedOverlayOpen]="true"
+                 (detach)="onDetach()">
+      Overlay content
+    </ng-template>
+  `,
+  host: {
+    '(click)': 'null',
+  },
+})
+class CompWithOverlay {
+  constructor(public elementRef: ElementRef) {}
+  ngOnDestroy() {
+    console.log('CompWithOverlay ngOnDestroy');
+  }
+  onDetach() {
+    this.elementRef.nativeElement.click();
+  }
+}
+
+@Component({
+  template: `
+    <mat-form-field>
+      <ng-container *ngIf="true; then input1; else input2">
+      </ng-container>
+      <ng-template #input1>
+        <input matInput>
+      </ng-template>
+      <ng-template #input2>
+        <input matInput>
+      </ng-template>
+    </mat-form-field>
+
+    <comp-with-overlay></comp-with-overlay>
+  `
+})
+class MatInputWithOverlay{
+  ngOnDestroy() {
+    console.log('MatInputWithOverlay ngOnDestroy');
+  }
 }

@@ -246,6 +246,7 @@ export class CdkConnectedOverlay implements OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
+    console.log('CdkConnectedOverlay ngOnDestroy')
     if (this._overlayRef) {
       this._overlayRef.dispose();
     }

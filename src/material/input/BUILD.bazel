@@ -47,6 +47,7 @@ ng_test_library(
         ":input",
         "//src/cdk/bidi",
         "//src/cdk/platform",
+        "//src/cdk/overlay",
         "//src/cdk/testing/private",
         "//src/material/core",
         "//src/material/form-field",

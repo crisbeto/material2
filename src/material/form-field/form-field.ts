@@ -523,6 +523,7 @@ export class MatFormField extends _MatFormFieldMixinBase
   /** Throws an error if the form field's control is missing. */
   protected _validateControlChild() {
     if (!this._control) {
+      console.log('Missing control error thrown');
       throw getMatFormFieldMissingControlError();
     }
   }
