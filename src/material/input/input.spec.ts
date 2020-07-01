@@ -367,20 +367,29 @@ describe('MatInput without forms', () => {
     let fixture = createComponent(MatInputPlaceholderAttrTestComponent);
     fixture.detectChanges();
 
-    let inputEl = fixture.debugElement.query(By.css('input'))!.nativeElement;
-
     expect(fixture.debugElement.query(By.css('label'))).toBeNull();
-    expect(inputEl.placeholder).toBe('');
 
     fixture.componentInstance.placeholder = 'Other placeholder';
     fixture.detectChanges();
 
     let labelEl = fixture.debugElement.query(By.css('label'))!;
 
-    expect(inputEl.placeholder).toBe('Other placeholder');
     expect(labelEl).not.toBeNull();
     expect(labelEl.nativeElement.textContent).toBe('Other placeholder');
   }));
+
+  it('should not render the native placeholder when its value is mirrored in the label',
+    fakeAsync(() => {
+      const fixture = createComponent(MatInputPlaceholderAttrTestComponent);
+      fixture.componentInstance.placeholder = 'Enter a name';
+      fixture.detectChanges();
+
+      const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+      const labelEl = fixture.debugElement.query(By.css('label'));
+
+      expect(inputEl.hasAttribute('placeholder')).toBe(false);
+      expect(labelEl.nativeElement.textContent).toContain('Enter a name');
+    }));
 
   it('supports placeholder element', fakeAsync(() => {
     let fixture = createComponent(MatInputPlaceholderElementTestComponent);
@@ -911,8 +920,8 @@ describe('MatInput without forms', () => {
 
     expect(container.classList).toContain('mat-form-field-hide-placeholder');
     expect(container.classList).not.toContain('mat-form-field-should-float');
-    expect(label.textContent).toBe('Label');
-    expect(input.getAttribute('placeholder')).toBe('Placeholder');
+    expect(label.textContent.trim()).toBe('Label');
+    expect(input.hasAttribute('placeholder')).toBe(false);
 
     input.value = 'Value';
     fixture.detectChanges();
