@@ -1,4 +1,4 @@
-import {Platform, PlatformModule, _supportsShadowDom} from '@angular/cdk/platform';
+  import {Platform, PlatformModule, _supportsShadowDom} from '@angular/cdk/platform';
 import {
   createFakeEvent,
   dispatchFakeEvent,
@@ -51,6 +51,11 @@ import {MatInputModule, MatInput, MAT_INPUT_VALUE_ACCESSOR} from './index';
 import {MatTextareaAutosize} from './autosize';
 
 describe('MatInput without forms', () => {
+  fit('should work', fakeAsync(() => {
+    let fixture = createComponent(MatInputRepro);
+    fixture.detectChanges();
+  }))
+
   it('should default to floating labels', fakeAsync(() => {
     let fixture = createComponent(MatInputWithId);
     fixture.detectChanges();
@@ -2230,3 +2235,16 @@ class CustomMatInputAccessor {
   set value(_value: any) {}
   private _value = null;
 }
+
+
+@Component({
+  template: `
+    <mat-form-field appearance="outline">
+      <mat-label *ngIf="true"> My Label </mat-label>
+      <ng-container *ngIf="true">
+        <input matInput>
+      </ng-container>
+    </mat-form-field>
+  `
+})
+class MatInputRepro {}
