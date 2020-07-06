@@ -4057,6 +4057,7 @@ describe('MatSelect', () => {
   describe('with multiple selection', () => {
     beforeEach(async(() => configureMatSelectTestingModule([
       MultiSelect,
+      MultiSelectWithPreselectedValues,
       MultiSelectWithLotsOfOptions,
       MultiSelectWithLotsOfPreselectedOptions
     ])));
@@ -4086,6 +4087,15 @@ describe('MatSelect', () => {
       fixture.detectChanges();
 
       expect(testInstance.control.value).toEqual(['steak-0', 'tacos-2', 'eggs-5']);
+    }));
+
+    fit('should be able to preselect multiple values', fakeAsync(() => {
+      const preselectedFixture = TestBed.createComponent(MultiSelectWithPreselectedValues);
+      preselectedFixture.detectChanges();
+
+      trigger = preselectedFixture.debugElement.query(By.css('.mat-select-trigger'))!.nativeElement;
+
+      expect(trigger.textContent).toContain('Steak, Pizza');
     }));
 
     it('should be able to toggle an option on and off', fakeAsync(() => {
@@ -4774,7 +4784,7 @@ class FloatLabelSelect {
   template: `
     <mat-form-field>
       <mat-select multiple placeholder="Food" [formControl]="control"
-        [sortComparator]="sortComparator">
+                  [sortComparator]="sortComparator">
         <mat-option *ngFor="let food of foods"
                     [value]="food.value">{{ food.viewValue }}
         </mat-option>
@@ -4798,6 +4808,32 @@ class MultiSelect {
   @ViewChild(MatSelect) select: MatSelect;
   @ViewChildren(MatOption) options: QueryList<MatOption>;
   sortComparator: (a: MatOption, b: MatOption, options: MatOption[]) => number;
+}
+
+@Component({
+  selector: 'multi-select',
+  template: `
+    <mat-form-field>
+      <mat-select multiple placeholder="Food" [formControl]="control">
+        <mat-option *ngFor="let food of foods"
+                    [value]="food.value">{{ food.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  `
+})
+class MultiSelectWithPreselectedValues {
+  foods: any[] = [
+    { value: 'steak-0', viewValue: 'Steak' },
+    { value: 'pizza-1', viewValue: 'Pizza' },
+    { value: 'tacos-2', viewValue: 'Tacos' },
+    { value: 'sandwich-3', viewValue: 'Sandwich' },
+    { value: 'chips-4', viewValue: 'Chips' },
+    { value: 'eggs-5', viewValue: 'Eggs' },
+    { value: 'pasta-6', viewValue: 'Pasta' },
+    { value: 'sushi-7', viewValue: 'Sushi' },
+  ];
+  control = new FormControl(['steak-0', 'pizza-1']);
 }
 
 @Component({
