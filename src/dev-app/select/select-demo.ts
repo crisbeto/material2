@@ -132,6 +132,21 @@ export class SelectDemo {
     {value: 'indramon-5', viewValue: 'Indramon'}
   ];
 
+  cars = [
+    {value: 'volvo', viewValue: 'Volvo'},
+    {value: 'saab', viewValue: 'Saab'},
+    {value: 'mercedes', viewValue: 'Mercedes'},
+    {value: 'audi', viewValue: 'Audi'}
+  ];
+
+  filteredCars = this.cars.slice();
+
+  filterCars(value: string) {
+    this.filteredCars = value ? this.cars.filter(car => {
+      return car.viewValue.toLowerCase().includes(value.toLowerCase());
+    }) : this.cars.slice();
+  }
+
   toggleDisabled() {
     this.foodControl.enabled ? this.foodControl.disable() : this.foodControl.enable();
   }

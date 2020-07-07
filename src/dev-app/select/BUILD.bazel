@@ -10,6 +10,9 @@ ng_module(
         ":select_demo_scss",
     ],
     deps = [
+        "//src/cdk/a11y",
+        "//src/cdk/overlay",
+        "//src/cdk/keycodes",
         "//src/material/button",
         "//src/material/card",
         "//src/material/form-field",

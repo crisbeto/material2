@@ -18,9 +18,21 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {RouterModule} from '@angular/router';
 import {SelectDemo} from './select-demo';
+import {OverlayModule} from '@angular/cdk/overlay';
+import {
+  NewSelect,
+  NewOption,
+  NewOptionListItem,
+  NewSelectList,
+  NewSelectCombobox,
+  NewSelectComboboxDialog,
+} from './new-select';
+import {A11yModule} from '@angular/cdk/a11y';
 
 @NgModule({
   imports: [
+    A11yModule,
+    OverlayModule,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -33,7 +45,15 @@ import {SelectDemo} from './select-demo';
     ReactiveFormsModule,
     RouterModule.forChild([{path: '', component: SelectDemo}]),
   ],
-  declarations: [SelectDemo],
+  declarations: [
+    SelectDemo,
+    NewSelect,
+    NewOption,
+    NewSelectList,
+    NewOptionListItem,
+    NewSelectCombobox,
+    NewSelectComboboxDialog,
+  ],
 })
 export class SelectDemoModule {
 }
