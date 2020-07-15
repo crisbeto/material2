@@ -156,10 +156,10 @@ export class NewSelect implements OnInit, AfterContentInit {
   labelId = `new-select-label-${id++}`;
   selectedValueId = `new-select-selected-value-${id++}`;
   expanded = false;
-  invalid = false;
-  required = true;
-  private _keyManager: ActiveDescendantKeyManager<NewOption>;
-  private _selectionModel: SelectionModel<NewOption>;
+  @Input() invalid = false;
+  @Input() required = false;
+  protected _keyManager: ActiveDescendantKeyManager<NewOption>;
+  protected _selectionModel: SelectionModel<NewOption>;
 
   ngOnInit() {
     this._selectionModel = new SelectionModel<NewOption>(this.multiple);
@@ -362,6 +362,10 @@ export class NewSelectCombobox extends NewSelect {
       max-width: 200px;
     }
 
+    .listbox:focus {
+      outline: solid 2px;
+    }
+
     .dialog {
       display: none;
     }
@@ -386,7 +390,7 @@ export class NewSelectCombobox extends NewSelect {
       class="trigger"
       #button
       role="combobox"
-      aria-haspopup="listbox"
+      aria-haspopup="dialog"
       [attr.aria-expanded]="expanded"
       [attr.aria-labelledby]="labelId + ' ' + selectedValueId"
       [attr.aria-required]="required"
@@ -396,24 +400,21 @@ export class NewSelectCombobox extends NewSelect {
         <span [attr.id]="selectedValueId">{{_getSelectedLabel()}}</span>
     </div>
 
-    <div class="dialog" [class.expanded]="expanded" role="dialog" cdkTrapFocus>
+    <div class="dialog" [class.expanded]="expanded" role="dialog" aria-modal="true" cdkTrapFocus>
       <input
         #input
         [value]="text"
         (input)="textChange.emit(input.value)"
-        [attr.aria-activedescendant]="_getActiveOption()?.id || null"
-        [attr.aria-controls]="_listboxId"
-        [attr.aria-labelledby]="labelId"
-        aria-expanded="true"
-        aria-autocomplete="list"
-        placeholder="Search for a car"
-        role="combobox">
+        (keydown)="$event.stopPropagation()"
+        placeholder="Search for a car">
 
       <div
         class="listbox"
         role="listbox"
-        tabindex="-1"
+        tabindex="0"
         [attr.id]="_listboxId"
+        [attr.aria-labelledby]="labelId"
+        [attr.aria-activedescendant]="_getActiveOption()?.id || null"
         [attr.aria-labelledby]="labelId">
         <ng-content></ng-content>
       </div>
@@ -424,10 +425,18 @@ export class NewSelectCombobox extends NewSelect {
     useExisting: NewSelectComboboxDialog
   }]
 })
-export class NewSelectComboboxDialog extends NewSelectCombobox {
+export class NewSelectComboboxDialog extends NewSelectCombobox implements AfterContentInit {
   @ViewChild('input') input: ElementRef<HTMLInputElement>;
   @Input() text = '';
   @Output() textChange = new EventEmitter<string>();
+
+  ngAfterContentInit() {
+    super.ngAfterContentInit();
+
+    this.options.changes.subscribe(() => {
+      this._keyManager.updateActiveItem(this.options.length === 0 ? -1 : 0);
+    });
+  }
 
   protected _moveFocus() {
     if (this.expanded) {

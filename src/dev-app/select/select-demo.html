@@ -28,49 +28,58 @@
     <mat-option value="audi">Audi</mat-option>
   </mat-select>
 </mat-form-field> -->
+<p>
+  <input type="checkbox" [(ngModel)]="required" id="is-required">
+  <label for="is-required">Simulate required state</label>
+</p>
+
+<p>
+  <input type="checkbox" [(ngModel)]="invalid" id="is-invalid">
+  <label for="is-invalid">Simulate invalid state</label>
+</p>
 
 <h2>Always inside the DOM</h2>
-<new-select label="Select your car" [alwaysInDom]="true">
+<new-select label="Select your car" [alwaysInDom]="true" [required]="required" [invalid]="invalid">
   <new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</new-option>
 </new-select>
 
 <h2>Removed from DOM on close</h2>
-<new-select label="Select your car" [alwaysInDom]="false">
+<new-select label="Select your car" [alwaysInDom]="false" [required]="required" [invalid]="invalid">
   <new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</new-option>
 </new-select>
 
 <h2>Always inside the DOM using <code>ul</code></h2>
-<new-select-ul label="Select your car" [alwaysInDom]="true">
+<new-select-ul label="Select your car" [alwaysInDom]="true" [required]="required" [invalid]="invalid">
   <li new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</li>
 </new-select-ul>
 
 <h2>Removed from DOM on close <code>ul</code></h2>
-<new-select-ul label="Select your car" [alwaysInDom]="false">
+<new-select-ul label="Select your car" [alwaysInDom]="false" [required]="required" [invalid]="invalid">
   <li new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</li>
 </new-select-ul>
 
 <h2>Based on combobox + listbox</h2>
-<new-select-combobox label="Select your car">
+<new-select-combobox label="Select your car" [required]="required" [invalid]="invalid">
   <new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</new-option>
 </new-select-combobox>
 
 <h2>Custom multi select</h2>
-<new-select label="Select your car" [multiple]="true">
+<new-select label="Select your car" [multiple]="true" [required]="required" [invalid]="invalid">
   <new-option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</new-option>
 </new-select>
 
 <h2>Filter dialog based on combobox + listbox</h2>
-<new-select-combobox-dialog label="Select your car" (textChange)="filterCars($event)">
+<new-select-combobox-dialog label="Select your car" (textChange)="filterCars($event)" [required]="required" [invalid]="invalid">
   <new-option *ngFor="let car of filteredCars" [value]="car.value">{{ car.viewValue }}</new-option>
 </new-select-combobox-dialog>
 
 <h2>Native single select</h2>
-<select>
+<select [attr.aria-required]="required" [attr.aria-invalid]="invalid">
   <option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</option>
 </select>
 
 <h2>Native multi select</h2>
-<select multiple>
+<select multiple [attr.aria-required]="required" [attr.aria-invalid]="invalid">
   <option *ngFor="let car of cars" [value]="car.value">{{ car.viewValue }}</option>
 </select>
 

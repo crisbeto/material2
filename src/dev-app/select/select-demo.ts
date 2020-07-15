@@ -27,6 +27,9 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     styleUrls: ['select-demo.css'],
 })
 export class SelectDemo {
+  required = false;
+  invalid = false;
+
   drinksRequired = false;
   drinkObjectRequired = false;
   pokemonRequired = false;
