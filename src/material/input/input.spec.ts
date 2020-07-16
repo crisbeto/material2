@@ -43,7 +43,6 @@ import {
 } from '@angular/material/form-field';
 import {By} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatStepperModule} from '@angular/material/stepper';
 import {MatTabsModule} from '@angular/material/tabs';
 import {Directionality, Direction} from '@angular/cdk/bidi';
 import {Subject} from 'rxjs';
@@ -996,6 +995,12 @@ describe('MatInput without forms', () => {
     }).not.toThrow();
   }));
 
+  fit('should not throw when there is a default ngIf on the input element', fakeAsync(() => {
+    expect(() => {
+      createComponent(MatInputWithAnotherNgIf).detectChanges();
+      debugger;
+    }).not.toThrow();
+  }));
 });
 
 describe('MatInput with forms', () => {
@@ -2251,3 +2256,23 @@ class CustomMatInputAccessor {
   `
 })
 class MatInputWithDefaultNgIf {}
+
+// Note that the DOM structure is slightly weird, but it's
+// testing a specific g3 issue. See the discussion on #10466.
+@Component({
+  template: `
+    <mat-form-field>
+      <mat-label>App name</mat-label>
+      <input matInput *ngIf="true"
+             placeholder="My placeholder"
+             [value]="inputValue">
+    </mat-form-field>
+  `
+})
+class MatInputWithAnotherNgIf {
+  inputValue: string;
+
+  ngOnInit() {
+    this.inputValue = 'test';
+  }
+}
