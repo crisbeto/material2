@@ -126,6 +126,7 @@ describe('MatSelect', () => {
     beforeEach(async(() => {
       configureMatSelectTestingModule([
         BasicSelect,
+        BasicSelectWithReset,
         MultiSelect,
         SelectWithGroups,
         SelectWithGroupsAndNgContainer,
@@ -133,6 +134,53 @@ describe('MatSelect', () => {
         SelectWithChangeEvent,
       ]);
     }));
+
+    fdescribe('with form field', () => {
+      let fixture: ComponentFixture<BasicSelectWithReset>;
+      let trigger: HTMLElement;
+      let options: HTMLElement[];
+
+      beforeEach(fakeAsync(() => {
+        fixture = TestBed.createComponent(BasicSelectWithReset);
+        fixture.detectChanges();
+        trigger = fixture.debugElement.query(By.css('.mat-select-trigger'))!.nativeElement;
+        trigger.click();
+        fixture.detectChanges();
+
+        options = Array.from(overlayContainerElement.querySelectorAll('mat-option'));
+      }));
+
+      it('should set the select value', fakeAsync(() => {
+        // This currently fails without PR #13598
+        fixture.componentInstance.control.setValue('a');
+        fixture.detectChanges();
+        expect(fixture.componentInstance.select.value).toBe('a');
+      }));
+
+      it('should reset the control value', fakeAsync(() => {
+        // This now fails with PR #13598
+        // In select, the `this.value` never changes from undefined even though
+        // the control has a value. Thus, when the reset option is clicked,
+        // the event isn't emitted because select still registers its
+        // value as "null" (undefined)
+        fixture.componentInstance.control.setValue('a');
+        fixture.detectChanges();
+
+        options[0].click();
+        fixture.detectChanges();
+        flush();
+        expect(fixture.componentInstance.control.value).toBe(undefined);
+      }));
+
+      it('should reflect the value in the form control', fakeAsync(() => {
+        options[1].click();
+        fixture.detectChanges();
+        flush();
+        expect(fixture.componentInstance.select.value).toBe('a');
+        expect(fixture.componentInstance.control.value).toBe('a');
+      }));
+    });
+
 
     describe('accessibility', () => {
       describe('for select', () => {
@@ -4591,6 +4639,26 @@ class BasicSelect {
   panelClass = ['custom-one', 'custom-two'];
   disableRipple: boolean;
   typeaheadDebounceInterval: number;
+
+  @ViewChild(MatSelect, {static: true}) select: MatSelect;
+  @ViewChildren(MatOption) options: QueryList<MatOption>;
+}
+
+@Component({
+  selector: 'basic-select-with-reset',
+  template: `
+    <mat-form-field>
+      <mat-select [formControl]="control">
+        <mat-option></mat-option>
+        <mat-option value="a"> A </mat-option>
+        <mat-option value="b"> A </mat-option>
+        <mat-option value="c"> A </mat-option>
+      </mat-select>
+    </mat-form-field>
+  `
+})
+class BasicSelectWithReset {
+  control = new FormControl();
 
   @ViewChild(MatSelect, {static: true}) select: MatSelect;
   @ViewChildren(MatOption) options: QueryList<MatOption>;
