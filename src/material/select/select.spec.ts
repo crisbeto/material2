@@ -2951,6 +2951,16 @@ describe('MatSelect', () => {
     }));
   });
 
+  describe('with placeholder in ngcontainer with ngIf', () => {
+    let fixture: ComponentFixture<SelectInNgContainer>;
+
+    fit('should set the select value', fakeAsync(() => {
+      configureMatSelectTestingModule([SelectInNgContainer]);
+      fixture = TestBed.createComponent(SelectInNgContainer);
+      fixture.detectChanges();
+    }));
+  });
+
   describe('without Angular forms', () => {
     beforeEach(async(() => configureMatSelectTestingModule([
       BasicSelectWithoutForms,
@@ -5433,3 +5443,19 @@ class SelectWithResetOptionAndFormControl {
   @ViewChildren(MatOption) options: QueryList<MatOption>;
   control = new FormControl();
 }
+
+@Component({
+  selector: 'select-with-placeholder-in-ngcontainer-with-ngIf',
+  template: `
+    <mat-form-field>
+      <ng-container *ngIf="true">
+        <mat-select placeholder="Product Area">
+          <mat-option value="a">A</mat-option>
+          <mat-option value="b">B</mat-option>
+          <mat-option value="c">C</mat-option>
+        </mat-select>
+      </ng-container>
+    </mat-form-field>
+  `
+})
+class SelectInNgContainer {}

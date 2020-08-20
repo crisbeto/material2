@@ -1164,6 +1164,8 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
       return null;
     }
 
+    console.log(this._getLabelId());
+
     let value = this._getLabelId() + ' ' + this._valueId;
 
     if (this.ariaLabelledby) {
