@@ -216,6 +216,10 @@ export abstract class _MatAutocompleteTriggerBase implements ControlValueAccesso
               @Optional() @Inject(MAT_AUTOCOMPLETE_DEFAULT_OPTIONS)
               private _defaults?: MatAutocompleteDefaultOptions) {
     this._scrollStrategy = scrollStrategy;
+
+    const root = this._getRoot();
+    root.setAttribute('role', 'combobox');
+    root.setAttribute('aria-expanded', 'false');
   }
 
   /** Class to apply to the panel when it's above the input. */
@@ -274,6 +278,8 @@ export abstract class _MatAutocompleteTriggerBase implements ControlValueAccesso
 
     if (this.panelOpen) {
       // Only emit if the panel was visible.
+      this._getRoot().setAttribute('aria-expanded', 'false');
+      this._getRoot().removeAttribute('aria-owns');
       this.autocomplete.closed.emit();
     }
 
@@ -635,6 +641,9 @@ export abstract class _MatAutocompleteTriggerBase implements ControlValueAccesso
     // We need to do an extra `panelOpen` check in here, because the
     // autocomplete won't be shown if there are no options.
     if (this.panelOpen && wasOpen !== this.panelOpen) {
+      this._getRoot().setAttribute('aria-expanded', 'true');
+      this._getRoot().setAttribute('aria-owns', this.autocomplete.id);
+      this.autocomplete._ariaLabelledby = this._formField.getLabelId();
       this.autocomplete.opened.emit();
     }
   }
@@ -762,6 +771,11 @@ export abstract class _MatAutocompleteTriggerBase implements ControlValueAccesso
     }
   }
 
+  private _getRoot(): HTMLElement {
+    const ref = this._formField ? this._formField._elementRef : this._element;
+    return ref.nativeElement;
+  }
+
   static ngAcceptInputType_autocompleteDisabled: BooleanInput;
 }
 
@@ -771,12 +785,9 @@ export abstract class _MatAutocompleteTriggerBase implements ControlValueAccesso
   host: {
     'class': 'mat-autocomplete-trigger',
     '[attr.autocomplete]': 'autocompleteAttribute',
-    '[attr.role]': 'autocompleteDisabled ? null : "combobox"',
     '[attr.aria-autocomplete]': 'autocompleteDisabled ? null : "list"',
     '[attr.aria-activedescendant]': '(panelOpen && activeOption) ? activeOption.id : null',
-    '[attr.aria-expanded]': 'autocompleteDisabled ? null : panelOpen.toString()',
-    '[attr.aria-owns]': '(autocompleteDisabled || !panelOpen) ? null : autocomplete?.id',
-    '[attr.aria-haspopup]': '!autocompleteDisabled',
+    '[attr.aria-controls]': '(autocompleteDisabled || !panelOpen) ? null : autocomplete?.id',
     // Note: we use `focusin`, as opposed to `focus`, in order to open the panel
     // a little earlier. This avoids issues where IE delays the focusing of the input.
     '(focusin)': '_handleFocus()',

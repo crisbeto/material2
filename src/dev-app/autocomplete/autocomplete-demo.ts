@@ -97,7 +97,7 @@ export class AutocompleteDemo {
 
   constructor() {
     this.tdStates = this.states;
-    this.stateCtrl = new FormControl({code: 'CA', name: 'California'});
+    this.stateCtrl = new FormControl();
     this.reactiveStates = this.stateCtrl.valueChanges
       .pipe(
         startWith(this.stateCtrl.value),

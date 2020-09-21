@@ -187,6 +187,8 @@ export abstract class _MatAutocompleteBase extends _MatAutocompleteMixinBase imp
   /** Unique ID to be used by autocomplete trigger's "aria-owns" property. */
   id: string = `mat-autocomplete-${_uniqueAutocompleteIdCounter++}`;
 
+  _ariaLabelledby: string | null;
+
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private _elementRef: ElementRef<HTMLElement>,
