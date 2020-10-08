@@ -69,12 +69,14 @@ export function createMigrationSchematicRule(
       return;
     }
 
+    debugger;
+
     // Keep track of all project source files which have been checked/migrated. This is
     // necessary because multiple TypeScript projects can contain the same source file and
     // we don't want to check these again, as this would result in duplicated failure messages.
     const analyzedFiles = new Set<WorkspacePath>();
     const fileSystem = new DevkitFileSystem(tree);
-    const projectNames = workspace.projects.keys(); // TODO: not a definition collection for some reason.
+    const projectNames = workspace.projects.keys();
     const migrations: NullableDevkitMigration[] = [...cdkMigrations, ...extraMigrations];
     let hasFailures = false;
 

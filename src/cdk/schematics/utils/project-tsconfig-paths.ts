@@ -7,7 +7,12 @@
  */
 
 import {JsonParseMode, normalize, parseJson} from '@angular-devkit/core';
-import {ProjectDefinition, WorkspaceDefinition} from '@angular-devkit/core/src/workspace';
+import {
+  ProjectDefinition,
+  ProjectDefinitionCollection,
+  WorkspaceDefinition,
+} from '@angular-devkit/core/src/workspace';
+import {readJsonWorkspace} from '@angular-devkit/core/src/workspace/json/reader';
 import {Tree} from '@angular-devkit/schematics';
 import {WorkspacePath} from '../update-tool/file-system';
 
@@ -25,7 +30,7 @@ export function getTargetTsconfigPath(project: ProjectDefinition,
  * Resolve the workspace configuration of the specified tree gracefully. We cannot use the utility
  * functions from the default Angular schematics because those might not be present in older
  * versions of the CLI. Also it's important to resolve the workspace gracefully because
- * the CLI project could be still using `.angular-cli.json` instead of thew new config.
+ * the CLI project could be still using `.angular-cli.json` instead of the new config.
  */
 export function getWorkspaceConfigGracefully(tree: Tree): null|WorkspaceDefinition {
   const path = defaultWorkspaceConfigPaths.find(filePath => tree.exists(filePath));
@@ -35,11 +40,17 @@ export function getWorkspaceConfigGracefully(tree: Tree): null|WorkspaceDefiniti
     return null;
   }
 
+  readJsonWorkspace(path, tree)
+
   try {
     // Parse the workspace file as JSON5 which is also supported for CLI
     // workspace configurations.
-    return parseJson(
-      configBuffer.toString(), JsonParseMode.Json5) as unknown as WorkspaceDefinition;
+    const parsed: any = parseJson(configBuffer.toString(), JsonParseMode.Json5);
+    if (parsed.projects) {
+      parsed.projects = new ProjectDefinitionCollection(parsed.projects);
+    }
+    debugger;
+    return parsed as unknown as WorkspaceDefinition;
   } catch (e) {
     return null;
   }

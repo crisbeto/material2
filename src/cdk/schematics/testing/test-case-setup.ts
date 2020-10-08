@@ -43,6 +43,8 @@ export async function createFileSystemTestApp(runner: SchematicTestRunner) {
   // map every file in the app tree to a temporary location on the file system.
   appTree.files.forEach(f => writeFile(f, appTree.readContent(f)));
 
+  // debugger;
+
   return {
     appTree,
     writeFile,
@@ -67,9 +69,7 @@ export async function createTestCaseSetup(migrationName: string, collectionPath:
 
   let logOutput = '';
   runner.logger.subscribe(entry => logOutput += `${entry.message}\n`);
-
-  const {appTree, writeFile} =
-    await createFileSystemTestApp(runner);
+  const {appTree, writeFile} = await createFileSystemTestApp(runner);
 
   _patchTypeScriptDefaultLib(appTree);
 

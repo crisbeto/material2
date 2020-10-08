@@ -13,6 +13,7 @@ import {SchematicTestRunner, UnitTestTree} from '@angular-devkit/schematics/test
 export async function createTestProject(
   runner: SchematicTestRunner, projectType: 'application'|'library', appOptions = {}, tree?: Tree):
     Promise<UnitTestTree> {
+  debugger;
   const workspaceTree = await runner.runExternalSchematicAsync('@schematics/angular', 'workspace', {
     name: 'workspace',
     version: '6.0.0',
