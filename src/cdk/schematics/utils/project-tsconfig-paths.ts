@@ -7,26 +7,18 @@
  */
 
 import {JsonParseMode, normalize, parseJson} from '@angular-devkit/core';
+import {ProjectDefinition, WorkspaceDefinition} from '@angular-devkit/core/src/workspace';
 import {Tree} from '@angular-devkit/schematics';
-import {WorkspaceProject, WorkspaceSchema} from '@schematics/angular/utility/workspace-models';
 import {WorkspacePath} from '../update-tool/file-system';
 
 /** Name of the default Angular CLI workspace configuration files. */
 const defaultWorkspaceConfigPaths = ['/angular.json', '/.angular.json'];
 
 /** Gets the tsconfig path from the given target within the specified project. */
-export function getTargetTsconfigPath(project: WorkspaceProject,
+export function getTargetTsconfigPath(project: ProjectDefinition,
                                       targetName: string): WorkspacePath|null {
-  if (project.targets && project.targets[targetName] && project.targets[targetName].options &&
-      project.targets[targetName].options.tsConfig) {
-    return normalize(project.targets[targetName].options.tsConfig);
-  }
-
-  if (project.architect && project.architect[targetName] && project.architect[targetName].options &&
-      project.architect[targetName].options.tsConfig) {
-    return normalize(project.architect[targetName].options.tsConfig);
-  }
-  return null;
+  const tsconfig = project.targets?.get(targetName)?.options?.tsConfig;
+  return tsconfig ? normalize(tsconfig as string) : null;
 }
 
 /**
@@ -35,7 +27,7 @@ export function getTargetTsconfigPath(project: WorkspaceProject,
  * versions of the CLI. Also it's important to resolve the workspace gracefully because
  * the CLI project could be still using `.angular-cli.json` instead of thew new config.
  */
-export function getWorkspaceConfigGracefully(tree: Tree): null|WorkspaceSchema {
+export function getWorkspaceConfigGracefully(tree: Tree): null|WorkspaceDefinition {
   const path = defaultWorkspaceConfigPaths.find(filePath => tree.exists(filePath));
   const configBuffer = tree.read(path!);
 
@@ -46,7 +38,8 @@ export function getWorkspaceConfigGracefully(tree: Tree): null|WorkspaceSchema {
   try {
     // Parse the workspace file as JSON5 which is also supported for CLI
     // workspace configurations.
-    return parseJson(configBuffer.toString(), JsonParseMode.Json5) as unknown as WorkspaceSchema;
+    return parseJson(
+      configBuffer.toString(), JsonParseMode.Json5) as unknown as WorkspaceDefinition;
   } catch (e) {
     return null;
   }

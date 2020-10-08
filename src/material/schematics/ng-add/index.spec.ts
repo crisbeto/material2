@@ -1,5 +1,5 @@
 import {normalize} from '@angular-devkit/core';
-import {WorkspaceProject} from '@angular-devkit/core/src/experimental/workspace';
+import {ProjectDefinition} from '@angular-devkit/core/src/workspace';
 import {Tree} from '@angular-devkit/schematics';
 import {SchematicTestRunner} from '@angular-devkit/schematics/testing';
 import {
@@ -9,7 +9,7 @@ import {
   getProjectTargetOptions,
 } from '@angular/cdk/schematics';
 import {createTestApp, createTestLibrary, getFileContent} from '@angular/cdk/schematics/testing';
-import {getWorkspace} from '@schematics/angular/utility/config';
+import {getWorkspace} from '@schematics/angular/utility/workspace';
 import {COLLECTION_PATH} from '../index.spec';
 import {addPackageToPackageJson} from './package-config';
 
@@ -35,7 +35,7 @@ describe('ng-add schematic', () => {
   });
 
   /** Expects the given file to be in the styles of the specified workspace project. */
-  function expectProjectStyleFile(project: WorkspaceProject, filePath: string) {
+  function expectProjectStyleFile(project: ProjectDefinition, filePath: string) {
     expect(getProjectTargetOptions(project, 'build').styles)
         .toContain(
             filePath, `Expected "${filePath}" to be added to the project styles in the workspace.`);
@@ -97,7 +97,7 @@ describe('ng-add schematic', () => {
   it('should add default theme', async () => {
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
 
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
 
     expectProjectStyleFile(
@@ -111,7 +111,7 @@ describe('ng-add schematic', () => {
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {theme: 'custom'}, appTree)
                      .toPromise();
 
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
     const expectedStylesPath = normalize(`/${project.root}/src/styles.scss`);
 
@@ -128,7 +128,7 @@ describe('ng-add schematic', () => {
 
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {theme: 'custom'}, appTree)
                      .toPromise();
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
     const expectedStylesPath = normalize(`/${project.root}/src/custom-theme.scss`);
 
@@ -138,7 +138,7 @@ describe('ng-add schematic', () => {
 
   it('should add font links', async () => {
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
 
     const indexFiles = getProjectIndexFiles(project);
@@ -161,7 +161,7 @@ describe('ng-add schematic', () => {
 
   it('should add material app styles', async () => {
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
 
     const defaultStylesPath = getProjectStyleFile(project)!;
@@ -184,7 +184,7 @@ describe('ng-add schematic', () => {
     });
 
     it('should not add BrowserAnimationsModule if NoopAnimationsModule is set up', async () => {
-      const workspace = getWorkspace(appTree);
+      const workspace = await getWorkspace(appTree);
       const project = getProjectFromWorkspace(workspace);
 
       // Simulate the case where a developer uses `ng-add` on an Angular CLI project which already
@@ -214,8 +214,8 @@ describe('ng-add schematic', () => {
               'Expected the project app module to import the "NoopAnimationsModule".');
     });
 
-    it('should not add NoopAnimationsModule if BrowserAnimationsModule is set up', () => {
-      const workspace = getWorkspace(appTree);
+    it('should not add NoopAnimationsModule if BrowserAnimationsModule is set up', async () => {
+      const workspace = await getWorkspace(appTree);
       const project = getProjectFromWorkspace(workspace);
 
       // Simulate the case where a developer uses `ng-add` on an Angular CLI project which already
@@ -233,25 +233,22 @@ describe('ng-add schematic', () => {
 
   describe('custom project builders', () => {
     /** Overwrites a target builder for the workspace in the given tree */
-    function overwriteTargetBuilder(tree: Tree, targetName: string, newBuilder: string) {
-      const workspace = getWorkspace(tree);
+    async function overwriteTargetBuilder(tree: Tree, targetName: string, newBuilder: string) {
+      const workspace = await getWorkspace(tree);
       const project = getProjectFromWorkspace(workspace);
-      const targetConfig = project.architect && project.architect[targetName] ||
-          project.targets && project.targets[targetName];
+      const targetConfig = project.targets.get(targetName)!;
       targetConfig['builder'] = newBuilder;
       tree.overwrite('/angular.json', JSON.stringify(workspace, null, 2));
     }
 
     it('should throw an error if the "build" target has been changed', async () => {
-      overwriteTargetBuilder(appTree, 'build', 'thirdparty-builder');
-
+      await overwriteTargetBuilder(appTree, 'build', 'thirdparty-builder');
       await expectAsync(runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise())
         .toBeRejectedWithError(/not using the default builders.*build/);
     });
 
     it('should warn if the "test" target has been changed', async () => {
-      overwriteTargetBuilder(appTree, 'test', 'thirdparty-test-builder');
-
+      await overwriteTargetBuilder(appTree, 'test', 'thirdparty-test-builder');
       await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
 
       expect(errorOutput.length).toBe(0);
@@ -267,15 +264,15 @@ describe('ng-add schematic', () => {
         './node_modules/@angular/material/prebuilt-themes/indigo-pink.css';
 
     /** Writes a specific style file to the workspace in the given tree */
-    function writeStyleFileToWorkspace(tree: Tree, stylePath: string) {
-      const workspace = getWorkspace(tree);
+    async function writeStyleFileToWorkspace(tree: Tree, stylePath: string) {
+      const workspace = await getWorkspace(tree);
       const project = getProjectFromWorkspace(workspace);
       const buildOptions = getProjectTargetOptions(project, 'build');
 
       if (!buildOptions.styles) {
         buildOptions.styles = [stylePath];
       } else {
-        buildOptions.styles.push(stylePath);
+        (buildOptions.styles as string[]).push(stylePath);
       }
 
       tree.overwrite('/angular.json', JSON.stringify(workspace, null, 2));
@@ -283,10 +280,10 @@ describe('ng-add schematic', () => {
 
     it('should replace existing prebuilt theme files', async () => {
       const existingThemePath = './node_modules/@angular/material/prebuilt-themes/purple-green.css';
-      writeStyleFileToWorkspace(appTree, existingThemePath);
+      await writeStyleFileToWorkspace(appTree, existingThemePath);
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
-      const workspace = getWorkspace(tree);
+      const workspace = await getWorkspace(tree);
       const project = getProjectFromWorkspace(workspace);
       const styles = getProjectTargetOptions(project, 'build').styles;
 
@@ -297,10 +294,10 @@ describe('ng-add schematic', () => {
     });
 
     it('should not replace existing custom theme files', async () => {
-      writeStyleFileToWorkspace(appTree, './projects/material/custom-theme.scss');
+      await writeStyleFileToWorkspace(appTree, './projects/material/custom-theme.scss');
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
-      const workspace = getWorkspace(tree);
+      const workspace = await getWorkspace(tree);
       const project = getProjectFromWorkspace(workspace);
       const styles = getProjectTargetOptions(project, 'build').styles;
 
@@ -311,10 +308,10 @@ describe('ng-add schematic', () => {
     });
 
     it('should not add a theme file multiple times', async () => {
-      writeStyleFileToWorkspace(appTree, defaultPrebuiltThemePath);
+      await writeStyleFileToWorkspace(appTree, defaultPrebuiltThemePath);
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
-      const workspace = getWorkspace(tree);
+      const workspace = await getWorkspace(tree);
       const project = getProjectFromWorkspace(workspace);
       const styles = getProjectTargetOptions(project, 'build').styles;
 
@@ -338,7 +335,7 @@ describe('ng-add schematic', () => {
     const tree = await runner.runSchematicAsync('ng-add-setup-project', {
       typography: true
     }, appTree).toPromise();
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
 
     const indexFiles = getProjectIndexFiles(project);
@@ -362,7 +359,7 @@ describe('ng-add schematic', () => {
       typography: true
     }, appTree).toPromise();
 
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
     const indexFiles = getProjectIndexFiles(project);
     expect(indexFiles.length).toBe(1);
@@ -385,7 +382,7 @@ describe('ng-add schematic', () => {
       typography: true
     }, appTree).toPromise();
 
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
     const indexFiles = getProjectIndexFiles(project);
     expect(indexFiles.length).toBe(1);
@@ -408,7 +405,7 @@ describe('ng-add schematic', () => {
       typography: false
     }, appTree).toPromise();
 
-    const workspace = getWorkspace(tree);
+    const workspace = await getWorkspace(tree);
     const project = getProjectFromWorkspace(workspace);
     const indexFiles = getProjectIndexFiles(project);
     expect(indexFiles.length).toBe(1);

@@ -4,7 +4,7 @@ import {createTestCaseSetup} from '../../../testing';
 
 describe('ng-update external resource resolution', () => {
 
-  it('should properly resolve referenced resources in components', async () => {
+  fit('should properly resolve referenced resources in components', async () => {
     const {runFixers, writeFile, appTree} = await createTestCaseSetup(
       'migration-v6', MIGRATION_PATH,
       [resolveBazelPath(__dirname, './external-resource-resolution_input.ts')]);

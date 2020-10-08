@@ -7,7 +7,7 @@
  */
 
 import {normalize, logging} from '@angular-devkit/core';
-import {WorkspaceProject, WorkspaceSchema} from '@angular-devkit/core/src/experimental/workspace';
+import {ProjectDefinition, WorkspaceDefinition} from '@angular-devkit/core/src/workspace';
 import {Rule, SchematicContext, SchematicsException, Tree} from '@angular-devkit/schematics';
 import {
   addBodyClass,
@@ -18,7 +18,7 @@ import {
   getProjectIndexFiles,
 } from '@angular/cdk/schematics';
 import {InsertChange} from '@schematics/angular/utility/change';
-import {getWorkspace} from '@schematics/angular/utility/config';
+import {getWorkspace} from '@schematics/angular/utility/workspace';
 import {join} from 'path';
 import {Schema} from '../schema';
 import {createCustomTheme} from './create-custom-theme';
@@ -31,8 +31,8 @@ const defaultCustomThemeFilename = 'custom-theme.scss';
 
 /** Add pre-built styles to the main project style file. */
 export function addThemeToAppStyles(options: Schema): Rule {
-  return function(host: Tree, context: SchematicContext): Tree {
-    const workspace = getWorkspace(host);
+  return async (host: Tree, context: SchematicContext) => {
+    const workspace = await getWorkspace(host);
     const project = getProjectFromWorkspace(workspace, options.project);
     const themeName = options.theme || 'indigo-pink';
 
@@ -41,15 +41,13 @@ export function addThemeToAppStyles(options: Schema): Rule {
     } else {
       insertPrebuiltTheme(project, host, themeName, workspace, context.logger);
     }
-
-    return host;
   };
 }
 
 /** Adds the global typography class to the body element. */
-export function addTypographyClass(options: Schema): (host: Tree) => Tree {
-  return function(host: Tree): Tree {
-    const workspace = getWorkspace(host);
+export function addTypographyClass(options: Schema): Rule {
+  return async (host: Tree) => {
+    const workspace = await getWorkspace(host);
     const project = getProjectFromWorkspace(workspace, options.project);
     const projectIndexFiles = getProjectIndexFiles(project);
 
@@ -60,8 +58,6 @@ export function addTypographyClass(options: Schema): (host: Tree) => Tree {
     if (options.typography) {
       projectIndexFiles.forEach(path => addBodyClass(host, path, 'mat-typography'));
     }
-
-    return host;
   };
 }
 
@@ -69,8 +65,8 @@ export function addTypographyClass(options: Schema): (host: Tree) => Tree {
  * Insert a custom theme to project style file. If no valid style file could be found, a new
  * Scss file for the custom theme will be created.
  */
-function insertCustomTheme(project: WorkspaceProject, projectName: string, host: Tree,
-                           workspace: WorkspaceSchema, logger: logging.LoggerApi) {
+function insertCustomTheme(project: ProjectDefinition, projectName: string, host: Tree,
+                           workspace: WorkspaceDefinition, logger: logging.LoggerApi) {
 
   const stylesPath = getProjectStyleFile(project, 'scss');
   const themeContent = createCustomTheme(projectName);
@@ -104,8 +100,8 @@ function insertCustomTheme(project: WorkspaceProject, projectName: string, host:
 }
 
 /** Insert a pre-built theme into the angular.json file. */
-function insertPrebuiltTheme(project: WorkspaceProject, host: Tree, theme: string,
-                             workspace: WorkspaceSchema, logger: logging.LoggerApi) {
+function insertPrebuiltTheme(project: ProjectDefinition, host: Tree, theme: string,
+                             workspace: WorkspaceDefinition, logger: logging.LoggerApi) {
 
   // Path needs to be always relative to the `package.json` or workspace root.
   const themePath =  `./node_modules/@angular/material/prebuilt-themes/${theme}.css`;
@@ -115,8 +111,8 @@ function insertPrebuiltTheme(project: WorkspaceProject, host: Tree, theme: strin
 }
 
 /** Adds a theming style entry to the given project target options. */
-function addThemeStyleToTarget(project: WorkspaceProject, targetName: 'test' | 'build', host: Tree,
-                               assetPath: string, workspace: WorkspaceSchema,
+function addThemeStyleToTarget(project: ProjectDefinition, targetName: 'test' | 'build', host: Tree,
+                               assetPath: string, workspace: WorkspaceDefinition,
                                logger: logging.LoggerApi) {
   // Do not update the builder options in case the target does not use the default CLI builder.
   if (!validateDefaultTargetBuilder(project, targetName, logger)) {
@@ -124,11 +120,12 @@ function addThemeStyleToTarget(project: WorkspaceProject, targetName: 'test' | '
   }
 
   const targetOptions = getProjectTargetOptions(project, targetName);
+  const styles = targetOptions.styles as (string | {input: string})[];
 
-  if (!targetOptions.styles) {
+  if (!styles) {
     targetOptions.styles = [assetPath];
   } else {
-    const existingStyles = targetOptions.styles.map(s => typeof s === 'string' ? s : s.input);
+    const existingStyles = styles.map(s => typeof s === 'string' ? s : s.input);
 
     for (let [index, stylePath] of existingStyles.entries()) {
       // If the given asset is already specified in the styles, we don't need to do anything.
@@ -147,11 +144,11 @@ function addThemeStyleToTarget(project: WorkspaceProject, targetName: 'test' | '
         logger.info(`    ${assetPath}`);
         return;
       } else if (stylePath.includes(prebuiltThemePathSegment)) {
-        targetOptions.styles.splice(index, 1);
+        styles.splice(index, 1);
       }
     }
 
-    targetOptions.styles.unshift(assetPath);
+    styles.unshift(assetPath);
   }
 
   host.overwrite('angular.json', JSON.stringify(workspace, null, 2));
@@ -162,11 +159,10 @@ function addThemeStyleToTarget(project: WorkspaceProject, targetName: 'test' | '
  * provided by the Angular CLI. If the configured builder does not match the default builder,
  * this function can either throw or just show a warning.
  */
-function validateDefaultTargetBuilder(project: WorkspaceProject, targetName: 'build' | 'test',
+function validateDefaultTargetBuilder(project: ProjectDefinition, targetName: 'build' | 'test',
                                       logger: logging.LoggerApi) {
   const defaultBuilder = defaultTargetBuilders[targetName];
-  const targetConfig = project.architect && project.architect[targetName] ||
-                       project.targets && project.targets[targetName];
+  const targetConfig = project.targets && project.targets.get(targetName);
   const isDefaultBuilder = targetConfig && targetConfig['builder'] === defaultBuilder;
 
   // Because the build setup for the Angular CLI can be customized by developers, we can't know
