@@ -7,8 +7,15 @@
  */
 
 import {normalize, logging} from '@angular-devkit/core';
-import {ProjectDefinition, WorkspaceDefinition} from '@angular-devkit/core/src/workspace';
-import {Rule, SchematicContext, SchematicsException, Tree} from '@angular-devkit/schematics';
+import {ProjectDefinition} from '@angular-devkit/core/src/workspace';
+import {
+  chain,
+  noop,
+  Rule,
+  SchematicContext,
+  SchematicsException,
+  Tree,
+} from '@angular-devkit/schematics';
 import {
   addBodyClass,
   defaultTargetBuilders,
@@ -18,7 +25,7 @@ import {
   getProjectIndexFiles,
 } from '@angular/cdk/schematics';
 import {InsertChange} from '@schematics/angular/utility/change';
-import {getWorkspace} from '@schematics/angular/utility/workspace';
+import {getWorkspace, updateWorkspace} from '@schematics/angular/utility/workspace';
 import {join} from 'path';
 import {Schema} from '../schema';
 import {createCustomTheme} from './create-custom-theme';
@@ -31,16 +38,11 @@ const defaultCustomThemeFilename = 'custom-theme.scss';
 
 /** Add pre-built styles to the main project style file. */
 export function addThemeToAppStyles(options: Schema): Rule {
-  return async (host: Tree, context: SchematicContext) => {
-    const workspace = await getWorkspace(host);
-    const project = getProjectFromWorkspace(workspace, options.project);
+  return (host: Tree, context: SchematicContext) => {
     const themeName = options.theme || 'indigo-pink';
-
-    if (themeName === 'custom') {
-      insertCustomTheme(project, options.project, host, workspace, context.logger);
-    } else {
-      insertPrebuiltTheme(project, host, themeName, workspace, context.logger);
-    }
+    return themeName === 'custom' ?
+      insertCustomTheme(options.project, host, context.logger) :
+      insertPrebuiltTheme(options.project, themeName, context.logger);
   };
 }
 
@@ -65,9 +67,10 @@ export function addTypographyClass(options: Schema): Rule {
  * Insert a custom theme to project style file. If no valid style file could be found, a new
  * Scss file for the custom theme will be created.
  */
-function insertCustomTheme(project: ProjectDefinition, projectName: string, host: Tree,
-                           workspace: WorkspaceDefinition, logger: logging.LoggerApi) {
-
+async function insertCustomTheme(projectName: string, host: Tree,
+                                 logger: logging.LoggerApi): Promise<Rule> {
+  const workspace = await getWorkspace(host);
+  const project = getProjectFromWorkspace(workspace, projectName);
   const stylesPath = getProjectStyleFile(project, 'scss');
   const themeContent = createCustomTheme(projectName);
 
@@ -84,12 +87,11 @@ function insertCustomTheme(project: ProjectDefinition, projectName: string, host
     if (host.exists(customThemePath)) {
       logger.warn(`Cannot create a custom Angular Material theme because
           ${customThemePath} already exists. Skipping custom theme generation.`);
-      return;
+      return noop();
     }
 
     host.create(customThemePath, themeContent);
-    addThemeStyleToTarget(project, 'build', host, customThemePath, workspace, logger);
-    return;
+    return addThemeStyleToTarget(projectName, 'build', customThemePath, logger);
   }
 
   const insertion = new InsertChange(stylesPath, 0, themeContent);
@@ -97,61 +99,63 @@ function insertCustomTheme(project: ProjectDefinition, projectName: string, host
 
   recorder.insertLeft(insertion.pos, insertion.toAdd);
   host.commitUpdate(recorder);
+  return noop();
 }
 
 /** Insert a pre-built theme into the angular.json file. */
-function insertPrebuiltTheme(project: ProjectDefinition, host: Tree, theme: string,
-                             workspace: WorkspaceDefinition, logger: logging.LoggerApi) {
-
+function insertPrebuiltTheme(project: string, theme: string, logger: logging.LoggerApi): Rule {
   // Path needs to be always relative to the `package.json` or workspace root.
-  const themePath =  `./node_modules/@angular/material/prebuilt-themes/${theme}.css`;
+  const themePath = `./node_modules/@angular/material/prebuilt-themes/${theme}.css`;
 
-  addThemeStyleToTarget(project, 'build', host, themePath, workspace, logger);
-  addThemeStyleToTarget(project, 'test', host, themePath, workspace, logger);
+  return chain([
+    addThemeStyleToTarget(project, 'build', themePath, logger),
+    addThemeStyleToTarget(project, 'test', themePath, logger)
+  ]);
 }
 
 /** Adds a theming style entry to the given project target options. */
-function addThemeStyleToTarget(project: ProjectDefinition, targetName: 'test' | 'build', host: Tree,
-                               assetPath: string, workspace: WorkspaceDefinition,
-                               logger: logging.LoggerApi) {
-  // Do not update the builder options in case the target does not use the default CLI builder.
-  if (!validateDefaultTargetBuilder(project, targetName, logger)) {
-    return;
-  }
+function addThemeStyleToTarget(projectName: string, targetName: 'test' | 'build',
+                               assetPath: string, logger: logging.LoggerApi): Rule {
+  return updateWorkspace(workspace => {
+    const project = getProjectFromWorkspace(workspace, projectName);
 
-  const targetOptions = getProjectTargetOptions(project, targetName);
-  const styles = targetOptions.styles as (string | {input: string})[];
-
-  if (!styles) {
-    targetOptions.styles = [assetPath];
-  } else {
-    const existingStyles = styles.map(s => typeof s === 'string' ? s : s.input);
-
-    for (let [index, stylePath] of existingStyles.entries()) {
-      // If the given asset is already specified in the styles, we don't need to do anything.
-      if (stylePath === assetPath) {
-        return;
-      }
-
-      // In case a prebuilt theme is already set up, we can safely replace the theme with the new
-      // theme file. If a custom theme is set up, we are not able to safely replace the custom
-      // theme because these files can contain custom styles, while prebuilt themes are
-      // always packaged and considered replaceable.
-      if (stylePath.includes(defaultCustomThemeFilename)) {
-        logger.error(`Could not add the selected theme to the CLI project ` +
-            `configuration because there is already a custom theme file referenced.`);
-        logger.info(`Please manually add the following style file to your configuration:`);
-        logger.info(`    ${assetPath}`);
-        return;
-      } else if (stylePath.includes(prebuiltThemePathSegment)) {
-        styles.splice(index, 1);
-      }
+    // Do not update the builder options in case the target does not use the default CLI builder.
+    if (!validateDefaultTargetBuilder(project, targetName, logger)) {
+      return;
     }
 
-    styles.unshift(assetPath);
-  }
+    const targetOptions = getProjectTargetOptions(project, targetName);
+    const styles = targetOptions.styles as (string | {input: string})[];
 
-  host.overwrite('angular.json', JSON.stringify(workspace, null, 2));
+    if (!styles) {
+      targetOptions.styles = [assetPath];
+    } else {
+      const existingStyles = styles.map(s => typeof s === 'string' ? s : s.input);
+
+      for (let [index, stylePath] of existingStyles.entries()) {
+        // If the given asset is already specified in the styles, we don't need to do anything.
+        if (stylePath === assetPath) {
+          return;
+        }
+
+        // In case a prebuilt theme is already set up, we can safely replace the theme with the new
+        // theme file. If a custom theme is set up, we are not able to safely replace the custom
+        // theme because these files can contain custom styles, while prebuilt themes are
+        // always packaged and considered replaceable.
+        if (stylePath.includes(defaultCustomThemeFilename)) {
+          logger.error(`Could not add the selected theme to the CLI project ` +
+              `configuration because there is already a custom theme file referenced.`);
+          logger.info(`Please manually add the following style file to your configuration:`);
+          logger.info(`    ${assetPath}`);
+          return;
+        } else if (stylePath.includes(prebuiltThemePathSegment)) {
+          styles.splice(index, 1);
+        }
+      }
+
+      styles.unshift(assetPath);
+    }
+  });
 }
 
 /**

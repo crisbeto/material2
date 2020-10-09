@@ -233,22 +233,52 @@ describe('ng-add schematic', () => {
 
   describe('custom project builders', () => {
     /** Overwrites a target builder for the workspace in the given tree */
-    async function overwriteTargetBuilder(tree: Tree, targetName: string, newBuilder: string) {
-      const workspace = await getWorkspace(tree);
-      const project = getProjectFromWorkspace(workspace);
-      const targetConfig = project.targets.get(targetName)!;
-      targetConfig['builder'] = newBuilder;
-      tree.overwrite('/angular.json', JSON.stringify(workspace, null, 2));
+    function overwriteTargetBuilder(tree: Tree, targetName: 'build' | 'test', newBuilder: string) {
+      const config = {
+        version: 1,
+        defaultProject: 'material',
+        projects: {
+          material: {
+            projectType: 'application',
+            root: 'projects/material',
+            sourceRoot: 'projects/material/src',
+            prefix: 'app',
+            architect: {
+              build: {
+                builder: '@angular-devkit/build-angular:browser',
+                options: {
+                  outputPath: 'dist/material',
+                  index: 'projects/material/src/index.html',
+                  main: 'projects/material/src/main.ts',
+                  styles: ['projects/material/src/styles.css']
+                }
+              },
+              test: {
+                builder: '@angular-devkit/build-angular:karma',
+                options: {
+                  outputPath: 'dist/material',
+                  index: 'projects/material/src/index.html',
+                  main: 'projects/material/src/main.ts',
+                  styles: ['projects/material/src/styles.css']
+                }
+              }
+            }
+          }
+        }
+      };
+
+      config.projects.material.architect[targetName].builder = newBuilder;
+      tree.overwrite('/angular.json', JSON.stringify(config, null, 2));
     }
 
     it('should throw an error if the "build" target has been changed', async () => {
-      await overwriteTargetBuilder(appTree, 'build', 'thirdparty-builder');
+      overwriteTargetBuilder(appTree, 'build', 'thirdparty-builder');
       await expectAsync(runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise())
         .toBeRejectedWithError(/not using the default builders.*build/);
     });
 
     it('should warn if the "test" target has been changed', async () => {
-      await overwriteTargetBuilder(appTree, 'test', 'thirdparty-test-builder');
+      overwriteTargetBuilder(appTree, 'test', 'thirdparty-test-builder');
       await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
 
       expect(errorOutput.length).toBe(0);
@@ -264,23 +294,35 @@ describe('ng-add schematic', () => {
         './node_modules/@angular/material/prebuilt-themes/indigo-pink.css';
 
     /** Writes a specific style file to the workspace in the given tree */
-    async function writeStyleFileToWorkspace(tree: Tree, stylePath: string) {
-      const workspace = await getWorkspace(tree);
-      const project = getProjectFromWorkspace(workspace);
-      const buildOptions = getProjectTargetOptions(project, 'build');
-
-      if (!buildOptions.styles) {
-        buildOptions.styles = [stylePath];
-      } else {
-        (buildOptions.styles as string[]).push(stylePath);
-      }
-
-      tree.overwrite('/angular.json', JSON.stringify(workspace, null, 2));
+    function writeStyleFileToWorkspace(tree: Tree, stylePath: string) {
+      tree.overwrite('/angular.json', JSON.stringify({
+        version: 1,
+        defaultProject: 'material',
+        projects: {
+          material: {
+            projectType: 'application',
+            root: 'projects/material',
+            sourceRoot: 'projects/material/src',
+            prefix: 'app',
+            architect: {
+              build: {
+                builder: '@angular-devkit/build-angular:browser',
+                options: {
+                  outputPath: 'dist/material',
+                  index: 'projects/material/src/index.html',
+                  main: 'projects/material/src/main.ts',
+                  styles: ['projects/material/src/styles.css', stylePath]
+                }
+              }
+            }
+          }
+        }
+      }, null, 2));
     }
 
     it('should replace existing prebuilt theme files', async () => {
       const existingThemePath = './node_modules/@angular/material/prebuilt-themes/purple-green.css';
-      await writeStyleFileToWorkspace(appTree, existingThemePath);
+      writeStyleFileToWorkspace(appTree, existingThemePath);
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
       const workspace = await getWorkspace(tree);
@@ -294,7 +336,7 @@ describe('ng-add schematic', () => {
     });
 
     it('should not replace existing custom theme files', async () => {
-      await writeStyleFileToWorkspace(appTree, './projects/material/custom-theme.scss');
+      writeStyleFileToWorkspace(appTree, './projects/material/custom-theme.scss');
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
       const workspace = await getWorkspace(tree);
@@ -308,7 +350,7 @@ describe('ng-add schematic', () => {
     });
 
     it('should not add a theme file multiple times', async () => {
-      await writeStyleFileToWorkspace(appTree, defaultPrebuiltThemePath);
+      writeStyleFileToWorkspace(appTree, defaultPrebuiltThemePath);
 
       const tree = await runner.runSchematicAsync('ng-add-setup-project', {}, appTree).toPromise();
       const workspace = await getWorkspace(tree);

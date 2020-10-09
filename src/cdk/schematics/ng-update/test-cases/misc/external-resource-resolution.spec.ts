@@ -4,7 +4,7 @@ import {createTestCaseSetup} from '../../../testing';
 
 describe('ng-update external resource resolution', () => {
 
-  fit('should properly resolve referenced resources in components', async () => {
+  it('should properly resolve referenced resources in components', async () => {
     const {runFixers, writeFile, appTree} = await createTestCaseSetup(
       'migration-v6', MIGRATION_PATH,
       [resolveBazelPath(__dirname, './external-resource-resolution_input.ts')]);
@@ -20,9 +20,9 @@ describe('ng-update external resource resolution', () => {
 
     expect(appTree.readContent('/projects/material/test.html'))
         .toBe(expected, 'Expected absolute devkit tree paths to work.');
-    // expect(appTree.readContent('/projects/cdk-testing/src/some-tmpl.html'))
-    //     .toBe(expected, 'Expected relative paths with parent segments to work.');
-    // expect(appTree.readContent('/projects/cdk-testing/src/test-cases/local.html'))
-    //     .toBe(expected, 'Expected relative paths without explicit dot to work.');
+    expect(appTree.readContent('/projects/cdk-testing/src/some-tmpl.html'))
+        .toBe(expected, 'Expected relative paths with parent segments to work.');
+    expect(appTree.readContent('/projects/cdk-testing/src/test-cases/local.html'))
+        .toBe(expected, 'Expected relative paths without explicit dot to work.');
   });
 });

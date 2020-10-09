@@ -62,14 +62,12 @@ export function createMigrationSchematicRule(
     upgradeData: UpgradeData, onMigrationCompleteFn?: PostMigrationFn): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const logger = context.logger;
-    const workspace = getWorkspaceConfigGracefully(tree);
+    const workspace = await getWorkspaceConfigGracefully(tree);
 
     if (workspace === null) {
       logger.error('Could not find workspace configuration file.');
       return;
     }
-
-    debugger;
 
     // Keep track of all project source files which have been checked/migrated. This is
     // necessary because multiple TypeScript projects can contain the same source file and
