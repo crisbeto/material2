@@ -1,0 +1,4 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'progress-bar-theme-internal';
+@forward 'progress-bar-theme-internal' as mat-mdc-progress-bar-* hide mat-mdc-progress-bar-color;

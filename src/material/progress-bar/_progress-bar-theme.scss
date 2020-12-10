@@ -1,0 +1,3 @@
+@forward '../core/theming/theming';
+@forward 'progress-bar-theme-internal';
+@forward 'progress-bar-theme-internal' as mat-progress-bar-* hide mat-progress-bar-density;

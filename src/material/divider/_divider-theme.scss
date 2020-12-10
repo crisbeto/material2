@@ -1,0 +1,3 @@
+@forward '../core/theming/theming';
+@forward 'divider-theme-internal';
+@forward 'divider-theme-internal' as mat-divider-* hide mat-divider-density;

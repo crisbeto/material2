@@ -1,0 +1,5 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'chips-theme-internal';
+@forward 'chips-theme-internal' as mat-mdc-chips-* hide $mat-mdc-chips-mdc-chips-fill-color-default,
+  $mat-mdc-chips-mdc-chips-icon-color, $mat-mdc-chips-mdc-chips-ink-color-default;

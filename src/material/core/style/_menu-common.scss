@@ -1,0 +1,12 @@
+@forward 'variables-internal';
+@forward 'variables-internal' as mat-* hide $mat-ease-in-out-curve-function, $mat-pi, $mat-swift-ease-in,
+  $mat-swift-ease-in-duration, $mat-swift-ease-in-out, $mat-swift-ease-in-out-duration,
+  $mat-swift-ease-in-out-timing-function, $mat-swift-ease-in-timing-function, $mat-swift-ease-out,
+  $mat-swift-ease-out-duration, $mat-swift-ease-out-timing-function, $mat-swift-linear,
+  $mat-swift-linear-duration, $mat-swift-linear-timing-function, $mat-z-index-drawer,
+  $mat-z-index-fab;
+@forward 'list-common-internal' as mat-* hide mat-base, mat-wrapper-base;
+@forward 'list-common-internal' as mat-line-* hide mat-line-normalize-text, mat-line-truncate-line;
+@forward 'layout-common-internal' as mat-*;
+@forward 'vendor-prefixes-internal';
+@forward 'menu-common-internal' as mat-menu-*;

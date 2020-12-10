@@ -1,0 +1,9 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'slide-toggle-theme-internal';
+@forward 'slide-toggle-theme-internal' as mat-mdc-slide-toggle-*
+  hide $mat-mdc-slide-toggle-mdc-switch-baseline-theme-color,
+  $mat-mdc-slide-toggle-mdc-switch-disabled-thumb-color,
+  $mat-mdc-slide-toggle-mdc-switch-disabled-track-color,
+  $mat-mdc-slide-toggle-mdc-switch-toggled-off-thumb-color,
+  $mat-mdc-slide-toggle-mdc-switch-toggled-off-track-color;

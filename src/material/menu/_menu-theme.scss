@@ -1,0 +1,5 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'menu-theme-internal';
+@forward 'menu-theme-internal' as mat-menu-* hide mat-menu-density;

@@ -1,0 +1,4 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward 'autocomplete-theme-internal';
+@forward 'autocomplete-theme-internal' as mat-autocomplete-* hide mat-autocomplete-density;

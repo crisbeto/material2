@@ -1,0 +1,5 @@
+@forward '../core/style/form-common';
+@forward '../core/style/private';
+@forward '../core/typography/typography-utils';
+@forward 'select-theme-internal';
+@forward 'select-theme-internal' as mat-select-* hide mat-select-density;

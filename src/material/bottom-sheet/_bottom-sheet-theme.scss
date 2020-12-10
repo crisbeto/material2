@@ -1,0 +1,5 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'bottom-sheet-theme-internal';
+@forward 'bottom-sheet-theme-internal' as mat-bottom-sheet-* hide mat-bottom-sheet-density;

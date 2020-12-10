@@ -1,0 +1,3 @@
+@forward 'compatibility-internal';
+@forward 'compatibility-internal' as mat-private-* hide $mat-private-default-scale, $mat-private-interval,
+  $mat-private-maximum-scale, $mat-private-minimum-scale, $mat-private-supported-scales;

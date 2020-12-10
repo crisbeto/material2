@@ -1,0 +1,5 @@
+@forward '../core/theming/theming';
+@forward '../core/style/private';
+@forward '../core/typography/typography-utils';
+@forward 'card-theme-internal';
+@forward 'card-theme-internal' as mat-card-* hide mat-card-density;

@@ -1,0 +1,7 @@
+@forward '../../material/core/style/private';
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward '../../material/core/style/vendor-prefixes';
+@forward '../../cdk/a11y/a11y';
+@forward 'tabs-common-internal';
+@forward 'tabs-common-internal' as mat-mdc-* hide $mat-mdc-mat-tab-animation-duration;

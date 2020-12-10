@@ -1,0 +1,8 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'select-theme-internal';
+@forward 'select-theme-internal' as mat-mdc-select-*
+  hide $mat-mdc-select-mdc-select-disabled-dropdown-icon-color,
+  $mat-mdc-select-mdc-select-disabled-label-color, $mat-mdc-select-mdc-select-dropdown-icon-color,
+  $mat-mdc-select-mdc-select-ink-color, $mat-mdc-select-mdc-select-label-color,
+  mat-mdc-select-get-mdc-focused-text-color;

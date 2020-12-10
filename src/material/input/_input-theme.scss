@@ -1,0 +1,5 @@
+@forward '../core/style/form-common';
+@forward '../core/typography/typography-utils';
+@forward '../core/style/vendor-prefixes';
+@forward 'input-theme-internal';
+@forward 'input-theme-internal' as mat-input-* hide mat-input-density;

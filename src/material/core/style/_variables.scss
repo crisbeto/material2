@@ -1,0 +1,7 @@
+@forward 'variables-internal';
+@forward 'variables-internal' as mat-* hide $mat-ease-in-out-curve-function, $mat-pi, $mat-swift-ease-in,
+  $mat-swift-ease-in-duration, $mat-swift-ease-in-out, $mat-swift-ease-in-out-duration,
+  $mat-swift-ease-in-out-timing-function, $mat-swift-ease-in-timing-function, $mat-swift-ease-out,
+  $mat-swift-ease-out-duration, $mat-swift-ease-out-timing-function, $mat-swift-linear,
+  $mat-swift-linear-duration, $mat-swift-linear-timing-function, $mat-z-index-drawer,
+  $mat-z-index-fab;

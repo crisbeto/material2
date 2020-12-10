@@ -1,0 +1,7 @@
+@forward '../core/theming/theming';
+@forward '../core/style/private';
+@forward '../core/typography/typography-utils';
+@forward 'button-theme-internal';
+@forward 'button-theme-internal' as mat-button-* hide $mat-button-ripple-opacity, mat-button-density,
+  mat-button-focus-overlay-color, mat-button-ripple-background, mat-button-ripple-color,
+  mat-button-theme-property;

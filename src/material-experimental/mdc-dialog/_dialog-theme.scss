@@ -1,0 +1,3 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'dialog-theme-internal' as mat-mdc-dialog-*;

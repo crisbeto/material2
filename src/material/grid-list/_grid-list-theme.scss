@@ -1,0 +1,5 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward '../core/style/list-common';
+@forward 'grid-list-theme-internal';
+@forward 'grid-list-theme-internal' as mat-grid-list-* hide mat-grid-list-density;

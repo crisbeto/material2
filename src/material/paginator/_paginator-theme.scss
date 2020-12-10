@@ -1,0 +1,5 @@
+@forward '../core/theming/theming';
+@forward '../core/density/private/compatibility';
+@forward 'paginator-variables-internal' as mat-paginator-*;
+@forward '../core/typography/typography-utils';
+@forward 'paginator-theme-internal' as mat-paginator-*;

@@ -1,0 +1,4 @@
+@forward '../../../material/core/theming/theming';
+@forward '../../mdc-helpers/mdc-helpers';
+@forward '../../mdc-helpers/mdc-helpers-internal';
+@forward 'option-theme-internal' as mat-mdc-*;

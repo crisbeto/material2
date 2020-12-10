@@ -1,0 +1,4 @@
+@forward '../core/theming/theming';
+@forward 'tree-variables-internal' as mat-tree-*;
+@forward '../core/typography/typography-utils';
+@forward 'tree-theme-internal' as mat-tree-*;

@@ -1,0 +1,15 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../../material/core/ripple/ripple';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'button-theme-internal';
+@forward 'button-theme-internal' as mat-mdc-* hide $mat-mdc-mat-button-state-target, mat-mdc-color,
+  mat-mdc-density, mat-mdc-mat-button-apply-disabled-style, mat-mdc-mat-button-disabled-background,
+  mat-mdc-mat-button-disabled-color, mat-mdc-mat-button-ripple-ink-color, mat-mdc-theme,
+  mat-mdc-typography;
+@forward 'button-theme-internal' as mat-mdc-button-* hide $mat-mdc-button-mat-button-state-target,
+  mat-mdc-button-fab-color, mat-mdc-button-fab-density, mat-mdc-button-fab-theme,
+  mat-mdc-button-fab-typography, mat-mdc-button-icon-button-color,
+  mat-mdc-button-icon-button-density, mat-mdc-button-icon-button-theme,
+  mat-mdc-button-icon-button-typography, mat-mdc-button-mat-button-apply-disabled-style,
+  mat-mdc-button-mat-button-disabled-background, mat-mdc-button-mat-button-disabled-color,
+  mat-mdc-button-mat-button-ripple-ink-color;

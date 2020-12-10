@@ -1,0 +1,17 @@
+@forward '../../material/core/theming/theming';
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'form-field-sizing-internal';
+@forward 'form-field-native-select-internal';
+@forward 'form-field-native-select-internal' as mat-mdc-* hide $mat-mdc-mat-form-field-select-arrow-height,
+  $mat-mdc-mat-form-field-select-arrow-width, $mat-mdc-mat-form-field-select-horizontal-end-padding;
+@forward '../../material/core/style/layout-common';
+@forward 'form-field-density-internal' as mat-mdc-*;
+@forward 'form-field-subscript-internal' as mat-mdc-*;
+@forward 'form-field-focus-overlay-internal' as mat-mdc-*;
+@forward '../../cdk/a11y/a11y';
+@forward 'mdc-text-field-theme-variable-refresh-internal' as mat-mdc-*;
+@forward 'form-field-theme-internal';
+@forward 'form-field-theme-internal' as mat-mdc-form-field-*
+  hide $mat-mdc-form-field-mdc-text-field-focused-label-color,
+  mat-mdc-form-field-text-field-color-styles;

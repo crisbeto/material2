@@ -1,0 +1,2 @@
+@forward 'a11y-internal';
+@forward 'a11y-internal' as cdk-* hide cdk-optionally-nest-content;

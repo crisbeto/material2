@@ -1,0 +1,5 @@
+@forward '../../material/core/theming/theming';
+@forward 'form-field-sizing-internal';
+@forward 'form-field-density-internal';
+@forward 'form-field-density-internal' as mat-mdc-* hide mat-mdc-infix-vertical-spacing-filled,
+  mat-mdc-infix-vertical-spacing-outlined;

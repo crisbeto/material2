@@ -1,0 +1,4 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'checkbox-theme-internal';
+@forward 'checkbox-theme-internal' as mat-checkbox-* hide mat-checkbox-density;

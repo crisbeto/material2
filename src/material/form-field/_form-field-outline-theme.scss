@@ -1,0 +1,8 @@
+@forward '../core/style/form-common';
+@forward '../core/typography/typography-utils';
+@forward 'form-field-outline-theme-internal';
+@forward 'form-field-outline-theme-internal' as mat-form-field-*
+  hide mat-form-field-form-field-outline-density, mat-form-field-outline-label-floating;
+@forward 'form-field-outline-theme-internal' as mat-private-* hide $mat-private-outline-dedupe,
+  mat-private-outline-color, mat-private-outline-label-floating, mat-private-outline-theme,
+  mat-private-outline-typography;

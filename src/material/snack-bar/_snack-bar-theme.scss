@@ -1,0 +1,6 @@
+@forward '../core/theming/palette';
+@forward '../core/theming/theming';
+@forward '../core/style/private';
+@forward '../core/typography/typography-utils';
+@forward 'snack-bar-theme-internal';
+@forward 'snack-bar-theme-internal' as mat-snack-bar-* hide mat-snack-bar-density;

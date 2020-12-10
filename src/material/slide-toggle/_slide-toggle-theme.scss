@@ -1,0 +1,6 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'slide-toggle-theme-internal';
+@forward 'slide-toggle-theme-internal' as mat-slide-toggle-* hide mat-slide-toggle-checked,
+  mat-slide-toggle-density;

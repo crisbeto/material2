@@ -1,0 +1,7 @@
+@forward '../../material/core/style/private';
+@forward '../../material/core/theming/theming';
+@forward '../../cdk/a11y/a11y';
+@forward '../../material/core/typography/typography-utils';
+@forward 'popover-edit-internal';
+@forward 'popover-edit-internal' as mat-popover-edit-*
+  hide mat-popover-edit-mat-edit-hover-content-background;

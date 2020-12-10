@@ -1,0 +1,4 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'table-theme-internal';
+@forward 'table-theme-internal' as mat-table-* hide mat-table-density;

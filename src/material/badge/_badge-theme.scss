@@ -1,0 +1,5 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward '../../cdk/a11y/a11y';
+@forward 'badge-theme-internal';
+@forward 'badge-theme-internal' as mat-badge-* hide mat-badge-density, mat-badge-size;

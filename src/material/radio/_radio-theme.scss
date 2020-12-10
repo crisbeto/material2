@@ -1,0 +1,4 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'radio-theme-internal';
+@forward 'radio-theme-internal' as mat-radio-* hide mat-radio-color, mat-radio-density;

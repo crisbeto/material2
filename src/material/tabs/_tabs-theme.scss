@@ -1,0 +1,5 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'tabs-theme-internal';
+@forward 'tabs-theme-internal' as mat-tabs-* hide mat-tabs-background, mat-tabs-density,
+  mat-tabs-ink-bar, mat-tabs-tab-label-focus;

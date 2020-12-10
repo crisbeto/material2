@@ -1,0 +1,4 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward 'sidenav-theme-internal';
+@forward 'sidenav-theme-internal' as mat-sidenav-* hide mat-sidenav-density;

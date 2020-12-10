@@ -1,0 +1,9 @@
+@forward '../core/style/form-common';
+@forward '../core/typography/typography-utils';
+@forward 'form-field-legacy-theme-internal';
+@forward 'form-field-legacy-theme-internal' as mat-form-field-*
+  hide mat-form-field-form-field-legacy-density, mat-form-field-legacy-label-floating,
+  mat-form-field-legacy-label-floating-print;
+@forward 'form-field-legacy-theme-internal' as mat-private-* hide $mat-private-legacy-dedupe,
+  mat-private-legacy-color, mat-private-legacy-label-floating,
+  mat-private-legacy-label-floating-print, mat-private-legacy-theme, mat-private-legacy-typography;

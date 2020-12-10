@@ -1,0 +1,4 @@
+@forward '../mdc-helpers/mdc-helpers';
+@forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'progress-spinner-theme-internal';
+@forward 'progress-spinner-theme-internal' as mat-mdc-progress-spinner-* hide mat-mdc-progress-spinner-color;

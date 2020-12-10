@@ -1,0 +1,3 @@
+@forward '../../material/core/focus-indicators/focus-indicators';
+@forward 'focus-indicators-internal';
+@forward 'focus-indicators-internal' as mat-mdc-* hide mat-mdc-strong-focus-indicators-border-color;

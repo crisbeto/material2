@@ -1,0 +1,5 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'dialog-theme-internal';
+@forward 'dialog-theme-internal' as mat-dialog-* hide mat-dialog-density;

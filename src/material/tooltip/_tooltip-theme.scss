@@ -1,0 +1,4 @@
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'tooltip-theme-internal';
+@forward 'tooltip-theme-internal' as mat-tooltip-* hide mat-tooltip-density;

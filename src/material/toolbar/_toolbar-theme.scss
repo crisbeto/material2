@@ -1,0 +1,7 @@
+@forward '../core/theming/theming';
+@forward '../core/style/variables';
+@forward 'toolbar-variables-internal' as mat-toolbar-*;
+@forward '../core/typography/typography-utils';
+@forward 'toolbar-theme-internal';
+@forward 'toolbar-theme-internal' as mat-toolbar-* hide mat-toolbar-color,
+  mat-toolbar-form-field-overrides, mat-toolbar-height;

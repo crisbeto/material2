@@ -1,0 +1,9 @@
+@forward '../core/style/private';
+@forward '../core/theming/theming';
+@forward '../core/typography/typography-utils';
+@forward 'chips-theme-internal';
+@forward 'chips-theme-internal' as mat-* hide mat-chip-element-color, mat-chip-theme-color, mat-color,
+  mat-density, mat-ripple-background, mat-theme, mat-typography;
+@forward 'chips-theme-internal' as mat-chips-* hide $mat-chips-chip-remove-font-size,
+  mat-chips-chip-element-color, mat-chips-chip-theme-color, mat-chips-density,
+  mat-chips-ripple-background;
