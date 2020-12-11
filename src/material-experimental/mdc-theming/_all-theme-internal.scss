@@ -18,13 +18,13 @@
 @use '../mdc-progress-spinner/progress-spinner-theme';
 @use '../mdc-input/input-theme';
 @use '../mdc-form-field/form-field-theme';
-@use '../../material/core/core' as core2;
+@use '../../material/core/core' as mat-core;
 @use '../../material/core/theming/theming';
 
 @mixin angular-material-mdc-theme($theme-or-color-config) {
   $dedupe-key: 'angular-material-mdc-theme';
   @include theming.check-duplicate-theme-styles($theme-or-color-config, $dedupe-key) {
-    @include core.theme($theme-or-color-config);
+    @include mat-core.theme($theme-or-color-config);
     @include autocomplete-theme.theme($theme-or-color-config);
     @include button-theme.theme($theme-or-color-config);
     @include dialog-theme.theme($theme-or-color-config);

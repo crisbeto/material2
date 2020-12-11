@@ -1,3 +1,4 @@
 @forward '../mdc-helpers/mdc-helpers';
 @forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'autocomplete-theme-internal';
 @forward 'autocomplete-theme-internal' as mat-mdc-autocomplete-*;

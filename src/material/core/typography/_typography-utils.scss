@@ -1,9 +1,9 @@
 @forward 'typography-utils-internal';
-@forward 'typography-utils-internal' as mat-* hide mat-font-shorthand, mat-get-type-value, mat-height,
-  mat-level-to-styles;
-@forward 'typography-utils-internal' as mat-line-* hide mat-line-font-family, mat-line-font-shorthand,
-  mat-line-font-size, mat-line-font-weight, mat-line-get-type-value, mat-line-letter-spacing,
-  mat-line-level-to-styles;
+@forward 'typography-utils-internal' as mat-* hide mat-font-shorthand, mat-get-type-value,
+  mat-height, mat-level-to-styles;
+@forward 'typography-utils-internal' as mat-line-* hide mat-line-font-family,
+  mat-line-font-shorthand, mat-line-font-size, mat-line-font-weight, mat-line-get-type-value,
+  mat-line-letter-spacing, mat-line-level-to-styles;
 @forward 'typography-utils-internal' as mat-typography-* hide mat-typography-font-family,
   mat-typography-font-size, mat-typography-font-weight, mat-typography-get-type-value,
   mat-typography-height, mat-typography-letter-spacing;

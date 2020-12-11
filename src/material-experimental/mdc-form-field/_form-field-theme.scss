@@ -3,8 +3,9 @@
 @forward '../mdc-helpers/mdc-helpers-internal';
 @forward 'form-field-sizing-internal';
 @forward 'form-field-native-select-internal';
-@forward 'form-field-native-select-internal' as mat-mdc-* hide $mat-mdc-mat-form-field-select-arrow-height,
-  $mat-mdc-mat-form-field-select-arrow-width, $mat-mdc-mat-form-field-select-horizontal-end-padding;
+@forward 'form-field-native-select-internal' as mat-mdc-*
+  hide $mat-mdc-mat-form-field-select-arrow-height, $mat-mdc-mat-form-field-select-arrow-width,
+  $mat-mdc-mat-form-field-select-horizontal-end-padding;
 @forward '../../material/core/style/layout-common';
 @forward 'form-field-density-internal' as mat-mdc-*;
 @forward 'form-field-subscript-internal' as mat-mdc-*;

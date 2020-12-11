@@ -1,3 +1,4 @@
 @forward '../core/theming/theming';
 @forward 'progress-spinner-theme-internal';
-@forward 'progress-spinner-theme-internal' as mat-progress-spinner-* hide mat-progress-spinner-density;
+@forward 'progress-spinner-theme-internal' as mat-progress-spinner-*
+  hide mat-progress-spinner-density;

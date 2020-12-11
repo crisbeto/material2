@@ -4,4 +4,5 @@
 @forward 'button-toggle-variables-internal' as mat-button-toggle-*;
 @forward '../../cdk/a11y/a11y';
 @forward '../core/typography/typography-utils';
+@forward 'button-toggle-theme-internal';
 @forward 'button-toggle-theme-internal' as mat-button-toggle-*;

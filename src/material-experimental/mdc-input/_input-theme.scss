@@ -1,3 +1,4 @@
 @forward '../mdc-helpers/mdc-helpers';
 @forward '../mdc-helpers/mdc-helpers-internal';
+@forward 'input-theme-internal';
 @forward 'input-theme-internal' as mat-mdc-input-*;

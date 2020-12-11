@@ -1,5 +1,6 @@
 @forward '../mdc-helpers/mdc-helpers';
 @forward '../mdc-helpers/mdc-helpers-internal';
 @forward 'radio-theme-internal';
-@forward 'radio-theme-internal' as mat-mdc-radio-* hide $mat-mdc-radio-mdc-radio-baseline-theme-color,
+@forward 'radio-theme-internal' as mat-mdc-radio-*
+  hide $mat-mdc-radio-mdc-radio-baseline-theme-color,
   $mat-mdc-radio-mdc-radio-disabled-circle-color, $mat-mdc-radio-mdc-radio-unchecked-color;

@@ -7,4 +7,5 @@
 @forward 'stepper-variables-internal' as mat-stepper-* hide $mat-stepper-step-header-icon-size,
   $mat-stepper-step-sub-label-font-size, $mat-stepper-vertical-stepper-content-margin;
 @forward '../core/typography/typography-utils';
+@forward 'stepper-theme-internal';
 @forward 'stepper-theme-internal' as mat-stepper-*;

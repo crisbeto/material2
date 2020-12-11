@@ -14,6 +14,7 @@ sass_library(
     name = "all_themes",
     srcs = [
         "_all-theme.scss",
+        "_all-theme-internal.scss",
     ],
     deps = [
         "//src/material-experimental/mdc-autocomplete:mdc_autocomplete_scss_lib",

@@ -1,4 +1,5 @@
 @forward '../core/theming/theming';
 @forward '../core/typography/typography-utils';
 @forward 'slider-theme-internal';
-@forward 'slider-theme-internal' as mat-slider-* hide mat-slider-density, mat-slider-inner-content-theme;
+@forward 'slider-theme-internal' as mat-slider-* hide mat-slider-density,
+  mat-slider-inner-content-theme;

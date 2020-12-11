@@ -1,4 +1,5 @@
 @forward '../mdc-helpers/mdc-helpers';
 @forward '../mdc-helpers/mdc-helpers-internal';
 @forward 'paginator-variables-internal';
+@forward 'paginator-theme-internal';
 @forward 'paginator-theme-internal' as mat-mdc-paginator-*;

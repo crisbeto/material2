@@ -1,5 +1,5 @@
 @forward '../mdc-helpers/mdc-helpers';
-@forward '../../material/core/ripple/ripple';
+@forward '../../material/core/ripple/ripple' as mat-ripple-*;
 @forward '../mdc-helpers/mdc-helpers-internal';
 @forward 'button-theme-internal';
 @forward 'button-theme-internal' as mat-mdc-* hide $mat-mdc-mat-button-state-target, mat-mdc-color,

@@ -33,7 +33,9 @@ sass_library(
     name = "mdc_form_field_scss_lib",
     srcs = [
         "_form-field-theme.scss",
+        "_form-field-theme-internal.scss",
         "_mdc-text-field-theme-variable-refresh.scss",
+        "_mdc-text-field-theme-variable-refresh-internal.scss",
     ],
     deps = [
         ":form_field_partials",
@@ -77,12 +79,19 @@ sass_library(
     name = "form_field_partials",
     srcs = [
         "_form-field-density.scss",
+        "_form-field-density-internal.scss",
         "_form-field-focus-overlay.scss",
+        "_form-field-focus-overlay-internal.scss",
         "_form-field-native-select.scss",
+        "_form-field-native-select-internal.scss",
         "_form-field-sizing.scss",
+        "_form-field-sizing-internal.scss",
         "_form-field-subscript.scss",
+        "_form-field-subscript-internal.scss",
         "_mdc-text-field-structure-overrides.scss",
+        "_mdc-text-field-structure-overrides-internal.scss",
         "_mdc-text-field-textarea-overrides.scss",
+        "_mdc-text-field-textarea-overrides-internal.scss",
     ],
     deps = [
         "//src/material-experimental/mdc-helpers:mdc_scss_deps_lib",

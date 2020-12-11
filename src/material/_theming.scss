@@ -1,8 +1,9 @@
 // Forwards all public API mixins so they can be imported from a single entry point.
-// Note that we have to forward the `.import` files for backwards-compatibility with
+// Note that we have to forward the non-internal files for backwards-compatibility with
 // projects that don't use Sass modules and include the `mat-`-prefixed mixins.
 
-@forward './core/color/all-color.import';
-@forward './core/density/private/all-density.import';
-@forward './core/theming/all-theme.import';
-@forward './core/typography/all-typography.import';
+@forward './core/color/all-color';
+@forward './core/density/private/all-density';
+@forward './core/theming/all-theme';
+@forward './core/typography/all-typography';
+@forward './core/style/variables';

@@ -9,6 +9,9 @@ filegroup(
 
 sass_library(
     name = "all_typography",
-    srcs = ["_all-typography.scss"],
+    srcs = [
+        "_all-typography.scss",
+        "_all-typography-internal.scss",
+    ],
     deps = ["//src/material-experimental/mdc-theming:all_themes"],
 )

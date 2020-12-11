@@ -43,7 +43,10 @@ sass_library(
 
 sass_library(
     name = "button_base_scss_lib",
-    srcs = ["_button-base.scss"],
+    srcs = [
+        "_button-base.scss",
+        "_button-base-internal.scss",
+    ],
 )
 
 sass_binary(

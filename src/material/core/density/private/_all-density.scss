@@ -1,8 +1,8 @@
-@forward '../../../button-toggle/button-toggle-theme';
-@forward '../../../expansion/expansion-theme';
-@forward '../../../stepper/stepper-theme';
-@forward '../../../toolbar/toolbar-theme';
-@forward '../../../tree/tree-theme';
-@forward '../../../paginator/paginator-theme';
-@forward '../../../form-field/form-field-theme';
+@forward '../../../button-toggle/button-toggle-theme' as mat-button-toggle-*;
+@forward '../../../expansion/expansion-theme' as mat-expansion-*;
+@forward '../../../stepper/stepper-theme' as mat-stepper-*;
+@forward '../../../toolbar/toolbar-theme' as mat-toolbar-*;
+@forward '../../../tree/tree-theme' as mat-tree-*;
+@forward '../../../paginator/paginator-theme' as mat-paginator-*;
+@forward '../../../form-field/form-field-theme' as mat-form-field-*;
 @forward 'all-density-internal';

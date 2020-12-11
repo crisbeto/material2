@@ -4,6 +4,6 @@
 @forward 'checkbox-theme-internal' as mat-mdc-* hide $mat-mdc-mdc-checkbox-border-color,
   $mat-mdc-mdc-checkbox-disabled-color, mat-mdc-color, mat-mdc-density, mat-mdc-theme,
   mat-mdc-typography;
-@forward 'checkbox-theme-internal' as mat-mdc-checkbox-* hide $mat-mdc-checkbox-mdc-checkbox-border-color,
-  $mat-mdc-checkbox-mdc-checkbox-disabled-color,
+@forward 'checkbox-theme-internal' as mat-mdc-checkbox-*
+  hide $mat-mdc-checkbox-mdc-checkbox-border-color, $mat-mdc-checkbox-mdc-checkbox-disabled-color,
   mat-mdc-checkbox-private-checkbox-styles-with-color;

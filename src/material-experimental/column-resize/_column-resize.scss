@@ -1,4 +1,5 @@
 @forward '../../material/core/style/variables';
 @forward '../../material/core/theming/theming';
 @forward '../../material/core/style/vendor-prefixes';
+@forward 'column-resize-internal';
 @forward 'column-resize-internal' as mat-column-resize-*;

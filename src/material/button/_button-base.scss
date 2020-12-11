@@ -1,5 +1,6 @@
 @forward '../core/style/private';
 @forward '../core/style/button-common';
+@forward 'button-base-internal';
 @forward 'button-base-internal' as mat-* hide $mat-border-radius, $mat-button-border-radius,
   $mat-button-line-height, $mat-button-size, $mat-focus-transition, $mat-line-height, $mat-margin,
   $mat-min-width, $mat-padding, mat-base;
@@ -9,8 +10,9 @@
   $mat-button-mini-fab-size, $mat-button-stroked-button-border-width,
   $mat-button-stroked-button-line-height, $mat-button-stroked-button-padding,
   mat-button-fab, mat-button-raised-button;
-@forward 'button-base-internal' as mat-icon-* hide $mat-icon-border-radius, $mat-icon-fab-border-radius,
-  $mat-icon-fab-padding, $mat-icon-fab-size, $mat-icon-focus-transition, $mat-icon-line-height,
-  $mat-icon-margin, $mat-icon-min-width, $mat-icon-mini-fab-padding, $mat-icon-mini-fab-size,
-  $mat-icon-padding, $mat-icon-stroked-button-border-width, $mat-icon-stroked-button-line-height,
+@forward 'button-base-internal' as mat-icon-* hide $mat-icon-border-radius,
+  $mat-icon-fab-border-radius, $mat-icon-fab-padding, $mat-icon-fab-size,
+  $mat-icon-focus-transition, $mat-icon-line-height, $mat-icon-margin, $mat-icon-min-width,
+  $mat-icon-mini-fab-padding, $mat-icon-mini-fab-size, $mat-icon-padding,
+  $mat-icon-stroked-button-border-width, $mat-icon-stroked-button-line-height,
   $mat-icon-stroked-button-padding, mat-icon-base, mat-icon-fab, mat-icon-raised-button;

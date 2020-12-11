@@ -1,2 +1,3 @@
+@forward 'list-common-internal';
 @forward 'list-common-internal' as mat-* hide mat-base, mat-wrapper-base;
 @forward 'list-common-internal' as mat-line-* hide mat-line-normalize-text, mat-line-truncate-line;
