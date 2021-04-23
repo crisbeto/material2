@@ -106,14 +106,16 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
   private _focusoutTimeout: number | null;
 
   constructor(
-    @Inject(DOCUMENT) private readonly _document: any,
     changeDetectorRef: ChangeDetectorRef,
-    elementRef: ElementRef, ngZone: NgZone,
+    elementRef: ElementRef,
+    ngZone: NgZone,
+    @Inject(DOCUMENT) _document: any,
     @Optional() dir: Directionality,
     @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
     @Optional() @Inject(MAT_RIPPLE_GLOBAL_OPTIONS)
         globalRippleOptions?: RippleGlobalOptions) {
-    super(changeDetectorRef, elementRef, ngZone, dir, animationMode, globalRippleOptions);
+    super(changeDetectorRef, elementRef, ngZone, _document, dir, animationMode,
+        globalRippleOptions);
   }
 
   ngAfterContentInit() {

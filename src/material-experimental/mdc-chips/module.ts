@@ -24,6 +24,7 @@ import {MatChipListbox} from './chip-listbox';
 import {MatChipRow} from './chip-row';
 import {MatChipOption} from './chip-option';
 import {MatChipSet} from './chip-set';
+import {MatChipAction} from './chip-action';
 
 
 const CHIP_DECLARATIONS = [
@@ -44,7 +45,11 @@ const CHIP_DECLARATIONS = [
 @NgModule({
   imports: [MatCommonModule, CommonModule, MatRippleModule],
   exports: [MatCommonModule, CHIP_DECLARATIONS],
-  declarations: CHIP_DECLARATIONS,
+  declarations: [
+    // TODO: should this be a private directive?
+    MatChipAction,
+    CHIP_DECLARATIONS
+  ],
   providers: [
     ErrorStateMatcher,
     {
