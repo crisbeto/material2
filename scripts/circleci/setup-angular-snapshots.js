@@ -28,15 +28,25 @@ packageJson['resolutions'] = packageJson['resolutions'] || {};
 
 // List that contains the names of all installed Angular packages (e.g. "@angular/core")
 const angularPackages = Object.keys({...packageJson.dependencies, ...packageJson.devDependencies})
-  .filter(packageName => packageName.startsWith('@angular/'));
+  .filter(packageName => packageName.startsWith('@angular/') ||
+                         packageName.startsWith('@angular-devkit/'));
 const packageSuffix = tag ? ` (${tag})` : '';
+
+// These packages don't follow a predictable pattern for
+// their builds repos so we have to map them individually.
+const buildRepositoryNames = {
+  '@angular-devkit/schematics': 'schematics-angular-builds',
+  '@angular-devkit/core': 'angular-devkit-core-builds',
+  '@angular-devkit/build-optimizer': 'angular-devkit-build-optimizer-builds'
+};
 
 console.log('Setting up snapshot builds for:\n');
 console.log(`  ${angularPackages.map(n => `${n}${packageSuffix}`).join('\n  ')}\n`);
 
 // Setup the snapshot version for each Angular package specified in the "package.json" file.
 angularPackages.forEach(packageName => {
-  let buildsUrl = `github:angular/${packageName.split('/')[1]}-builds${tag ? `#${tag}` : ''}`;
+  const repositoryName = buildRepositoryNames[packageName] || packageName.split('/')[1] + '-builds';
+  const buildsUrl = 'github:angular/' + repositoryName + (tag ? `#${tag}` : '');
 
   // Add resolutions for each package in the format "**/{PACKAGE}" so that all
   // nested versions of that specific Angular package will have the same version.
