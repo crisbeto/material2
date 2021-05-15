@@ -1,4 +1,3 @@
-// stylelint-disable material/no-prefixes
 @mixin user-select($value) {
   -webkit-user-select: $value;
   -moz-user-select: $value;
@@ -43,4 +42,3 @@
   position: -webkit-sticky #{if($important, '!important', '')};
   position: sticky #{if($important, '!important', '')};
 }
-// stylelint-enable
