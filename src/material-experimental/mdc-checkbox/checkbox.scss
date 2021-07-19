@@ -1,4 +1,5 @@
 @use '@material/checkbox' as mdc-checkbox;
+@use '@material/checkbox/checkbox-theme' as mdc-checkbox-theme;
 @use '@material/form-field' as mdc-form-field;
 @use '@material/ripple' as mdc-ripple;
 @use '@material/touch-target' as mdc-touch-target;
@@ -19,6 +20,10 @@
 }
 
 .mat-mdc-checkbox {
+  // MDC theme styles also include structural styles so we have to include the theme at least
+  // once here. The values will be overwritten by our own theme file afterwards.
+  @include mdc-checkbox-theme.theme-styles(mdc-checkbox-theme.$light-theme);
+
   // The host node defaults to `diplay: inline` so
   // we have to change it in order for margins to work.
   display: inline-block;

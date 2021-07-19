@@ -8,7 +8,8 @@
 // inside list options by default uses the `primary` color too.
 @mixin private-list-option-color-override($color) {
   & .mdc-list-item__start, & .mdc-list-item__end {
-    @include checkbox-theme.private-checkbox-styles-with-color($color);
+    // TODO
+    @include checkbox-theme.private-checkbox-styles-with-color(hotpink, $color);
   }
 }
 
