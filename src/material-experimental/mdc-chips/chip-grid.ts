@@ -19,6 +19,7 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
+  Inject,
   Input,
   OnDestroy,
   Optional,
@@ -34,19 +35,20 @@ import {
   NgForm,
   Validators,
 } from '@angular/forms';
+import {DOCUMENT} from '@angular/common';
 import {
   CanUpdateErrorState,
   ErrorStateMatcher,
   mixinErrorState,
 } from '@angular/material-experimental/mdc-core';
 import {MatFormFieldControl} from '@angular/material-experimental/mdc-form-field';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {MatChipTextControl} from './chip-text-control';
 import {merge, Observable, Subscription} from 'rxjs';
 import {startWith, takeUntil} from 'rxjs/operators';
 import {MatChipEvent} from './chip';
 import {MatChipRow} from './chip-row';
 import {MatChipSet} from './chip-set';
-import {GridFocusKeyManager} from './grid-focus-key-manager';
 
 /** Change event object that is emitted when the chip grid value has changed. */
 export class MatChipGridChange {
@@ -64,16 +66,18 @@ export class MatChipGridChange {
  */
 class MatChipGridBase extends MatChipSet {
   constructor(
-    _elementRef: ElementRef,
-    _changeDetectorRef: ChangeDetectorRef,
-    _dir: Directionality,
+    liveAnnouncer: LiveAnnouncer,
+    document: any,
+    elementRef: ElementRef,
+    changeDetectorRef: ChangeDetectorRef,
+    dir: Directionality,
     public _defaultErrorStateMatcher: ErrorStateMatcher,
     public _parentForm: NgForm,
     public _parentFormGroup: FormGroupDirective,
     /** @docs-private */
     public ngControl: NgControl,
   ) {
-    super(_elementRef, _changeDetectorRef, _dir);
+    super(liveAnnouncer, document, elementRef, changeDetectorRef, dir);
   }
 }
 const _MatChipGridMixinBase = mixinErrorState(MatChipGridBase);
@@ -84,11 +88,15 @@ const _MatChipGridMixinBase = mixinErrorState(MatChipGridBase);
  */
 @Component({
   selector: 'mat-chip-grid',
-  template: '<ng-content></ng-content>',
+  template: `
+    <span class="mdc-evolution-chip-set__chips" role="presentation">
+      <ng-content></ng-content>
+    </span>
+  `,
   styleUrls: ['chips.css'],
   inputs: ['tabIndex'],
   host: {
-    'class': 'mat-mdc-chip-set mat-mdc-chip-grid mdc-chip-set',
+    'class': 'mat-mdc-chip-set mat-mdc-chip-grid mdc-evolution-chip-set',
     '[attr.role]': 'role',
     '[tabIndex]': '_chips && _chips.length === 0 ? -1 : tabIndex',
     // TODO: replace this binding with use of AriaDescriber
@@ -145,9 +153,6 @@ export class MatChipGrid
    */
   _onChange: (value: any) => void = () => {};
 
-  /** The GridFocusKeyManager which handles focus. */
-  _keyManager: GridFocusKeyManager;
-
   /**
    * Implemented as part of MatFormFieldControl.
    * @docs-private
@@ -188,7 +193,6 @@ export class MatChipGrid
    * Implemented as part of MatFormFieldControl.
    * @docs-private
    */
-  @Input()
   @Input()
   get placeholder(): string {
     return this._chipInput ? this._chipInput.placeholder : this._placeholder;
@@ -271,21 +275,25 @@ export class MatChipGrid
   override _chips: QueryList<MatChipRow>;
 
   constructor(
-    _elementRef: ElementRef,
-    _changeDetectorRef: ChangeDetectorRef,
-    @Optional() _dir: Directionality,
-    @Optional() _parentForm: NgForm,
-    @Optional() _parentFormGroup: FormGroupDirective,
-    _defaultErrorStateMatcher: ErrorStateMatcher,
+    liveAnnouncer: LiveAnnouncer,
+    @Inject(DOCUMENT) document: any,
+    elementRef: ElementRef,
+    changeDetectorRef: ChangeDetectorRef,
+    @Optional() dir: Directionality,
+    @Optional() parentForm: NgForm,
+    @Optional() parentFormGroup: FormGroupDirective,
+    defaultErrorStateMatcher: ErrorStateMatcher,
     @Optional() @Self() ngControl: NgControl,
   ) {
     super(
-      _elementRef,
-      _changeDetectorRef,
-      _dir,
-      _defaultErrorStateMatcher,
-      _parentForm,
-      _parentFormGroup,
+      liveAnnouncer,
+      document,
+      elementRef,
+      changeDetectorRef,
+      dir,
+      defaultErrorStateMatcher,
+      parentForm,
+      parentFormGroup,
       ngControl,
     );
     if (this.ngControl) {
@@ -295,12 +303,11 @@ export class MatChipGrid
 
   override ngAfterContentInit() {
     super.ngAfterContentInit();
-    this._initKeyManager();
+    this._listenToChipsBlur();
 
     this._chips.changes.pipe(startWith(null), takeUntil(this._destroyed)).subscribe(() => {
       // Check to see if we have a destroyed chip and need to refocus
       this._updateFocusForDestroyedChips();
-
       this.stateChanges.next();
     });
   }
@@ -323,6 +330,7 @@ export class MatChipGrid
 
   override ngOnDestroy() {
     super.ngOnDestroy();
+    this._dropSubscriptions();
     this.stateChanges.complete();
   }
 
@@ -352,7 +360,7 @@ export class MatChipGrid
     }
 
     if (this._chips.length > 0) {
-      this._keyManager.setFirstCellActive();
+      this._chips.first.focus();
     } else {
       this._focusInput();
     }
@@ -414,7 +422,6 @@ export class MatChipGrid
     // Timeout is needed to wait for the focus() event trigger on chip input.
     setTimeout(() => {
       if (!this.focused) {
-        this._keyManager.setActiveCell({row: -1, column: -1});
         this._propagateChanges();
         this._markAsTouched();
       }
@@ -447,22 +454,18 @@ export class MatChipGrid
   _keydown(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
     const keyCode = event.keyCode;
-    const manager = this._keyManager;
 
     if (keyCode === TAB && target.id !== this._chipInput!.id) {
       this._allowFocusEscape();
     } else if (this._originatesFromEditingChip(event)) {
       // No-op, let the editing chip handle all keyboard events except for Tab.
-    } else if (this._originatesFromChip(event)) {
-      manager.onKeydown(event);
     }
 
     this.stateChanges.next();
   }
 
   /** Unsubscribes from all chip events. */
-  protected override _dropSubscriptions() {
-    super._dropSubscriptions();
+  private _dropSubscriptions() {
     if (this._chipBlurSubscription) {
       this._chipBlurSubscription.unsubscribe();
       this._chipBlurSubscription = null;
@@ -472,37 +475,6 @@ export class MatChipGrid
       this._chipFocusSubscription.unsubscribe();
       this._chipFocusSubscription = null;
     }
-  }
-
-  /** Subscribes to events on the child chips. */
-  protected override _subscribeToChipEvents() {
-    super._subscribeToChipEvents();
-    this._listenToChipsFocus();
-    this._listenToChipsBlur();
-  }
-
-  /** Initializes the key manager to manage focus. */
-  private _initKeyManager() {
-    this._keyManager = new GridFocusKeyManager(this._chips)
-      .withHomeAndEnd()
-      .withDirectionality(this._dir ? this._dir.value : 'ltr');
-
-    if (this._dir) {
-      this._dir.change
-        .pipe(takeUntil(this._destroyed))
-        .subscribe(dir => this._keyManager.withDirectionality(dir));
-    }
-  }
-
-  /** Subscribes to chip focus events. */
-  private _listenToChipsFocus(): void {
-    this._chipFocusSubscription = this.chipFocusChanges.subscribe((event: MatChipEvent) => {
-      let chipIndex: number = this._chips.toArray().indexOf(event.chip as MatChipRow);
-
-      if (this._isValidIndex(chipIndex)) {
-        this._keyManager.updateActiveCell({row: chipIndex, column: 0});
-      }
-    });
   }
 
   /** Subscribes to chip blur events. */
@@ -538,10 +510,7 @@ export class MatChipGrid
     if (this._lastDestroyedChipIndex != null) {
       if (this._chips.length) {
         const newChipIndex = Math.min(this._lastDestroyedChipIndex, this._chips.length - 1);
-        this._keyManager.setActiveCell({
-          row: newChipIndex,
-          column: Math.max(this._keyManager.activeColumnIndex, 0),
-        });
+        this._chips.toArray()[newChipIndex].focus();
       } else {
         this.focus();
       }

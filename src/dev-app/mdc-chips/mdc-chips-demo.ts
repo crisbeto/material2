@@ -33,6 +33,7 @@ export class MdcChipsDemo {
   disabledListboxes = false;
   disableInputs = false;
   editable = false;
+  showListboxAvatar = false;
   message = '';
 
   // Enter, comma, semi-colon

@@ -1,12 +1,20 @@
-<span class="mdc-chip__ripple"></span>
-
 <span matRipple class="mat-mdc-chip-ripple"
      [matRippleDisabled]="_isRippleDisabled()"
      [matRippleCentered]="_isRippleCentered"
      [matRippleTrigger]="_elementRef.nativeElement"></span>
 
-<ng-content select="mat-chip-avatar, [matChipAvatar]"></ng-content>
-<div class="mdc-chip__primary-action">
-  <div class="mdc-chip__text"><ng-content></ng-content></div>
-</div>
-<ng-content select="mat-chip-trailing-icon,[matChipRemove],[matChipTrailingIcon]"></ng-content>
+<span class="mdc-evolution-chip__cell mdc-evolution-chip__cell--primary">
+  <span matChipAction>
+    <span class="mdc-evolution-chip__ripple mdc-evolution-chip__ripple--primary"></span>
+    <span class="mdc-evolution-chip__graphic" *ngIf="leadingIcon">
+      <ng-content select="mat-chip-avatar, [matChipAvatar]"></ng-content>
+    </span>
+    <span class="mdc-evolution-chip__text-label"><ng-content></ng-content></span>
+  </span>
+</span>
+
+<span
+  class="mdc-evolution-chip__cell mdc-evolution-chip__cell--trailing"
+  *ngIf="_hasTrailingIcon()">
+  <ng-content select="mat-chip-trailing-icon,[matChipRemove],[matChipTrailingIcon]"></ng-content>
+</span>

@@ -34,7 +34,6 @@ import {
 } from '@angular/material-experimental/mdc-core';
 import {MatChip, MatChipEvent} from './chip';
 import {MatChipEditInput} from './chip-edit-input';
-import {GridKeyManagerRow} from './grid-key-manager';
 
 /** Represents an event fired on an individual `mat-chip` when it is edited. */
 export interface MatChipEditedEvent extends MatChipEvent {
@@ -53,30 +52,31 @@ export interface MatChipEditedEvent extends MatChipEvent {
   inputs: ['color', 'disableRipple', 'tabIndex'],
   host: {
     'role': 'row',
-    'class': 'mat-mdc-chip-row',
-    '[class.mat-mdc-chip-disabled]': 'disabled',
+    'class': 'mat-mdc-chip-row mat-mdc-focus-indicator mdc-evolution-chip',
+    '[class.mdc-evolution-chip--disabled]': 'disabled',
+    '[class.mdc-evolution-chip--with-trailing-action]': '_hasTrailingIcon()',
+    '[class.mdc-evolution-chip--with-primary-graphic]': 'leadingIcon',
+    '[class.mdc-evolution-chip--with-primary-icon]': 'leadingIcon',
+    '[class.mdc-evolution-chip--with-avatar]': 'leadingIcon',
     '[class.mat-mdc-chip-highlighted]': 'highlighted',
-    '[class.mat-mdc-chip-with-avatar]': 'leadingIcon',
-    '[class.mat-mdc-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
-    '[class.mdc-chip--editable]': 'editable',
     '[id]': 'id',
-    '[attr.disabled]': 'disabled || null',
-    '[attr.aria-disabled]': 'disabled.toString()',
     '[tabIndex]': 'tabIndex',
-    '(mousedown)': '_mousedown($event)',
-    '(dblclick)': '_dblclick($event)',
-    '(keydown)': '_keydown($event)',
-    '(focusin)': '_focusin($event)',
-    '(focusout)': '_focusout($event)',
+    '[attr.aria-disabled]': 'disabled.toString()',
+    // TODO
+    // '(mousedown)': '_mousedown($event)',
+    // '[class.mat-mdc-chip-disabled]': 'disabled',
+    // '[class.mat-mdc-chip-with-avatar]': 'leadingIcon',
+    // '[class.mat-mdc-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
+    // '(dblclick)': '_dblclick($event)',
+    // '(keydown)': '_keydown($event)',
+    // '(focusin)': '_focusin($event)',
+    // '(focusout)': '_focusout($event)'
   },
   providers: [{provide: MatChip, useExisting: MatChipRow}],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MatChipRow
-  extends MatChip
-  implements AfterContentInit, AfterViewInit, GridKeyManagerRow<HTMLElement>
-{
+export class MatChipRow extends MatChip implements AfterContentInit, AfterViewInit {
   protected override basicChipAttrName = 'mat-basic-chip-row';
 
   @Input() editable: boolean = false;
@@ -85,20 +85,11 @@ export class MatChipRow
   @Output() readonly edited: EventEmitter<MatChipEditedEvent> =
     new EventEmitter<MatChipEditedEvent>();
 
-  /**
-   * The focusable wrapper element in the first gridcell, which contains all
-   * chip content other than the remove icon.
-   */
-  @ViewChild('chipContent') chipContent: ElementRef;
-
   /** The default chip edit input that is used if none is projected into this chip row. */
   @ViewChild(MatChipEditInput) defaultEditInput?: MatChipEditInput;
 
   /** The projected chip edit input. */
   @ContentChild(MatChipEditInput) contentEditInput?: MatChipEditInput;
-
-  /** The focusable grid cells for this row. Implemented as part of GridKeyManagerRow. */
-  cells!: HTMLElement[];
 
   /**
    * Timeout used to give some time between `focusin` and `focusout`
@@ -107,17 +98,25 @@ export class MatChipRow
   private _focusoutTimeout: any;
 
   constructor(
-    @Inject(DOCUMENT) private readonly _document: any,
     changeDetectorRef: ChangeDetectorRef,
     elementRef: ElementRef,
     ngZone: NgZone,
+    @Inject(DOCUMENT) _document: any,
     @Optional() dir: Directionality,
     @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
     @Optional()
     @Inject(MAT_RIPPLE_GLOBAL_OPTIONS)
     globalRippleOptions?: RippleGlobalOptions,
   ) {
-    super(changeDetectorRef, elementRef, ngZone, dir, animationMode, globalRippleOptions);
+    super(
+      changeDetectorRef,
+      elementRef,
+      ngZone,
+      _document,
+      dir,
+      animationMode,
+      globalRippleOptions,
+    );
   }
 
   override ngAfterContentInit() {
@@ -134,13 +133,6 @@ export class MatChipRow
     }
   }
 
-  override ngAfterViewInit() {
-    super.ngAfterViewInit();
-    this.cells = this.removeIcon
-      ? [this.chipContent.nativeElement, this.removeIcon._elementRef.nativeElement]
-      : [this.chipContent.nativeElement];
-  }
-
   /**
    * Allows for programmatic focusing of the chip.
    * Sends focus to the first grid cell. The row chip element itself
@@ -155,7 +147,7 @@ export class MatChipRow
       this._onFocus.next({chip: this});
     }
 
-    this.chipContent.nativeElement.focus();
+    this.primaryAction.focus();
   }
 
   /**
@@ -171,7 +163,8 @@ export class MatChipRow
     this._focusoutTimeout = setTimeout(() => {
       this._hasFocusInternal = false;
       this._onBlur.next({chip: this});
-      this._handleInteraction(event);
+      // TODO
+      // this._handleInteraction(event);
     });
   }
 
@@ -183,7 +176,9 @@ export class MatChipRow
     }
 
     this._hasFocusInternal = true;
-    this._handleInteraction(event);
+
+    // TODO
+    // this._handleInteraction(event);
   }
 
   /** Sends focus to the first gridcell when the user clicks anywhere inside the chip. */
@@ -199,9 +194,10 @@ export class MatChipRow
     event.preventDefault();
   }
 
-  _dblclick(event: MouseEvent) {
-    this._handleInteraction(event);
-  }
+  // TODO
+  // _dblclick(event: MouseEvent) {
+  //   this._handleInteraction(event);
+  // }
 
   /** Handles custom key presses. */
   _keydown(event: KeyboardEvent): void {
@@ -209,7 +205,8 @@ export class MatChipRow
       return;
     }
     if (this._isEditing()) {
-      this._handleInteraction(event);
+      // TODO
+      // this._handleInteraction(event);
       return;
     }
     switch (event.keyCode) {
@@ -220,13 +217,16 @@ export class MatChipRow
         // Always prevent so page navigation does not occur
         event.preventDefault();
         break;
-      default:
-        this._handleInteraction(event);
+      // TODO
+      // default:
+      // this._handleInteraction(event);
     }
   }
 
   _isEditing() {
-    return this._chipFoundation.isEditing();
+    // TODO
+    // return this._chipFoundation.isEditing();
+    return false;
   }
 
   protected override _onEditStart() {
@@ -243,7 +243,8 @@ export class MatChipRow
       this._document.activeElement === this._getEditInput().getNativeElement() ||
       this._document.activeElement === this._document.body
     ) {
-      this.chipContent.nativeElement.focus();
+      // TODO
+      // this.chipContent.nativeElement.focus();
     }
     this.edited.emit({chip: this, value: this._getEditInput().getValue()});
   }

@@ -55,12 +55,12 @@
         </mat-chip>
 
         <mat-chip>
-          <img src="https://material.angularjs.org/material2_assets/ngconf/Mal.png" matChipAvatar>
+          <img src="https://material.angular.io/assets/img/examples/shiba1.jpg" matChipAvatar>
           Mal
         </mat-chip>
 
         <mat-chip highlighted="true" color="warn">
-          <img src="https://material.angularjs.org/material2_assets/ngconf/Husi.png" matChipAvatar>
+          <img src="https://material.angular.io/assets/img/examples/shiba1.jpg" matChipAvatar>
           Husi
           <button matChipRemove>
             <mat-icon>cancel</mat-icon>
@@ -102,14 +102,22 @@
       <button mat-button (click)="disabledListboxes = !disabledListboxes">
        {{disabledListboxes ? "Enable" : "Disable"}}
       </button>
+      <button mat-button (click)="showListboxAvatar = !showListboxAvatar">
+       {{showListboxAvatar ? "Hide avatar" : "Show avatar"}}
+      </button>
 
       <h4>Single selection</h4>
 
-      <mat-chip-listbox multiple="false" [disabled]="disabledListboxes">
+      <mat-chip-listbox [disabled]="disabledListboxes">
         <mat-chip-option>Extra Small</mat-chip-option>
         <mat-chip-option>Small</mat-chip-option>
         <mat-chip-option>Medium</mat-chip-option>
-        <mat-chip-option>Large</mat-chip-option>
+        <mat-chip-option>
+          <img
+            *ngIf="showListboxAvatar"
+            src="https://material.angular.io/assets/img/examples/shiba1.jpg" matChipAvatar>
+          Large
+        </mat-chip-option>
       </mat-chip-listbox>
 
       <h4>Multi selection</h4>
@@ -117,8 +125,13 @@
       <mat-chip-listbox multiple="true" [disabled]="disabledListboxes">
         <mat-chip-option selected="true">Open Now</mat-chip-option>
         <mat-chip-option>Takes Reservations</mat-chip-option>
-        <mat-chip-option selected="true">Pet Friendly</mat-chip-option>
-        <mat-chip-option>Good for Brunch</mat-chip-option>
+        <mat-chip-option>
+          <img
+            *ngIf="showListboxAvatar"
+            src="https://material.angular.io/assets/img/examples/shiba1.jpg" matChipAvatar>
+          Pet Friendly
+        </mat-chip-option>
+        <mat-chip-option selected="true">Good for Brunch</mat-chip-option>
       </mat-chip-listbox>
 
     </mat-card-content>

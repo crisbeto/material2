@@ -6,9 +6,10 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {FocusKeyManager} from '@angular/cdk/a11y';
+import {FocusKeyManager, LiveAnnouncer} from '@angular/cdk/a11y';
 import {Directionality} from '@angular/cdk/bidi';
 import {BooleanInput, coerceBooleanProperty} from '@angular/cdk/coercion';
+import {DOCUMENT} from '@angular/common';
 import {
   AfterContentInit,
   ChangeDetectionStrategy,
@@ -18,14 +19,16 @@ import {
   ElementRef,
   EventEmitter,
   forwardRef,
+  Inject,
   Input,
+  OnDestroy,
   Optional,
   Output,
   QueryList,
   ViewEncapsulation,
 } from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
-import {deprecated} from '@material/chips';
+import {MDCChipSetFoundation, MDCChipActionType} from '@material/chips';
 import {merge, Observable, Subscription} from 'rxjs';
 import {startWith, takeUntil} from 'rxjs/operators';
 import {MatChip, MatChipEvent} from './chip';
@@ -59,11 +62,15 @@ export const MAT_CHIP_LISTBOX_CONTROL_VALUE_ACCESSOR: any = {
  */
 @Component({
   selector: 'mat-chip-listbox',
-  template: '<ng-content></ng-content>',
+  template: `
+    <span class="mdc-evolution-chip-set__chips" role="presentation">
+      <ng-content></ng-content>
+    </span>
+  `,
   styleUrls: ['chips.css'],
   inputs: ['tabIndex'],
   host: {
-    'class': 'mat-mdc-chip-set mat-mdc-chip-listbox mdc-chip-set',
+    'class': 'mdc-evolution-chip-set',
     '[attr.role]': 'role',
     '[tabIndex]': 'empty ? -1 : tabIndex',
     // TODO: replace this binding with use of AriaDescriber
@@ -76,14 +83,16 @@ export const MAT_CHIP_LISTBOX_CONTROL_VALUE_ACCESSOR: any = {
     '[class.mat-mdc-chip-list-required]': 'required',
     '(focus)': 'focus()',
     '(blur)': '_blur()',
-    '(keydown)': '_keydown($event)',
     '[id]': '_uid',
   },
   providers: [MAT_CHIP_LISTBOX_CONTROL_VALUE_ACCESSOR],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MatChipListbox extends MatChipSet implements AfterContentInit, ControlValueAccessor {
+export class MatChipListbox
+  extends MatChipSet
+  implements AfterContentInit, OnDestroy, ControlValueAccessor
+{
   /** Subscription to selection changes in the chips. */
   private _chipSelectionSubscription: Subscription | null;
 
@@ -92,9 +101,6 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
 
   /** Subscription to focus changes in the chips. */
   private _chipFocusSubscription: Subscription | null;
-
-  /** The FocusKeyManager which handles focus. */
-  _keyManager: FocusKeyManager<MatChip>;
 
   /**
    * Function when touched. Set as part of ControlValueAccessor implementation.
@@ -109,6 +115,7 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
   _onChange: (value: any) => void = () => {};
 
   /** The ARIA role applied to the chip listbox. */
+  // TODO: MDC uses `grid` here
   override get role(): string | null {
     return this.empty ? null : 'listbox';
   }
@@ -214,22 +221,25 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
   override _chips: QueryList<MatChipOption>;
 
   constructor(
+    liveAnnouncer: LiveAnnouncer,
+    @Inject(DOCUMENT) _document: any,
     elementRef: ElementRef,
     changeDetectorRef: ChangeDetectorRef,
     @Optional() _dir: Directionality,
   ) {
-    super(elementRef, changeDetectorRef, _dir);
-    this._chipSetAdapter.selectChipAtIndex = (index: number, selected: boolean) => {
-      this._setSelected(index, selected);
-    };
+    super(liveAnnouncer, _document, elementRef, changeDetectorRef, _dir);
+    // TODO
+    // this._chipSetAdapter.setChipSelectedAtIndex = (index, actionType, isSelected) => {
+    //   this._setSelected(index, actionType, isSelected);
+    // };
     // Reinitialize the foundation with our overridden adapter
-    this._chipSetFoundation = new deprecated.MDCChipSetFoundation(this._chipSetAdapter);
+    this._chipSetFoundation = new MDCChipSetFoundation(this._chipSetAdapter);
     this._updateMdcSelectionClasses();
   }
 
   override ngAfterContentInit() {
     super.ngAfterContentInit();
-    this._initKeyManager();
+    this._listenToChipsBlur();
 
     this._chips.changes.pipe(startWith(null), takeUntil(this._destroyed)).subscribe(() => {
       // Update listbox selectable/multiple properties on chips
@@ -241,6 +251,10 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
       // Check to see if we have a destroyed chip and need to refocus
       this._updateFocusForDestroyedChips();
     });
+  }
+
+  override ngOnDestroy() {
+    this._dropSubscriptions();
   }
 
   /**
@@ -255,10 +269,9 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     const firstSelectedChip = this._getFirstSelectedChip();
 
     if (firstSelectedChip) {
-      const firstSelectedChipIndex = this._chips.toArray().indexOf(firstSelectedChip);
-      this._keyManager.setActiveItem(firstSelectedChipIndex);
+      firstSelectedChip.focus();
     } else if (this._chips.length > 0) {
-      this._keyManager.setFirstItemActive();
+      this._chips.last.primaryAction.focus();
     }
   }
 
@@ -303,25 +316,18 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     if (Array.isArray(value)) {
       value.forEach(currentValue => this._selectValue(currentValue, isUserInput));
     } else {
-      const correspondingChip = this._selectValue(value, isUserInput);
-
-      // Shift focus to the active item. Note that we shouldn't do this in multiple
-      // mode, because we don't know what chip the user interacted with last.
-      if (correspondingChip) {
-        if (isUserInput) {
-          this._keyManager.setActiveItem(correspondingChip);
-        }
-      }
+      this._selectValue(value, isUserInput);
     }
   }
 
+  // TODO
   /** Selects or deselects a chip by id. */
-  _setSelected(index: number, selected: boolean) {
-    const chip = this._chips.toArray()[index];
-    if (chip && chip.selected != selected) {
-      chip.toggleSelected(true);
-    }
-  }
+  // _setSelected(index: number, selected: boolean) {
+  //   const chip = this._chips.toArray()[index];
+  //   if (chip && chip.selected != selected) {
+  //     chip.toggleSelected(true);
+  //   }
+  // }
 
   /** When blurred, marks the field as touched when focus moved outside the chip listbox. */
   _blur() {
@@ -329,8 +335,9 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
       return;
     }
 
+    // TODO
     if (!this.focused) {
-      this._keyManager.setActiveItem(-1);
+      // this._keyManager.setActiveItem(-1);
     }
 
     // Wait to see if focus moves to an indivdual chip.
@@ -357,15 +364,6 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
         this.tabIndex = previousTabIndex;
         this._changeDetectorRef.markForCheck();
       });
-    }
-  }
-
-  /**
-   * Handles custom keyboard shortcuts, and passes other keyboard events to the keyboard manager.
-   */
-  _keydown(event: KeyboardEvent) {
-    if (this._originatesFromChip(event)) {
-      this._keyManager.onKeydown(event);
     }
   }
 
@@ -397,9 +395,9 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     setTimeout(() => {
       // Defer setting the value in order to avoid the "Expression
       // has changed after it was checked" errors from Angular.
-      this._chips.forEach(chip => {
+      this._chips.forEach((chip, index) => {
         if (chip.selected) {
-          this._chipSetFoundation.select(chip.id);
+          this._chipSetFoundation.setChipSelected(index, MDCChipActionType.PRIMARY, true);
         }
       });
     });
@@ -454,25 +452,6 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     this._setMdcClass('mdc-chip-set--choice', this.selectable && !this.multiple);
   }
 
-  /** Initializes the key manager to manage focus. */
-  private _initKeyManager() {
-    this._keyManager = new FocusKeyManager<MatChip>(this._chips)
-      .withWrap()
-      .withVerticalOrientation()
-      .withHomeAndEnd()
-      .withHorizontalOrientation(this._dir ? this._dir.value : 'ltr');
-
-    if (this._dir) {
-      this._dir.change
-        .pipe(takeUntil(this._destroyed))
-        .subscribe(dir => this._keyManager.withHorizontalOrientation(dir));
-    }
-
-    this._keyManager.tabOut.pipe(takeUntil(this._destroyed)).subscribe(() => {
-      this._allowFocusEscape();
-    });
-  }
-
   /** Returns the first selected chip in this listbox, or undefined if no chips are selected. */
   private _getFirstSelectedChip(): MatChipOption | undefined {
     if (Array.isArray(this.selected)) {
@@ -483,8 +462,7 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
   }
 
   /** Unsubscribes from all chip events. */
-  protected override _dropSubscriptions() {
-    super._dropSubscriptions();
+  private _dropSubscriptions() {
     if (this._chipSelectionSubscription) {
       this._chipSelectionSubscription.unsubscribe();
       this._chipSelectionSubscription = null;
@@ -501,25 +479,6 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     }
   }
 
-  /** Subscribes to events on the child chips. */
-  protected override _subscribeToChipEvents() {
-    super._subscribeToChipEvents();
-    this._listenToChipsSelection();
-    this._listenToChipsFocus();
-    this._listenToChipsBlur();
-  }
-
-  /** Subscribes to chip focus events. */
-  private _listenToChipsFocus(): void {
-    this._chipFocusSubscription = this.chipFocusChanges.subscribe((event: MatChipEvent) => {
-      let chipIndex: number = this._chips.toArray().indexOf(event.chip as MatChipOption);
-
-      if (this._isValidIndex(chipIndex)) {
-        this._keyManager.updateActiveItem(chipIndex);
-      }
-    });
-  }
-
   /** Subscribes to chip blur events. */
   private _listenToChipsBlur(): void {
     this._chipBlurSubscription = this.chipBlurChanges.subscribe(() => {
@@ -527,21 +486,24 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     });
   }
 
+  // TODO
   /** Subscribes to selection changes in the option chips. */
-  private _listenToChipsSelection(): void {
-    this._chipSelectionSubscription = this.chipSelectionChanges.subscribe(
-      (chipSelectionChange: MatChipSelectionChange) => {
-        this._chipSetFoundation.handleChipSelection({
-          chipId: chipSelectionChange.source.id,
-          selected: chipSelectionChange.selected,
-          shouldIgnore: false,
-        });
-        if (chipSelectionChange.isUserInput) {
-          this._propagateChanges();
-        }
-      },
-    );
-  }
+  // private _listenToChipsSelection(): void {
+  //   this._chipSelectionSubscription = this.chipSelectionChanges.subscribe(event => {
+  //       const chip = event.source;
+  //       this._chipSetFoundation.handleChipInteraction({
+  //         detail: {
+  //           chipID: event.source.id,
+  //           isSelected: event.selected,
+  //           actionID:
+  //         }
+  //       });
+
+  //       if (event.isUserInput) {
+  //         this._propagateChanges();
+  //       }
+  //   });
+  // }
 
   /**
    * If the amount of chips changed, we need to update the
@@ -552,7 +514,7 @@ export class MatChipListbox extends MatChipSet implements AfterContentInit, Cont
     if (this._lastDestroyedChipIndex != null) {
       if (this._chips.length) {
         const newChipIndex = Math.min(this._lastDestroyedChipIndex, this._chips.length - 1);
-        this._keyManager.setActiveItem(newChipIndex);
+        this._chips.toArray()[newChipIndex].focus();
       } else {
         this.focus();
       }

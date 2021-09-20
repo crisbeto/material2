@@ -176,7 +176,8 @@ export class MatChipInput implements MatChipTextControl, AfterContentInit, OnCha
       // And the input is empty (see behaviour in _keyup)
       if (event.keyCode === BACKSPACE && this._focusLastChipOnBackspace) {
         if (this._chipGrid._chips.length) {
-          this._chipGrid._keyManager.setLastCellActive();
+          // TODO
+          // this._chipGrid._keyManager.setLastCellActive();
         }
         event.preventDefault();
         return;

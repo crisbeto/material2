@@ -7,25 +7,32 @@
        [matRippleTrigger]="_elementRef.nativeElement"></span>
 </ng-container>
 
-<div class="mat-mdc-chip-content">
-  <div role="gridcell">
-    <div #chipContent tabindex="-1"
-         class="mat-mdc-chip-row-focusable-text-content mat-mdc-focus-indicator mdc-chip__primary-action"
-         [attr.role]="editable ? 'button' : null">
+<span class="mdc-evolution-chip__cell mdc-evolution-chip__cell--primary" role="gridcell">
+  <!-- TODO: MDC also has an aria-label on this. Maybe add an input? -->
+  <button
+    matChipAction
+    type="button"
+    tabindex="0"
+    [attr.disabled]="disabled || null">
+    <span class="mdc-evolution-chip__ripple mdc-evolution-chip__ripple--primary"></span>
+    <span class="mdc-evolution-chip__graphic" *ngIf="leadingIcon">
       <ng-content select="mat-chip-avatar, [matChipAvatar]"></ng-content>
-      <span class="mdc-chip__text"><ng-content></ng-content></span>
-      <ng-content select="mat-chip-trailing-icon,[matChipTrailingIcon]"></ng-content>
-    </div>
-  </div>
-  <div role="gridcell" *ngIf="removeIcon" class="mat-mdc-chip-remove-icon">
-    <ng-content select="[matChipRemove]"></ng-content>
-  </div>
-</div>
+    </span>
+    <span class="mdc-evolution-chip__text-label"><ng-content></ng-content></span>
+  </button>
+</span>
 
-<div *ngIf="_isEditing()" role="gridcell" class="mat-mdc-chip-edit-input-container">
+<span
+  class="mdc-evolution-chip__cell mdc-evolution-chip__cell--trailing"
+  *ngIf="_hasTrailingIcon()">
+  <ng-content select="mat-chip-trailing-icon,[matChipRemove],[matChipTrailingIcon]"></ng-content>
+</span>
+
+<!-- TODO -->
+<!-- <div *ngIf="_isEditing()" role="gridcell" class="mat-mdc-chip-edit-input-container">
   <ng-content *ngIf="contentEditInput; else defaultMatChipEditInput"
               select="[matChipEditInput]"></ng-content>
   <ng-template #defaultMatChipEditInput>
     <span matChipEditInput></span>
   </ng-template>
-</div>
+</div> -->
