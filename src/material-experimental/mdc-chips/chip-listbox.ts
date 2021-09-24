@@ -83,7 +83,6 @@ export const MAT_CHIP_LISTBOX_CONTROL_VALUE_ACCESSOR: any = {
     '[class.mat-mdc-chip-list-required]': 'required',
     '(focus)': 'focus()',
     '(blur)': '_blur()',
-    '[id]': '_uid',
   },
   providers: [MAT_CHIP_LISTBOX_CONTROL_VALUE_ACCESSOR],
   encapsulation: ViewEncapsulation.None,
@@ -127,7 +126,6 @@ export class MatChipListbox
   }
   set multiple(value: boolean) {
     this._multiple = coerceBooleanProperty(value);
-    this._updateMdcSelectionClasses();
     this._syncListboxProperties();
   }
   private _multiple: boolean = false;
@@ -153,7 +151,6 @@ export class MatChipListbox
   }
   set selectable(value: boolean) {
     this._selectable = coerceBooleanProperty(value);
-    this._updateMdcSelectionClasses();
     this._syncListboxProperties();
   }
   protected _selectable: boolean = true;
@@ -228,13 +225,8 @@ export class MatChipListbox
     @Optional() _dir: Directionality,
   ) {
     super(liveAnnouncer, _document, elementRef, changeDetectorRef, _dir);
-    // TODO
-    // this._chipSetAdapter.setChipSelectedAtIndex = (index, actionType, isSelected) => {
-    //   this._setSelected(index, actionType, isSelected);
-    // };
     // Reinitialize the foundation with our overridden adapter
     this._chipSetFoundation = new MDCChipSetFoundation(this._chipSetAdapter);
-    this._updateMdcSelectionClasses();
   }
 
   override ngAfterContentInit() {
@@ -320,49 +312,15 @@ export class MatChipListbox
     }
   }
 
-  // TODO
-  /** Selects or deselects a chip by id. */
-  // _setSelected(index: number, selected: boolean) {
-  //   const chip = this._chips.toArray()[index];
-  //   if (chip && chip.selected != selected) {
-  //     chip.toggleSelected(true);
-  //   }
-  // }
-
   /** When blurred, marks the field as touched when focus moved outside the chip listbox. */
   _blur() {
-    if (this.disabled) {
-      return;
-    }
-
-    // TODO
-    if (!this.focused) {
-      // this._keyManager.setActiveItem(-1);
-    }
-
-    // Wait to see if focus moves to an indivdual chip.
-    setTimeout(() => {
-      if (!this.focused) {
-        this._propagateChanges();
-        this._markAsTouched();
-      }
-    });
-  }
-
-  /**
-   * Removes the `tabindex` from the chip listbox and resets it back afterwards, allowing the
-   * user to tab out of it. This prevents the listbox from capturing focus and redirecting
-   * it back to the first chip, creating a focus trap, if it user tries to tab away.
-   */
-  _allowFocusEscape() {
-    const previousTabIndex = this.tabIndex;
-
-    if (this.tabIndex !== -1) {
-      this.tabIndex = -1;
-
+    if (!this.disabled) {
+      // Wait to see if focus moves to an indivdual chip.
       setTimeout(() => {
-        this.tabIndex = previousTabIndex;
-        this._changeDetectorRef.markForCheck();
+        if (!this.focused) {
+          this._propagateChanges();
+          this._markAsTouched();
+        }
       });
     }
   }
@@ -446,12 +404,6 @@ export class MatChipListbox
     }
   }
 
-  /** Sets the mdc classes for single vs multi selection. */
-  private _updateMdcSelectionClasses() {
-    this._setMdcClass('mdc-chip-set--filter', this.selectable && this.multiple);
-    this._setMdcClass('mdc-chip-set--choice', this.selectable && !this.multiple);
-  }
-
   /** Returns the first selected chip in this listbox, or undefined if no chips are selected. */
   private _getFirstSelectedChip(): MatChipOption | undefined {
     if (Array.isArray(this.selected)) {
@@ -485,25 +437,6 @@ export class MatChipListbox
       this._blur();
     });
   }
-
-  // TODO
-  /** Subscribes to selection changes in the option chips. */
-  // private _listenToChipsSelection(): void {
-  //   this._chipSelectionSubscription = this.chipSelectionChanges.subscribe(event => {
-  //       const chip = event.source;
-  //       this._chipSetFoundation.handleChipInteraction({
-  //         detail: {
-  //           chipID: event.source.id,
-  //           isSelected: event.selected,
-  //           actionID:
-  //         }
-  //       });
-
-  //       if (event.isUserInput) {
-  //         this._propagateChanges();
-  //       }
-  //   });
-  // }
 
   /**
    * If the amount of chips changed, we need to update the

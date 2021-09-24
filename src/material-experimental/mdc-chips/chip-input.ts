@@ -165,20 +165,11 @@ export class MatChipInput implements MatChipTextControl, AfterContentInit, OnCha
   /** Utility method to make host definition/tests more clear. */
   _keydown(event?: KeyboardEvent) {
     if (event) {
-      // Allow the user's focus to escape when they're tabbing forward. Note that we don't
-      // want to do this when going backwards, because focus should go back to the first chip.
-      if (event.keyCode === TAB && !hasModifierKey(event, 'shiftKey')) {
-        this._chipGrid._allowFocusEscape();
-      }
-
       // To prevent the user from accidentally deleting chips when pressing BACKSPACE continuously,
       // We focus the last chip on backspace only after the user has released the backspace button,
       // And the input is empty (see behaviour in _keyup)
       if (event.keyCode === BACKSPACE && this._focusLastChipOnBackspace) {
-        if (this._chipGrid._chips.length) {
-          // TODO
-          // this._chipGrid._keyManager.setLastCellActive();
-        }
+        this._chipGrid._focusLastChip();
         event.preventDefault();
         return;
       } else {

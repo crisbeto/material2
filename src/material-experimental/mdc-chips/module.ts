@@ -43,11 +43,7 @@ const CHIP_DECLARATIONS = [
 @NgModule({
   imports: [MatCommonModule, CommonModule, MatRippleModule],
   exports: [MatCommonModule, CHIP_DECLARATIONS],
-  declarations: [
-    // TODO: should this be a private directive?
-    MatChipAction,
-    CHIP_DECLARATIONS
-  ],
+  declarations: [MatChipAction, CHIP_DECLARATIONS],
   providers: [
     ErrorStateMatcher,
     {

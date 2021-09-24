@@ -1,20 +1,20 @@
 <ng-container *ngIf="!_isEditing()">
-  <span class="mdc-chip__ripple"></span>
-
   <span matRipple class="mat-mdc-chip-ripple"
        [matRippleDisabled]="_isRippleDisabled()"
        [matRippleCentered]="_isRippleCentered"
        [matRippleTrigger]="_elementRef.nativeElement"></span>
+  <span class="mat-mdc-chip-focus-overlay"></span>
 </ng-container>
+
 
 <span class="mdc-evolution-chip__cell mdc-evolution-chip__cell--primary" role="gridcell">
   <!-- TODO: MDC also has an aria-label on this. Maybe add an input? -->
+  <!-- TODO: should the `tabindex` be roving? -->
   <button
     matChipAction
     type="button"
     tabindex="0"
     [attr.disabled]="disabled || null">
-    <span class="mdc-evolution-chip__ripple mdc-evolution-chip__ripple--primary"></span>
     <span class="mdc-evolution-chip__graphic" *ngIf="leadingIcon">
       <ng-content select="mat-chip-avatar, [matChipAvatar]"></ng-content>
     </span>

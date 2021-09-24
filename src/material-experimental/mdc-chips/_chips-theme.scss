@@ -20,10 +20,11 @@
 }
 
 @mixin color($config-or-theme) {
-  // $config: theming.get-color-config($config-or-theme);
+  $config: theming.get-color-config($config-or-theme);
   // $primary: theming.get-color-from-palette(map.get($config, primary));
   // $accent: theming.get-color-from-palette(map.get($config, accent));
   // $warn: theming.get-color-from-palette(map.get($config, warn));
+  $foreground: map.get($config, foreground);
   // $background: map.get($config, background);
   // $unselected-background: theming.get-color-from-palette($background, unselected-chip);
 
@@ -69,6 +70,10 @@
   //   }
   // }
 
+  .mat-mdc-chip-focus-overlay {
+    background: map.get($foreground, base);
+  }
+
   // // Restore original values of MDC global variables.
   // mdc-chips.$fill-color-default: $orig-mdc-chips-fill-color-default;
   // mdc-chips.$ink-color-default: $orig-mdc-chips-ink-color-default;
@@ -92,21 +97,21 @@
 }
 
 @mixin theme($theme-or-color-config) {
-  // $theme: theming.private-legacy-get-theme($theme-or-color-config);
-  // @include theming.private-check-duplicate-theme-styles($theme, 'mat-mdc-chips') {
-  //   $color: theming.get-color-config($theme);
-  //   $density: theming.get-density-config($theme);
-  //   $typography: theming.get-typography-config($theme);
+  $theme: theming.private-legacy-get-theme($theme-or-color-config);
+  @include theming.private-check-duplicate-theme-styles($theme, 'mat-mdc-chips') {
+    $color: theming.get-color-config($theme);
+    $density: theming.get-density-config($theme);
+    $typography: theming.get-typography-config($theme);
 
-  //   @if $color != null {
-  //     @include color($color);
-  //   }
-  //   @if $density != null {
-  //     @include density($density);
-  //   }
-  //   @if $typography != null {
-  //     @include typography($typography);
-  //   }
-  // }
+    @if $color != null {
+      @include color($color);
+    }
+    @if $density != null {
+      @include density($density);
+    }
+    @if $typography != null {
+      @include typography($typography);
+    }
+  }
 }
 

@@ -2,6 +2,7 @@
      [matRippleDisabled]="_isRippleDisabled()"
      [matRippleCentered]="_isRippleCentered"
      [matRippleTrigger]="_elementRef.nativeElement"></span>
+<span class="mat-mdc-chip-focus-overlay"></span>
 
 <span class="mdc-evolution-chip__cell mdc-evolution-chip__cell--primary">
   <button
@@ -10,8 +11,9 @@
     [tabIndex]="tabIndex"
     [attr.disabled]="disabled || null"
     [attr.aria-selected]="ariaSelected"
-    role="option">
-    <span class="mdc-evolution-chip__ripple mdc-evolution-chip__ripple--primary"></span>
+    role="option"
+    (blur)="_blur()"
+    (focus)="focus()">
     <span class="mdc-evolution-chip__graphic" *ngIf="_hasLeadingGraphic()">
       <ng-content select="mat-chip-avatar, [matChipAvatar]"></ng-content>
       <span class="mdc-evolution-chip__checkmark">

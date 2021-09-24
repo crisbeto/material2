@@ -109,7 +109,6 @@ const _MatChipGridMixinBase = mixinErrorState(MatChipGridBase);
     '(focus)': 'focus()',
     '(blur)': '_blur()',
     '(keydown)': '_keydown($event)',
-    '[id]': '_uid',
   },
   providers: [{provide: MatFormFieldControl, useExisting: MatChipGrid}],
   encapsulation: ViewEncapsulation.None,
@@ -337,7 +336,6 @@ export class MatChipGrid
   /** Associates an HTML input element with this chip grid. */
   registerInput(inputElement: MatChipTextControl): void {
     this._chipInput = inputElement;
-    this._setMdcClass('mdc-chip-set--input', true);
   }
 
   /**
@@ -462,6 +460,12 @@ export class MatChipGrid
     }
 
     this.stateChanges.next();
+  }
+
+  _focusLastChip() {
+    if (this._chips.length) {
+      this._chips.last.primaryAction.focus();
+    }
   }
 
   /** Unsubscribes from all chip events. */

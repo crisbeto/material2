@@ -8,31 +8,67 @@
 @include mdc-chip.without-ripple-styles();
 @include mdc-chip-set.core-styles();
 
+// TODO: remove icon color and potentially focus styles.
+
 // @include mdc-chips.without-ripple($query: mdc-helpers.$mat-base-styles-query);
 // @include mdc-chips.set-core-styles($query: mdc-helpers.$mat-base-styles-query);
 
-// .mat-mdc-chip {
-//   // MDC uses a pointer cursor
-//   cursor: default;
+.mat-mdc-chip {
+  // // MDC uses a pointer cursor
+  // cursor: default;
 
-//   &._mat-animation-noopable {
-//     animation: none;
-//     transition: none;
+  // &._mat-animation-noopable {
+  //   animation: none;
+  //   transition: none;
 
-//     .mdc-chip__checkmark-svg {
-//       transition: none;
-//     }
-//   }
+  //   .mdc-chip__checkmark-svg {
+  //     transition: none;
+  //   }
+  // }
 
-//   @include a11y.high-contrast(active, off) {
-//     outline: solid 1px;
+  @include a11y.high-contrast(active, off) {
+    outline: solid 1px;
 
-//     &:focus {
-//       // Use 2px here since the dotted outline is a little thinner.
-//       outline: dotted 2px;
-//     }
-//   }
-// }
+    &.cdk-focused {
+      // Use 2px here since the dotted outline is a little thinner.
+      outline: dotted 2px;
+    }
+  }
+
+  // Angular Material supports disabled chips, which MDC does not.
+  // Dim the disabled chips and stop MDC from changing the icon color on click.
+  &.mdc-evolution-chip--disabled {
+    opacity: 0.4;
+  }
+}
+
+// MDC's focus and hover indication is handled through their ripple which we currently
+// don't use due to size concerns so we have to re-implement it ourselves.
+.mat-mdc-chip-focus-overlay {
+  @include layout-common.fill;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity 150ms linear;
+
+  ._mat-animation-noopable & {
+    transition: none;
+  }
+
+  .mat-mdc-basic-chip & {
+    display: none;
+  }
+
+  .mat-mdc-chip:hover & {
+    opacity: 0.04;
+  }
+
+  .mat-mdc-chip.cdk-keyboard-focused &,
+  .mat-mdc-chip.cdk-program-focused & {
+    opacity: 0.12;
+  }
+}
 
 // The ripple container should match the bounds of the entire chip.
 .mat-mdc-chip-ripple {
@@ -54,56 +90,22 @@
   line-height: 1;
 }
 
-// // The MDC chip styles related to hover and focus states are intertwined with the MDC ripple styles.
-// // We currently don't use the MDC ripple due to size concerns, therefore we need to add some
-// // additional styles to restore these states.
-// .mdc-chip__ripple {
-//   @include mdc-ripple.target-common($query: structure);
+// Angular Material supports vertically-stacked chips, which MDC does not.
+.mat-mdc-chip-set-stacked {
+  flex-direction: column;
+  align-items: flex-start;
 
-//   &::after, &::before {
-//     @include layout-common.fill;
-//     content: '';
-//     pointer-events: none;
-//     opacity: 0;
-//     border-radius: inherit;
+  .mat-mdc-chip {
+    width: 100%;
+  }
+}
 
-//     ._mat-animation-noopable & {
-//       transition: none;
-//     }
-//   }
-// }
+// Add styles for the matChipInputFor input element.
+$mat-chip-input-width: 150px;
 
-// // Angular Material supports disabled chips, which MDC does not.
-// // Dim the disabled chips and stop MDC from changing the icon color on click.
-// .mat-mdc-chip-disabled.mat-mdc-chip {
-//   opacity: 0.4;
-
-//   .mat-mdc-chip-trailing-icon, .mat-mdc-chip-row-focusable-text-content {
-//     pointer-events: none;
-//   }
-
-//   // Do not show state interactions for disabled chips.
-//   .mdc-chip__ripple::after, .mdc-chip__ripple::before {
-//     display: none;
-//   }
-// }
-
-// // Angular Material supports vertically-stacked chips, which MDC does not.
-// .mat-mdc-chip-set-stacked {
-//   flex-direction: column;
-//   align-items: flex-start;
-
-//   .mat-mdc-chip {
-//     width: 100%;
-//   }
-// }
-
-// // Add styles for the matChipInputFor input element.
-// $mat-chip-input-width: 150px;
-
-// input.mat-mdc-chip-input {
-//   flex: 1 0 $mat-chip-input-width;
-// }
+input.mat-mdc-chip-input {
+  flex: 1 0 $mat-chip-input-width;
+}
 
 // // The margin value is set in MDC.
 // $chip-margin: 4px;

@@ -34,8 +34,6 @@ export class MatChipSelectionChange {
   ) {}
 }
 
-// TODO: MDC doesn't allow selection when there is a remove button. Do we even support that?
-
 /**
  * An extension of the MatChip component that supports chip selection.
  * Used with MatChipListbox.
@@ -47,9 +45,7 @@ export class MatChipSelectionChange {
   inputs: ['color', 'disableRipple', 'tabIndex'],
   host: {
     'class':
-      'mat-mdc-focus-indicator mdc-evolution-chip ' +
-      // TODO: this `with-primary-graphic` should probably be conditional.
-      'mdc-evolution-chip--filter',
+      'mat-mdc-chip mat-mdc-focus-indicator mdc-evolution-chip ' + 'mdc-evolution-chip--filter',
     '[class.mdc-evolution-chip--selectable]': 'selectable',
     '[class.mdc-evolution-chip--disabled]': 'disabled',
     '[class.mdc-evolution-chip--with-trailing-action]': '_hasTrailingIcon()',
@@ -58,11 +54,6 @@ export class MatChipSelectionChange {
     '[class.mdc-evolution-chip--with-avatar]': 'leadingIcon',
     '[class.mat-mdc-chip-highlighted]': 'highlighted',
     'role': 'presentation',
-
-    // '[class.mat-mdc-chip-disabled]': 'disabled',
-    // '[class.mat-mdc-chip-with-avatar]': 'leadingIcon',
-    // '[class.mat-mdc-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
-    // '[class.mat-mdc-chip-selected]': 'selected',
     '[id]': 'id',
   },
   providers: [{provide: MatChip, useExisting: MatChipOption}],
@@ -136,9 +127,7 @@ export class MatChipOption extends MatChip implements AfterContentInit, AfterVie
   @Output() readonly selectionChange: EventEmitter<MatChipSelectionChange> =
     new EventEmitter<MatChipSelectionChange>();
 
-  override ngAfterContentInit() {
-    super.ngAfterContentInit();
-
+  ngAfterContentInit() {
     if (this.selected && this.leadingIcon) {
       this.leadingIcon.setClass(deprecated.chipCssClasses.HIDDEN_LEADING_ICON, true);
     }
@@ -197,49 +186,19 @@ export class MatChipOption extends MatChip implements AfterContentInit, AfterVie
     this._hasFocusInternal = true;
   }
 
-  // TODO
   /** Resets the state of the chip when it loses focus. */
-  // _blur(): void {
-  //   // When animations are enabled, Angular may end up removing the chip from the DOM a little
-  //   // earlier than usual, causing it to be blurred and throwing off the logic in the chip list
-  //   // that moves focus not the next item. To work around the issue, we defer marking the chip
-  //   // as not focused until the next time the zone stabilizes.
-  //   this._ngZone.onStable
-  //     .pipe(take(1))
-  //     .subscribe(() => {
-  //       this._ngZone.run(() => {
-  //         this._hasFocusInternal = false;
-  //         this._onBlur.next({chip: this});
-  //       });
-  //     });
-  // }
-
-  // TODO
-  /** Handles click events on the chip. */
-  // _click(event: MouseEvent) {
-  //   if (this.disabled) {
-  //     event.preventDefault();
-  //   } else {
-  //     event.stopPropagation();
-  //   }
-  // }
-
-  // TODO
-  /** Handles custom key presses. */
-  // _keydown(event: KeyboardEvent): void {
-  //   if (this.disabled) {
-  //     return;
-  //   }
-
-  //   switch (event.keyCode) {
-  //     case SPACE:
-  //       this.toggleSelected(true);
-
-  //       // Always prevent space from scrolling the page since the list has focus
-  //       event.preventDefault();
-  //       break;
-  //   }
-  // }
+  _blur(): void {
+    // When animations are enabled, Angular may end up removing the chip from the DOM a little
+    // earlier than usual, causing it to be blurred and throwing off the logic in the chip list
+    // that moves focus not the next item. To work around the issue, we defer marking the chip
+    // as not focused until the next time the zone stabilizes.
+    this._ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this._ngZone.run(() => {
+        this._hasFocusInternal = false;
+        this._onBlur.next({chip: this});
+      });
+    });
+  }
 
   _hasLeadingGraphic() {
     // The checkmark graphic is built in for multi-select chip lists.

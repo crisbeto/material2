@@ -52,6 +52,7 @@ import {
   ActionInteractionEvent,
   ActionNavigationEvent,
 } from '@material/chips';
+import {FocusMonitor} from '@angular/cdk/a11y';
 import {numbers} from '@material/ripple';
 import {SPACE, ENTER, hasModifierKey} from '@angular/cdk/keycodes';
 import {Subject} from 'rxjs';
@@ -98,7 +99,7 @@ const _MatChipMixinBase = mixinTabIndex(mixinColor(mixinDisableRipple(MatChipBas
   templateUrl: 'chip.html',
   styleUrls: ['chips.css'],
   host: {
-    'class': 'mat-mdc-focus-indicator',
+    'class': 'mat-mdc-chip mat-mdc-focus-indicator',
     '[class.mdc-evolution-chip]': '!_isBasicChip',
     '[class.mdc-evolution-chip--disabled]': 'disabled',
     '[class.mdc-evolution-chip--with-trailing-action]': '_hasTrailingIcon()',
@@ -106,29 +107,18 @@ const _MatChipMixinBase = mixinTabIndex(mixinColor(mixinDisableRipple(MatChipBas
     '[class.mdc-evolution-chip--with-primary-icon]': 'leadingIcon',
     '[class.mdc-evolution-chip--with-avatar]': 'leadingIcon',
     '[class.mat-mdc-chip-highlighted]': 'highlighted',
-
-    // '[class.mat-mdc-chip-disabled]': 'disabled',
-    // '[class.mat-mdc-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
     '[class.mat-mdc-basic-chip]': '_isBasicChip',
     '[class.mat-mdc-standard-chip]': '!_isBasicChip',
-    // '[class._mat-animation-noopable]': '_animationsDisabled',
-    // '[id]': 'id',
-    // '[attr.disabled]': 'disabled || null',
-    // '[attr.aria-disabled]': 'disabled.toString()',
+    '[class._mat-animation-noopable]': '_animationsDisabled',
+    '[id]': 'id',
+    '[attr.aria-disabled]': 'disabled.toString()',
   },
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatChip
   extends _MatChipMixinBase
-  implements
-    AfterContentInit,
-    AfterViewInit,
-    CanColor,
-    CanDisableRipple,
-    CanDisable,
-    HasTabIndex,
-    OnDestroy
+  implements AfterViewInit, CanColor, CanDisableRipple, CanDisable, HasTabIndex, OnDestroy
 {
   protected _document: Document;
 
@@ -233,6 +223,9 @@ export class MatChip
   /** Emitted when a chip is to be removed. */
   @Output() readonly removed: EventEmitter<MatChipEvent> = new EventEmitter<MatChipEvent>();
 
+  /** Emitted when the chip is destroyed. */
+  readonly destroyed: EventEmitter<MatChipEvent> = new EventEmitter<MatChipEvent>();
+
   /** The MDC foundation containing business logic for MDC chip. */
   _chipFoundation: MDCChipFoundation;
 
@@ -311,6 +304,7 @@ export class MatChip
     public _changeDetectorRef: ChangeDetectorRef,
     elementRef: ElementRef<HTMLElement>,
     protected _ngZone: NgZone,
+    private _focusMonitor: FocusMonitor,
     @Inject(DOCUMENT) _document: any,
     @Optional() private _dir: Directionality,
     @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
@@ -328,11 +322,7 @@ export class MatChip
       elementRef.nativeElement.tagName.toLowerCase() === this.basicChipAttrName;
     element.addEventListener(MDCChipActionEvents.INTERACTION, this._handleActionInteraction);
     element.addEventListener(MDCChipActionEvents.NAVIGATION, this._handleActionNavigation);
-  }
-
-  ngAfterContentInit() {
-    // TODO
-    // this._initRemoveIcon();
+    _focusMonitor.monitor(elementRef, true);
   }
 
   ngAfterViewInit() {
@@ -347,42 +337,9 @@ export class MatChip
     element.removeEventListener(MDCChipActionEvents.INTERACTION, this._handleActionInteraction);
     element.removeEventListener(MDCChipActionEvents.NAVIGATION, this._handleActionNavigation);
     this._chipFoundation.destroy();
+    this._focusMonitor.stopMonitoring(this._elementRef);
+    this.destroyed.emit({chip: this});
   }
-
-  // TODO
-  /** Sets up the remove icon chip foundation, and subscribes to remove icon events. */
-  // private _initRemoveIcon() {
-  //   if (this.removeIcon) {
-  //     this._chipFoundation.setShouldRemoveOnTrailingIconClick(true);
-  //     this.removeIcon.disabled = this.disabled;
-
-  //     this.removeIcon.interaction
-  //       .pipe(takeUntil(this.destroyed))
-  //       .subscribe(event => {
-  //         // The MDC chip foundation calls stopPropagation() for any trailing icon interaction
-  //         // event, even ones it doesn't handle, so we want to avoid passing it keyboard events
-  //         // for which we have a custom handler. Note that we assert the type of the event using
-  //         // the `type`, because `instanceof KeyboardEvent` can throw during server-side rendering.
-  //         const isKeyboardEvent = event.type.startsWith('key');
-
-  //         if (this.disabled || (isKeyboardEvent &&
-  //             !this.REMOVE_ICON_HANDLED_KEYS.has((event as KeyboardEvent).keyCode))) {
-  //           return;
-  //         }
-
-  //         this.remove();
-
-  //         if (isKeyboardEvent && !hasModifierKey(event as KeyboardEvent)) {
-  //           const keyCode = (event as KeyboardEvent).keyCode;
-
-  //           // Prevent default space and enter presses so we don't scroll the page or submit forms.
-  //           if (keyCode === SPACE || keyCode === ENTER) {
-  //             event.preventDefault();
-  //           }
-  //         }
-  //       });
-  //   }
-  // }
 
   /**
    * Allows for programmatic removal of the chip.

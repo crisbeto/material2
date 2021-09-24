@@ -32,6 +32,7 @@ import {
   MAT_RIPPLE_GLOBAL_OPTIONS,
   RippleGlobalOptions,
 } from '@angular/material-experimental/mdc-core';
+import {FocusMonitor} from '@angular/cdk/a11y';
 import {MatChip, MatChipEvent} from './chip';
 import {MatChipEditInput} from './chip-edit-input';
 
@@ -52,7 +53,7 @@ export interface MatChipEditedEvent extends MatChipEvent {
   inputs: ['color', 'disableRipple', 'tabIndex'],
   host: {
     'role': 'row',
-    'class': 'mat-mdc-chip-row mat-mdc-focus-indicator mdc-evolution-chip',
+    'class': 'mat-mdc-chip mat-mdc-chip-row mat-mdc-focus-indicator mdc-evolution-chip',
     '[class.mdc-evolution-chip--disabled]': 'disabled',
     '[class.mdc-evolution-chip--with-trailing-action]': '_hasTrailingIcon()',
     '[class.mdc-evolution-chip--with-primary-graphic]': 'leadingIcon',
@@ -62,15 +63,10 @@ export interface MatChipEditedEvent extends MatChipEvent {
     '[id]': 'id',
     '[tabIndex]': 'tabIndex',
     '[attr.aria-disabled]': 'disabled.toString()',
-    // TODO
-    // '(mousedown)': '_mousedown($event)',
-    // '[class.mat-mdc-chip-disabled]': 'disabled',
-    // '[class.mat-mdc-chip-with-avatar]': 'leadingIcon',
-    // '[class.mat-mdc-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
-    // '(dblclick)': '_dblclick($event)',
-    // '(keydown)': '_keydown($event)',
-    // '(focusin)': '_focusin($event)',
-    // '(focusout)': '_focusout($event)'
+    '(mousedown)': '_mousedown($event)',
+    '(keydown)': '_keydown($event)',
+    '(focusin)': '_focusin($event)',
+    '(focusout)': '_focusout($event)',
   },
   providers: [{provide: MatChip, useExisting: MatChipRow}],
   encapsulation: ViewEncapsulation.None,
@@ -101,6 +97,7 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
     changeDetectorRef: ChangeDetectorRef,
     elementRef: ElementRef,
     ngZone: NgZone,
+    focusMonitor: FocusMonitor,
     @Inject(DOCUMENT) _document: any,
     @Optional() dir: Directionality,
     @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
@@ -112,6 +109,7 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
       changeDetectorRef,
       elementRef,
       ngZone,
+      focusMonitor,
       _document,
       dir,
       animationMode,
@@ -119,9 +117,7 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
     );
   }
 
-  override ngAfterContentInit() {
-    super.ngAfterContentInit();
-
+  ngAfterContentInit() {
     if (this.removeIcon) {
       // Defer setting the value in order to avoid the "Expression
       // has changed after it was checked" errors from Angular.
@@ -139,22 +135,20 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
    * is never focused.
    */
   focus(): void {
-    if (this.disabled) {
-      return;
-    }
+    if (!this.disabled) {
+      if (!this._hasFocusInternal) {
+        this._onFocus.next({chip: this});
+      }
 
-    if (!this._hasFocusInternal) {
-      this._onFocus.next({chip: this});
+      this.primaryAction.focus();
     }
-
-    this.primaryAction.focus();
   }
 
   /**
    * Emits a blur event when one of the gridcells loses focus, unless focus moved
    * to the other gridcell.
    */
-  _focusout(event: FocusEvent) {
+  _focusout() {
     if (this._focusoutTimeout) {
       clearTimeout(this._focusoutTimeout);
     }
@@ -163,63 +157,41 @@ export class MatChipRow extends MatChip implements AfterContentInit, AfterViewIn
     this._focusoutTimeout = setTimeout(() => {
       this._hasFocusInternal = false;
       this._onBlur.next({chip: this});
-      // TODO
-      // this._handleInteraction(event);
     });
   }
 
   /** Records that the chip has focus when one of the gridcells is focused. */
-  _focusin(event: FocusEvent) {
+  _focusin() {
     if (this._focusoutTimeout) {
       clearTimeout(this._focusoutTimeout);
       this._focusoutTimeout = null;
     }
 
     this._hasFocusInternal = true;
-
-    // TODO
-    // this._handleInteraction(event);
   }
 
   /** Sends focus to the first gridcell when the user clicks anywhere inside the chip. */
   _mousedown(event: MouseEvent) {
-    if (this._isEditing()) {
-      return;
-    }
+    if (!this._isEditing()) {
+      if (!this.disabled) {
+        this.focus();
+      }
 
-    if (!this.disabled) {
-      this.focus();
+      event.preventDefault();
     }
-
-    event.preventDefault();
   }
-
-  // TODO
-  // _dblclick(event: MouseEvent) {
-  //   this._handleInteraction(event);
-  // }
 
   /** Handles custom key presses. */
   _keydown(event: KeyboardEvent): void {
-    if (this.disabled) {
-      return;
-    }
-    if (this._isEditing()) {
-      // TODO
-      // this._handleInteraction(event);
-      return;
-    }
-    switch (event.keyCode) {
-      case DELETE:
-      case BACKSPACE:
-        // Remove the focused chip
-        this.remove();
-        // Always prevent so page navigation does not occur
-        event.preventDefault();
-        break;
-      // TODO
-      // default:
-      // this._handleInteraction(event);
+    if (
+      !this.disabled &&
+      !this._isEditing() &&
+      (event.keyCode === DELETE || event.keyCode === BACKSPACE)
+    ) {
+      // Remove the focused chip
+      this.remove();
+      // Always prevent so page navigation does not occur
+      event.preventDefault();
     }
   }
 

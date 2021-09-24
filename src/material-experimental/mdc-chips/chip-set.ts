@@ -41,8 +41,6 @@ import {startWith, takeUntil} from 'rxjs/operators';
 import {MatChip, MatChipEvent} from './chip';
 import {emitCustomEvent} from './emit-event';
 
-let uid = 0;
-
 /**
  * Boilerplate for applying mixins to MatChipSet.
  * @docs-private
@@ -71,7 +69,6 @@ const _MatChipSetMixinBase = mixinTabIndex(MatChipSetBase);
     '[attr.role]': 'role',
     // TODO: replace this binding with use of AriaDescriber
     '[attr.aria-describedby]': '_ariaDescribedby || null',
-    '[id]': '_uid',
   },
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -92,6 +89,11 @@ export class MatChipSet
 
   /** Subject that emits when the component has been destroyed. */
   protected _destroyed = new Subject<void>();
+
+  /** Combined stream of all of the child chips' remove events. */
+  get chipDestroyedChanges(): Observable<MatChipEvent> {
+    return merge(...this._chips.map(chip => chip.destroyed));
+  }
 
   /**
    * Implementation of the MDC chip-set adapter interface.
@@ -123,8 +125,9 @@ export class MatChipSet
       this._chipFoundation(index)?.setActionFocus(action, behavior);
     },
     setChipSelectedAtIndex: (index, actionType, isSelected) => {
-      // TODO(crisbeto): setting the trailing action as deselected ends up deselecting the entire
-      // chip. Figure out if this is the intended behavior or a bug in MDC.
+      // Setting the trailing action as deselected ends up deselecting the entire chip.
+      // This is working as expected, but it's not something we want so we only apply the
+      // selected state to the primary chip.
       if (actionType === MDCChipActionType.PRIMARY) {
         this._chipFoundation(index)?.setActionSelected(actionType, isSelected);
       }
@@ -136,9 +139,6 @@ export class MatChipSet
 
   /** The aria-describedby attribute on the chip list for improved a11y. */
   _ariaDescribedby: string;
-
-  /** Uid of the chip set */
-  _uid: string = `mat-mdc-chip-set-${uid++}`;
 
   /**
    * Map from class to whether the class is enabled.
@@ -219,6 +219,18 @@ export class MatChipSet
         });
       }
     });
+
+    this.chipDestroyedChanges.pipe(takeUntil(this._destroyed)).subscribe((event: MatChipEvent) => {
+      const chip = event.chip;
+      const chipIndex = this._chips.toArray().indexOf(event.chip);
+
+      // In case the chip that will be removed is currently focused, we temporarily store
+      // the index in order to be able to determine an appropriate sibling chip that will
+      // receive focus.
+      if (this._isValidIndex(chipIndex) && chip._hasFocus()) {
+        this._lastDestroyedChipIndex = chipIndex;
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -244,18 +256,6 @@ export class MatChipSet
         chip._changeDetectorRef.markForCheck();
       });
     }
-  }
-
-  /** Sets whether the given CSS class should be applied to the MDC chip. */
-  protected _setMdcClass(cssClass: string, active: boolean) {
-    const classes = this._elementRef.nativeElement.classList;
-    active ? classes.add(cssClass) : classes.remove(cssClass);
-    this._changeDetectorRef.markForCheck();
-  }
-
-  /** Adapter method that returns true if the chip set has the given MDC class. */
-  protected _hasMdcClass(className: string) {
-    return this._elementRef.nativeElement.classList.contains(className);
   }
 
   /** Dummy method for subclasses to override. Base chip set cannot be focused. */
