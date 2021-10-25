@@ -1,11 +1,189 @@
 @use '@material/chips/chip' as mdc-chip;
+@use '@material/chips/chip-theme' as mdc-chip-theme;
 @use '@material/chips/chip-set' as mdc-chip-set;
 @use '@material/ripple' as mdc-ripple;
 @use '../../material/core/style/layout-common';
 @use '../../cdk/a11y';
 @use '../mdc-helpers/mdc-helpers';
 
-@include mdc-chip.without-ripple-styles();
+@function _get-theme(
+  $on-surface-state-content,
+  $on-surface,
+  $on-surface-state-layer,
+  $on-secondary-state-content,
+  $on-secondary-state-layer,
+  $secondary,
+  $surface,
+  $hairline,
+  $primary-state-content,
+  $on-secondary,
+  $on-surface-variant,
+  $shadow,
+  $primary) {
+  // $on-surface-state-content: map.get($color-theme-map, on-surface-state-content);
+  // $on-surface: map.get($color-theme-map, on-surface);
+  // $on-surface-state-layer: map.get($color-theme-map, on-surface-state-layer);
+  // $on-secondary-state-content: map.get($color-theme-map, on-secondary-state-content);
+  // $on-secondary-state-layer: map.get($color-theme-map, on-secondary-state-layer);
+  // $secondary: map.get($color-theme-map, secondary);
+  // $surface: map.get($color-theme-map, surface);
+  // $hairline: map.get($color-theme-map, hairline);
+  // $primary-state-content: map.get($color-theme-map, primary-state-content);
+  // $on-secondary: map.get($color-theme-map, on-secondary);
+  // $on-surface-variant: map.get($color-theme-map, on-surface-variant);
+  // $shadow: map.get($color-theme-map, shadow);
+  // $primary: map.get($color-theme-map, primary);
+
+  @return (
+    container-elevation: 0,
+    elevated-disabled-container-elevation: 0,
+    elevated-focus-container-elevation: 1,
+    elevated-hover-container-elevation: 3,
+    elevated-pressed-container-elevation: 6,
+    flat-container-elevation: 0,
+    flat-selected-focus-container-elevation: 0,
+    flat-selected-hover-container-elevation: 1,
+    flat-selected-pressed-container-elevation: 3,
+    flat-unselected-focus-container-elevation: 0,
+    flat-unselected-hover-container-elevation: 0,
+    flat-unselected-pressed-container-elevation: 0,
+    elevated-container-elevation: 1,
+
+    elevated-selected-container-elevation: 1,
+
+    // TODO: MDC logs a warning because these aren't defined, but at the same
+    // time it throws an error because they aren't in the validation theme.
+    // flat-unselected-container-elevation: 0,
+    // flat-unselected-disabled-container-elevation: 0,
+    // flat-selected-container-elevation: 0,
+    // flat-selected-disabled-container-elevation: 0,
+
+    disabled-label-text-color: $on-surface,
+    disabled-outline-color: $on-surface,
+    elevated-disabled-container-color: $on-surface,
+    flat-disabled-outline-color: $on-surface,
+    flat-disabled-unselected-outline-color: $on-surface,
+    label-text-color: $on-surface,
+    with-icon-disabled-icon-color: $on-surface,
+    with-leading-icon-disabled-leading-icon-color: $on-surface,
+    with-trailing-icon-disabled-trailing-icon-color: $on-surface,
+
+    flat-focus-outline-color: $on-surface-state-content,
+    flat-unselected-focus-outline-color: $on-surface-state-content,
+    focus-label-text-color: $on-surface-state-content,
+    focus-outline-color: $on-surface-state-content,
+    hover-label-text-color: $on-surface-state-content,
+    pressed-label-text-color: $on-surface-state-content,
+    unselected-focus-label-text-color: $on-surface-state-content,
+    unselected-hover-label-text-color: $on-surface-state-content,
+    unselected-pressed-label-text-color: $on-surface-state-content,
+    with-icon-unselected-focus-icon-color: $on-surface-state-content,
+    with-icon-unselected-hover-icon-color: $on-surface-state-content,
+    with-icon-unselected-pressed-icon-color: $on-surface-state-content,
+    with-leading-icon-pressed-leading-icon-color: $on-surface-state-content,
+    with-leading-icon-focus-leading-icon-color: $on-surface-state-content,
+    with-leading-icon-hover-leading-icon-color: $on-surface-state-content,
+    with-trailing-icon-focus-trailing-icon-color: $on-surface-state-content,
+    with-trailing-icon-hover-trailing-icon-color: $on-surface-state-content,
+    with-trailing-icon-pressed-trailing-icon-color: $on-surface-state-content,
+
+    focus-state-layer-color: $on-surface-state-layer,
+    hover-state-layer-color: $on-surface-state-layer,
+    pressed-state-layer-color: $on-surface-state-layer,
+    selected-pressed-state-layer-color: $on-surface-state-layer,
+    unselected-focus-state-layer-color: $on-surface-state-layer,
+    unselected-hover-state-layer-color: $on-surface-state-layer,
+
+    elevated-selected-container-color: $secondary,
+    flat-selected-container-color: $secondary,
+
+    elevated-container-color: $surface,
+    elevated-unselected-container-color: $surface,
+
+    flat-outline-color: $hairline,
+    flat-unselected-outline-color: $hairline,
+    outline-color: $hairline,
+
+    selected-focus-label-text-color: $on-secondary-state-content,
+    selected-hover-label-text-color: $on-secondary-state-content,
+    selected-pressed-label-text-color: $on-secondary-state-content,
+    with-icon-selected-focus-icon-color: $on-secondary-state-content,
+    with-icon-selected-hover-icon-color: $on-secondary-state-content,
+    with-icon-selected-pressed-icon-color: $on-secondary-state-content,
+
+    selected-focus-state-layer-color: $on-secondary-state-layer,
+    selected-hover-state-layer-color: $on-secondary-state-layer,
+    unselected-pressed-state-layer-color: $on-secondary-state-layer,
+
+    with-icon-focus-icon-color: $primary-state-content,
+    with-icon-hover-icon-color: $primary-state-content,
+    with-icon-pressed-icon-color: $primary-state-content,
+
+    selected-label-text-color: $on-secondary,
+    with-icon-selected-icon-color: $on-secondary,
+
+    unselected-label-text-color: $on-surface-variant,
+    with-icon-unselected-icon-color: $on-surface-variant,
+    with-leading-icon-leading-icon-color: $on-surface-variant,
+    with-trailing-icon-trailing-icon-color: $on-surface-variant,
+
+    container-shadow-color: $shadow,
+    elevated-container-shadow-color: $shadow,
+
+    with-icon-icon-color: $primary,
+
+    // TODO: check if these can't be taken from the typography config.
+    label-text-font: 'Roboto, "Helvetica Neue", sans-serif',
+    label-text-line-height: 20px,
+    label-text-size: 14px,
+    label-text-tracking: 0.25px,
+    label-text-weight: 500,
+
+    // Non-theme styles
+    unselected-pressed-state-layer-opacity: 0.1,
+    with-avatar-avatar-shape: (
+      family: 'rounded',
+      radius: (14px, 14px, 14px, 14px)
+    ),
+    with-icon-icon-size: 18px,
+    with-leading-icon-disabled-leading-icon-opacity: 0.38,
+    with-leading-icon-leading-icon-size: 20px,
+    with-trailing-icon-disabled-trailing-icon-opacity: 0.38,
+    with-avatar-avatar-size: 28px,
+    with-avatar-disabled-avatar-opacity: 0.38,
+    with-icon-disabled-icon-opacity: 0.38,
+    with-trailing-icon-trailing-icon-size: 18px,
+    pressed-state-layer-opacity: 0.1,
+    selected-focus-state-layer-opacity: 0.12,
+    selected-hover-state-layer-opacity: 0.04,
+    selected-pressed-state-layer-opacity: 0.1,
+    unselected-focus-state-layer-opacity: 0.12,
+    unselected-hover-state-layer-opacity: 0.04,
+    flat-disabled-outline-opacity: 0.12,
+    flat-disabled-unselected-outline-opacity: 0.12,
+    flat-selected-outline-width: 0,
+    focus-state-layer-opacity: 0.12,
+    hover-state-layer-opacity: 0.04,
+    outline-width: 1px,
+    flat-unselected-outline-width: 1px,
+    flat-outline-width: 1px,
+    disabled-label-text-opacity: 0.38,
+    disabled-outline-opacity: 0.12,
+    elevated-disabled-container-opacity: 0.12,
+    container-height: 32px,
+    container-shape: (
+      family: 'rounded',
+      radius: (16px, 16px, 16px, 16px)
+    ),
+
+    // TODO: these don't appear in MDC's internal mappings either.
+    flat-disabled-selected-outline-color: null,
+    flat-disabled-selected-outline-opacity: null,
+    flat-selected-outline-color: null,
+  );
+}
+
+@include mdc-chip.without-ripple-styles($query: mdc-helpers.$mat-base-styles-query);
 @include mdc-chip-set.core-styles();
 
 // TODO: remove icon color and potentially focus styles.
@@ -25,6 +203,21 @@
   //     transition: none;
   //   }
   // }
+  @include mdc-chip-theme.theme-styles(_get-theme(
+    $on-surface-state-content: rgb(5, 5, 5),
+    $on-surface: rgb(5, 5, 5),
+    $on-surface-state-layer: rgb(5, 5, 5),
+    $on-secondary-state-content: #0d47a1, // gm-ref-palette.$blue900
+    $on-secondary-state-layer: #1976d2, // gm-ref-palette.$blue700
+    $secondary: #bbdefb, // gm-ref-palette.$blue100
+    $surface: #fff,
+    $hairline: #9e9e9e, // gm-ref-palette.$grey500
+    $primary-state-content: #0d47a1, // gm-ref-palette.$blue900
+    $on-secondary: #1976d2, // gm-ref-palette.$blue700
+    $on-surface-variant: #424242, // gm-ref-palette.$grey800
+    $shadow: #424242, // gm-ref-palette.$grey800
+    $primary: #1565c0 // gm-ref-palette.$blue800
+  ));
 
   @include a11y.high-contrast(active, off) {
     outline: solid 1px;
