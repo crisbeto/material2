@@ -23,7 +23,7 @@ import {MatRippleModule} from '@angular/material/core';
 import {By} from '@angular/platform-browser';
 import {MatInkBar} from './ink-bar';
 import {MatTabHeader} from './tab-header';
-import {MatTabLabelWrapper} from './tab-label-wrapper';
+import {MatTabHeaderItem} from './tab-header-item';
 import {Subject} from 'rxjs';
 import {ObserversModule, MutationObserverFactory} from '@angular/cdk/observers';
 
@@ -38,7 +38,7 @@ describe('MatTabHeader', () => {
       dir = 'ltr';
       TestBed.configureTestingModule({
         imports: [CommonModule, PortalModule, MatRippleModule, ScrollingModule, ObserversModule],
-        declarations: [MatTabHeader, MatInkBar, MatTabLabelWrapper, SimpleTabHeaderApp],
+        declarations: [MatTabHeader, MatInkBar, MatTabHeaderItem, SimpleTabHeaderApp],
         providers: [
           ViewportRuler,
           {provide: Directionality, useFactory: () => ({value: dir, change: change})},
@@ -690,12 +690,11 @@ interface Tab {
                (indexFocused)="focusedIndex = $event"
                (selectFocusedIndex)="selectedIndex = $event"
                [disablePagination]="disablePagination">
-      <div matTabLabelWrapper class="label-content" style="min-width: 30px; width: 30px"
-           *ngFor="let tab of tabs; let i = index"
-           [disabled]="!!tab.disabled"
-           (click)="selectedIndex = i">
+      <mat-tab-header-item class="label-content" style="min-width: 30px; width: 30px"
+           *ngFor="let tab of tabs;"
+           [disabled]="!!tab.disabled">
          {{tab.label}}
-      </div>
+      </mat-tab-header-item>
     </mat-tab-header>
   </div>
   `,

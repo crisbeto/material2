@@ -276,6 +276,11 @@ export abstract class MatPaginatedTabHeader
     }
   }
 
+  _itemClicked(index: number) {
+    this.selectedIndex = this.focusIndex = index;
+    this.selectFocusedIndex.emit(index);
+  }
+
   /**
    * Callback for when the MutationObserver detects that the content has changed.
    */

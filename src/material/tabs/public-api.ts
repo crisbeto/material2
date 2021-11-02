@@ -17,7 +17,7 @@ export {
   MatTabBodyPortal,
 } from './tab-body';
 export {MatTabHeader, _MatTabHeaderBase} from './tab-header';
-export {MatTabLabelWrapper} from './tab-label-wrapper';
+export {MatTabHeaderItem} from './tab-header-item';
 export {MatTab, MAT_TAB_GROUP} from './tab';
 export {MatTabLabel, MAT_TAB} from './tab-label';
 export {MatTabNav, MatTabLink, _MatTabNavBase, _MatTabLinkBase} from './tab-nav-bar/index';

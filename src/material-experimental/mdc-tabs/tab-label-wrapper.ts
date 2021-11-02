@@ -8,7 +8,9 @@
 
 import {Directive, ElementRef, Inject, Input, OnDestroy, OnInit} from '@angular/core';
 import {DOCUMENT} from '@angular/common';
-import {MatTabLabelWrapper as BaseMatTabLabelWrapper} from '@angular/material/tabs';
+
+// Ignore this for now, I just reused the same class to avoid TS compilation errors.
+import {MatTabHeaderItem as BaseMatTabLabelWrapper} from '@angular/material/tabs';
 import {MatInkBarFoundation, MatInkBarItem} from './ink-bar';
 import {BooleanInput, coerceBooleanProperty} from '@angular/cdk/coercion';
 
@@ -42,7 +44,8 @@ export class MatTabLabelWrapper
   }
 
   constructor(elementRef: ElementRef, @Inject(DOCUMENT) _document: any) {
-    super(elementRef);
+    // TODO: actually implement these nulls
+    super(elementRef, null!, null!);
     this._document = _document;
     this._foundation = new MatInkBarFoundation(elementRef.nativeElement, this._document);
   }
@@ -51,7 +54,7 @@ export class MatTabLabelWrapper
     this._foundation.init();
   }
 
-  ngOnDestroy() {
+  override ngOnDestroy() {
     this._foundation.destroy();
   }
 

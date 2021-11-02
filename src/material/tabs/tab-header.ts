@@ -14,7 +14,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ContentChildren,
   ElementRef,
   NgZone,
   OnDestroy,
@@ -30,7 +29,7 @@ import {
 import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
 import {BooleanInput, coerceBooleanProperty} from '@angular/cdk/coercion';
 import {MatInkBar} from './ink-bar';
-import {MatTabLabelWrapper} from './tab-label-wrapper';
+import {MatTabHeaderItem} from './tab-header-item';
 import {Platform} from '@angular/cdk/platform';
 import {MatPaginatedTabHeader} from './paginated-tab-header';
 
@@ -92,13 +91,13 @@ export abstract class _MatTabHeaderBase
     '[class.mat-tab-header-rtl]': "_getLayoutDirection() == 'rtl'",
   },
 })
-export class MatTabHeader extends _MatTabHeaderBase {
-  @ContentChildren(MatTabLabelWrapper, {descendants: false}) _items: QueryList<MatTabLabelWrapper>;
+export class MatTabHeader extends _MatTabHeaderBase implements OnDestroy {
   @ViewChild(MatInkBar, {static: true}) _inkBar: MatInkBar;
   @ViewChild('tabListContainer', {static: true}) _tabListContainer: ElementRef;
   @ViewChild('tabList', {static: true}) _tabList: ElementRef;
   @ViewChild('nextPaginator') _nextPaginator: ElementRef<HTMLElement>;
   @ViewChild('previousPaginator') _previousPaginator: ElementRef<HTMLElement>;
+  _items = new QueryList<MatTabHeaderItem>();
 
   constructor(
     elementRef: ElementRef,
@@ -110,6 +109,40 @@ export class MatTabHeader extends _MatTabHeaderBase {
     @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
   ) {
     super(elementRef, changeDetectorRef, viewportRuler, dir, ngZone, platform, animationMode);
+  }
+
+  // Note: _registerItem and _removeItem are a little hacky, but they help us avoid all of the
+  // 'Changed after checked' errors due to `MatTabHeaderItem` having to read values from `_items`.
+
+  _registerItem(item: MatTabHeaderItem) {
+    this._items.reset(this._sortItems([...this._items.toArray(), item]));
+  }
+
+  _removeItem(item: MatTabHeaderItem) {
+    const items = this._items.toArray();
+    const index = items.indexOf(item);
+
+    if (index > -1) {
+      items.splice(index, 1);
+      this._items.reset(this._sortItems(items));
+    }
+  }
+
+  override ngOnDestroy() {
+    super.ngOnDestroy();
+    this._items.destroy();
+  }
+
+  // The items need to be sorted, because an `ngFor` might
+  // register a new item in the middle of the list.
+  private _sortItems(items: MatTabHeaderItem[]): MatTabHeaderItem[] {
+    return items.sort((a, b) => {
+      const documentPosition = a.elementRef.nativeElement.compareDocumentPosition(
+        b.elementRef.nativeElement,
+      );
+      // tslint:disable-next-line:no-bitwise
+      return documentPosition & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
   }
 
   static ngAcceptInputType_disableRipple: BooleanInput;
