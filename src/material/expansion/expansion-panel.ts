@@ -36,7 +36,7 @@ import {
 } from '@angular/core';
 import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
 import {Subject} from 'rxjs';
-import {distinctUntilChanged, filter, startWith, take} from 'rxjs/operators';
+import {distinctUntilChanged, filter, startWith, take, takeUntil} from 'rxjs/operators';
 import {MatAccordionBase, MatAccordionTogglePosition, MAT_ACCORDION} from './accordion-base';
 import {matExpansionAnimations} from './expansion-animations';
 import {MatExpansionPanelContent} from './expansion-panel-content';
@@ -171,15 +171,24 @@ export class MatExpansionPanel
           return x.fromState === y.fromState && x.toState === y.toState;
         }),
       )
-      .subscribe(event => {
-        if (event.fromState !== 'void') {
-          if (event.toState === 'expanded') {
+      .subscribe(({toState, fromState}) => {
+        if (fromState !== 'void') {
+          if (toState === 'expanded') {
             this.afterExpand.emit();
-          } else if (event.toState === 'collapsed') {
+          } else if (toState === 'collapsed') {
             this.afterCollapse.emit();
           }
         }
+
+        this._toggleBodyVisibility(toState === 'expanded');
       });
+
+    this.expandedChange.pipe(takeUntil(this.destroyed)).subscribe(isExpanded => {
+      // We need to show the body as early as possible so Angular has time to measure its height.
+      if (isExpanded) {
+        this._toggleBodyVisibility(true);
+      }
+    });
 
     if (defaultOptions) {
       this.hideToggle = defaultOptions.hideToggle;
@@ -248,6 +257,12 @@ export class MatExpansionPanel
     }
 
     return false;
+  }
+
+  private _toggleBodyVisibility(isVisible: boolean) {
+    if (this._body) {
+      this._body.nativeElement.style.display = isVisible ? '' : 'none';
+    }
   }
 
   static ngAcceptInputType_hideToggle: BooleanInput;

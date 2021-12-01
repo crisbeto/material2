@@ -55,8 +55,8 @@ export const matExpansionAnimations: {
   ]),
   /** Animation that expands and collapses the panel content. */
   bodyExpansion: trigger('bodyExpansion', [
-    state('collapsed, void', style({height: '0px', visibility: 'hidden'})),
-    state('expanded', style({height: '*', visibility: 'visible'})),
+    state('collapsed, void', style({height: '0px'})),
+    state('expanded', style({height: '*'})),
     transition(
       'expanded <=> collapsed, void => collapsed',
       animate(EXPANSION_PANEL_ANIMATION_TIMING),
