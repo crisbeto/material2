@@ -90,16 +90,16 @@ export class ComponentPortal<T> extends Portal<ComponentRef<T>> {
    * This is different from where the component *renders*, which is determined by the PortalOutlet.
    * The origin is necessary when the host is outside of the Angular application context.
    */
-  viewContainerRef?: ViewContainerRef | null;
+  viewContainerRef?: ViewContainerRef | null | undefined;
 
   /** [Optional] Injector used for the instantiation of the component. */
-  injector?: Injector | null;
+  injector?: Injector | null | undefined;
 
   /**
    * Alternate `ComponentFactoryResolver` to use when resolving the associated component.
    * Defaults to using the resolver from the outlet that the portal is attached to.
    */
-  componentFactoryResolver?: ComponentFactoryResolver | null;
+  componentFactoryResolver?: ComponentFactoryResolver | null | undefined;
 
   constructor(
     component: ComponentType<T>,

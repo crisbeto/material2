@@ -78,7 +78,7 @@ export const enum _ViewRepeaterOperation {
  */
 export interface _ViewRepeaterItemChange<R, C> {
   /** The view's context after it was changed. */
-  context?: C;
+  context?: C | undefined;
   /** Indicates how the view was changed. */
   operation: _ViewRepeaterOperation;
   /** The view's corresponding change record. */

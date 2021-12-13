@@ -98,7 +98,10 @@ export class UnitTestElement implements TestElement {
    */
   click(relativeX: number, relativeY: number, modifiers?: ModifierKeys): Promise<void>;
   async click(
-    ...args: [ModifierKeys?] | ['center', ModifierKeys?] | [number, number, ModifierKeys?]
+    ...args:
+      | [(ModifierKeys | undefined)?]
+      | ['center', (ModifierKeys | undefined)?]
+      | [number, number, (ModifierKeys | undefined)?]
   ): Promise<void> {
     await this._dispatchMouseEventSequence('click', args, 0);
     await this._stabilize();
@@ -112,7 +115,10 @@ export class UnitTestElement implements TestElement {
    */
   rightClick(relativeX: number, relativeY: number, modifiers?: ModifierKeys): Promise<void>;
   async rightClick(
-    ...args: [ModifierKeys?] | ['center', ModifierKeys?] | [number, number, ModifierKeys?]
+    ...args:
+      | [(ModifierKeys | undefined)?]
+      | ['center', (ModifierKeys | undefined)?]
+      | [number, number, (ModifierKeys | undefined)?]
   ): Promise<void> {
     await this._dispatchMouseEventSequence('contextmenu', args, 2);
     await this._stabilize();
@@ -280,14 +286,20 @@ export class UnitTestElement implements TestElement {
     // need to support Safari 12 at time of writing. Safari 12 does not have support for this,
     // so we need to conditionally create and dispatch these events based on feature detection.
     if (typeof PointerEvent !== 'undefined' && PointerEvent) {
-      dispatchPointerEvent(this.element, name, clientX, clientY, {isPrimary: true, button});
+      dispatchPointerEvent(this.element, name, clientX, clientY, {
+        isPrimary: true,
+        button: button!,
+      });
     }
   }
 
   /** Dispatches all the events that are part of a mouse event sequence. */
   private async _dispatchMouseEventSequence(
     name: string,
-    args: [ModifierKeys?] | ['center', ModifierKeys?] | [number, number, ModifierKeys?],
+    args:
+      | [(ModifierKeys | undefined)?]
+      | ['center', (ModifierKeys | undefined)?]
+      | [number, number, (ModifierKeys | undefined)?],
     button?: number,
   ) {
     let clientX: number | undefined = undefined;

@@ -40,10 +40,10 @@ export function createMouseEvent(
     screenY,
     clientX,
     clientY,
-    ctrlKey: modifiers.control,
-    altKey: modifiers.alt,
-    shiftKey: modifiers.shift,
-    metaKey: modifiers.meta,
+    ctrlKey: modifiers.control ?? false,
+    altKey: modifiers.alt ?? false,
+    shiftKey: modifiers.shift ?? false,
+    metaKey: modifiers.meta ?? false,
     button: button,
     buttons: 1,
   });
@@ -122,10 +122,10 @@ export function createKeyboardEvent(
     view: window,
     keyCode: keyCode,
     key: key,
-    shiftKey: modifiers.shift,
-    metaKey: modifiers.meta,
-    altKey: modifiers.alt,
-    ctrlKey: modifiers.control,
+    shiftKey: modifiers.shift ?? false,
+    metaKey: modifiers.meta ?? false,
+    altKey: modifiers.alt ?? false,
+    ctrlKey: modifiers.control ?? false,
   });
 }
 
