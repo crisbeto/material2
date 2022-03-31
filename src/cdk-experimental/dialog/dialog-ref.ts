@@ -6,12 +6,10 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {OverlayRef, GlobalPositionStrategy, OverlaySizeConfig} from '@angular/cdk/overlay';
+import {OverlayRef} from '@angular/cdk/overlay';
 import {ESCAPE, hasModifierKey} from '@angular/cdk/keycodes';
-import {Observable} from 'rxjs';
-import {map, filter} from 'rxjs/operators';
-import {DialogPosition} from './dialog-config';
-import {CdkDialogContainer} from './dialog-container';
+import {Observable, Subject} from 'rxjs';
+import {DialogConfig} from './dialog-config';
 
 /** Unique id for the created dialog. */
 let uniqueId = 0;
@@ -20,130 +18,84 @@ let uniqueId = 0;
  * Reference to a dialog opened via the Dialog service.
  */
 export class DialogRef<T, R = any> {
-  /** The instance of the component in the dialog. */
+  /** The instance of component opened into the dialog. */
   componentInstance: T;
 
   /** Whether the user is allowed to close the dialog. */
   disableClose: boolean | undefined;
 
-  /** Result to be passed to afterClosed. */
-  private _result: R | undefined;
+  /** Emits when the dialog has been closed. */
+  readonly closed: Observable<R | undefined> = new Subject<R | undefined>();
 
-  constructor(
-    public _overlayRef: OverlayRef,
-    protected _containerInstance: CdkDialogContainer,
-    readonly id: string = `dialog-${uniqueId++}`,
-  ) {
-    // If the dialog has a backdrop, handle clicks from the backdrop.
-    if (_containerInstance._config.hasBackdrop) {
-      _overlayRef.backdropClick().subscribe(() => {
-        if (!this.disableClose) {
-          this.close();
-        }
-      });
-    }
+  /** Emits when the backdrop of the dialog is clicked. */
+  readonly backdropClick: Observable<MouseEvent>;
 
-    this.beforeClosed().subscribe(() => {
-      this._overlayRef.detachBackdrop();
-    });
+  /** Emits when on keyboard events within the dialog. */
+  readonly keydownEvents: Observable<KeyboardEvent>;
 
-    this.afterClosed().subscribe(() => {
-      this._overlayRef.detach();
-      this._overlayRef.dispose();
-      this.componentInstance = null!;
-    });
+  /** Unique ID for the dialog. */
+  readonly id: string;
 
-    // Close when escape keydown event occurs
-    _overlayRef
-      .keydownEvents()
-      .pipe(
-        filter(event => {
-          return event.keyCode === ESCAPE && !this.disableClose && !hasModifierKey(event);
-        }),
-      )
-      .subscribe(event => {
+  constructor(private _overlayRef: OverlayRef, readonly config: DialogConfig) {
+    this.disableClose = config.disableClose;
+    this.backdropClick = _overlayRef.backdropClick();
+    this.keydownEvents = _overlayRef.keydownEvents();
+    this.id = config.id || `cdk-dialog-${uniqueId++}`;
+
+    this.keydownEvents.subscribe(event => {
+      if (event.keyCode === ESCAPE && !this.disableClose && !hasModifierKey(event)) {
         event.preventDefault();
         this.close();
-      });
-  }
+      }
+    });
 
-  /** Gets an observable that emits when the overlay's backdrop has been clicked. */
-  backdropClick(): Observable<MouseEvent> {
-    return this._overlayRef.backdropClick();
+    this.backdropClick.subscribe(() => {
+      if (!this.disableClose) {
+        this.close();
+      }
+    });
   }
 
   /**
    * Close the dialog.
    * @param dialogResult Optional result to return to the dialog opener.
    */
-  close(dialogResult?: R): void {
-    this._result = dialogResult;
-    this._containerInstance._startExiting();
+  close(result?: R): void {
+    const closedSubject = this.closed as Subject<R | undefined>;
+    this._overlayRef.dispose();
+    closedSubject.next(result);
+    closedSubject.complete();
   }
 
   /**
    * Updates the dialog's position.
    * @param position New dialog position.
    */
-  updatePosition(position?: DialogPosition): this {
-    let strategy = this._getPositionStrategy();
-
-    if (position && (position.left || position.right)) {
-      position.left ? strategy.left(position.left) : strategy.right(position.right);
-    } else {
-      strategy.centerHorizontally();
-    }
-
-    if (position && (position.top || position.bottom)) {
-      position.top ? strategy.top(position.top) : strategy.bottom(position.bottom);
-    } else {
-      strategy.centerVertically();
-    }
-
-    this._overlayRef.updatePosition();
-
-    return this;
-  }
-
-  /**
-   * Gets an observable that emits when keydown events are targeted on the overlay.
-   */
-  keydownEvents(): Observable<KeyboardEvent> {
-    return this._overlayRef.keydownEvents();
-  }
-
-  /**
-   * Updates the dialog's width and height, defined, min and max.
-   * @param size New size for the overlay.
-   */
-  updateSize(size: OverlaySizeConfig): this {
-    this._overlayRef.updateSize(size);
+  updatePosition(): this {
     this._overlayRef.updatePosition();
     return this;
   }
 
-  /** Fetches the position strategy object from the overlay ref. */
-  private _getPositionStrategy(): GlobalPositionStrategy {
-    return this._overlayRef.getConfig().positionStrategy as GlobalPositionStrategy;
+  /**
+   * Updates the dialog's width and height.
+   * @param width New width of the dialog.
+   * @param height New height of the dialog.
+   */
+  updateSize(width: string = '', height: string = ''): this {
+    this._overlayRef.updateSize({width, height});
+    this._overlayRef.updatePosition();
+    return this;
   }
 
-  /** Gets an observable that emits when dialog begins opening. */
-  beforeOpened(): Observable<void> {
-    return this._containerInstance._beforeEnter;
+  /** Add a CSS class or an array of classes to the overlay pane. */
+  addPanelClass(classes: string | string[]): this {
+    this._overlayRef.addPanelClass(classes);
+    return this;
   }
 
-  /** Gets an observable that emits when dialog is finished opening. */
-  afterOpened(): Observable<void> {
-    return this._containerInstance._afterEnter;
-  }
-
-  /** Gets an observable that emits when dialog begins closing. */
-  beforeClosed(): Observable<R | undefined> {
-    return this._containerInstance._beforeExit.pipe(map(() => this._result));
-  }
-
-  /** Gets an observable that emits when dialog is finished closing. */
-  afterClosed(): Observable<R | undefined> {
-    return this._containerInstance._afterExit.pipe(map(() => this._result));
+  /** Remove a CSS class or an array of classes from the overlay pane. */
+  removePanelClass(classes: string | string[]): this {
+    this._overlayRef.removePanelClass(classes);
+    return this;
   }
 }
