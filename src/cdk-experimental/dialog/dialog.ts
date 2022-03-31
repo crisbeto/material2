@@ -31,30 +31,37 @@ import {
 } from '@angular/cdk/overlay';
 import {startWith} from 'rxjs/operators';
 
-import {DIALOG_DATA, DIALOG_REF} from './dialog-injectors';
+import {DIALOG_DATA} from './dialog-injectors';
 
-@Injectable()
-export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutlet>>
-  implements OnDestroy
-{
+export abstract class DialogBase<
+  R extends {id: string; componentInstance: unknown},
+  C extends BasePortalOutlet,
+> {
   private _openDialogsAtThisLevel: R[] = [];
   private readonly _afterAllClosedAtThisLevel = new Subject<void>();
   private readonly _afterOpenedAtThisLevel = new Subject<R>();
   private _ariaHiddenElements = new Map<Element, string | null>();
   private _scrollStrategy: () => ScrollStrategy;
-  protected readonly _containerType: C = CdkDialogContainer as unknown as C;
+  protected abstract readonly _containerType: Type<C>;
+  protected abstract _getClosedStream(ref: R): Observable<unknown>;
+  protected abstract _closeDialog(ref: R): void;
+  protected abstract _createDialogRef(
+    overlayRef: OverlayRef,
+    config: DialogConfig,
+    containerInstance: BasePortalOutlet,
+  ): R;
 
   /** Keeps track of the currently-open dialogs. */
-  get openDialogs(): R[] {
+  protected get openDialogs(): R[] {
     return this._parentDialog ? this._parentDialog.openDialogs : this._openDialogsAtThisLevel;
   }
 
   /** Stream that emits when a dialog has been opened. */
-  get afterOpened(): Subject<R> {
+  protected get afterOpened(): Subject<R> {
     return this._parentDialog ? this._parentDialog.afterOpened : this._afterOpenedAtThisLevel;
   }
 
-  _getAfterAllClosed(): Subject<void> {
+  protected _getAfterAllClosed(): Subject<void> {
     const parent = this._parentDialog;
     return parent ? parent._getAfterAllClosed() : this._afterAllClosedAtThisLevel;
   }
@@ -63,44 +70,28 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
    * Stream that emits when all open dialog have finished closing.
    * Will emit on subscribe if there are no open dialogs to begin with.
    */
-  readonly afterAllClosed: Observable<void> = defer(() =>
+  protected readonly afterAllClosed: Observable<void> = defer(() =>
     this.openDialogs.length
       ? this._getAfterAllClosed()
       : this._getAfterAllClosed().pipe(startWith(undefined)),
   ) as Observable<any>;
 
-  constructor(
-    private _overlay: Overlay,
+  protected constructor(
+    protected _overlay: Overlay,
     private _injector: Injector,
-    private _defaultOptions: DialogConfig | undefined,
-    private _parentDialog: Dialog<R, C> | undefined,
+    private _defaultOptions: DialogConfig | undefined, // TODO: is this still necessary?
+    private _parentDialog: DialogBase<R, C> | undefined,
     private _overlayContainer: OverlayContainer,
     scrollStrategy: any,
   ) {
     this._scrollStrategy = scrollStrategy;
   }
 
-  /**
-   * Opens a modal dialog containing the given component.
-   * @param component Type of the component to load into the dialog.
-   * @param config Extra configuration options.
-   * @returns Reference to the newly-opened dialog.
-   */
-  open<T, D = any>(component: ComponentType<T>, config?: DialogConfig<D>): R;
-
-  /**
-   * Opens a modal dialog containing the given template.
-   * @param template TemplateRef to instantiate as the dialog content.
-   * @param config Extra configuration options.
-   * @returns Reference to the newly-opened dialog.
-   */
-  open<T, D = any>(template: TemplateRef<T>, config?: DialogConfig<D>): R;
-
-  open<T, D = any>(
+  protected openFrom<T, D = any>(
     componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
     config?: DialogConfig<D>,
   ): R {
-    config = {...(this._defaultOptions || new DialogConfig()), ...config};
+    config = {...(this._defaultOptions || new DialogConfig()), ...config} as DialogConfig<D>;
 
     if (
       config.id &&
@@ -125,7 +116,7 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
     }
 
     this.openDialogs.push(dialogRef);
-    dialogRef.closed.subscribe(() => this._removeOpenDialog(dialogRef));
+    this._getClosedStream(dialogRef).subscribe(() => this._removeOpenDialog(dialogRef));
     this.afterOpened.next(dialogRef);
 
     return dialogRef;
@@ -134,7 +125,7 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
   /**
    * Closes all of the currently-open dialogs.
    */
-  closeAll(): void {
+  protected closeAll(): void {
     this._closeDialogs(this.openDialogs);
   }
 
@@ -142,11 +133,11 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
    * Finds an open dialog by its id.
    * @param id ID to use when looking up the dialog.
    */
-  getDialogById(id: string): R | undefined {
+  protected getDialogById(id: string): R | undefined {
     return this.openDialogs.find(dialog => dialog.id === id);
   }
 
-  ngOnDestroy() {
+  protected destroy() {
     // Only close the dialogs at this level on destroy
     // since the parent service may still be active.
     this._closeDialogs(this._openDialogsAtThisLevel);
@@ -171,7 +162,9 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
    */
   private _getOverlayConfig(config: DialogConfig): OverlayConfig {
     const state = new OverlayConfig({
-      positionStrategy: this._overlay.position().global(),
+      positionStrategy:
+        config.positionStrategy ||
+        this._overlay.position().global().centerHorizontally().centerVertically(),
       scrollStrategy: config.scrollStrategy || this._scrollStrategy(),
       panelClass: config.panelClass,
       hasBackdrop: config.hasBackdrop,
@@ -180,6 +173,8 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
       minHeight: config.minHeight,
       maxWidth: config.maxWidth,
       maxHeight: config.maxHeight,
+      width: config.width,
+      height: config.height,
       disposeOnNavigation: config.closeOnNavigation,
     });
 
@@ -200,7 +195,10 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
     const userInjector = config.injector ?? config.viewContainerRef?.injector;
     const injector = Injector.create({
       parent: userInjector || this._injector,
-      providers: [{provide: DialogConfig, useValue: config}],
+      providers: [
+        {provide: DialogConfig, useValue: config},
+        {provide: OverlayRef, useValue: overlay},
+      ],
     });
 
     const containerPortal = new ComponentPortal(
@@ -231,11 +229,8 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
   ): R {
     // Create a reference to the dialog we're creating in order to give the user a handle
     // to modify and close it.
-    const dialogRef = this._createDialogRef(overlayRef, config);
-    const injector = this._createInjector(config, [
-      {provide: DIALOG_DATA, useValue: config.data},
-      {provide: DIALOG_REF, useValue: dialogRef},
-    ]);
+    const dialogRef = this._createDialogRef(overlayRef, config, dialogContainer);
+    const injector = this._createInjector(dialogContainer, config, dialogRef);
 
     if (componentOrTemplateRef instanceof TemplateRef) {
       dialogContainer.attachTemplatePortal(
@@ -261,8 +256,6 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
       dialogRef.componentInstance = contentRef.instance;
     }
 
-    dialogRef.updateSize(config.width, config.height).updatePosition();
-
     return dialogRef;
   }
 
@@ -273,8 +266,17 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
    * @param providers Providers to attach to the dialog injector.
    * @returns The custom injector that can be used inside the dialog.
    */
-  protected _createInjector(config: DialogConfig, providers: StaticProvider[]): Injector {
+  private _createInjector(
+    containerInstance: BasePortalOutlet,
+    config: DialogConfig,
+    dialogRef: R,
+  ): Injector {
     const userInjector = config && config.viewContainerRef && config.viewContainerRef.injector;
+    const providers: StaticProvider[] = [
+      {provide: DIALOG_DATA, useValue: config.data},
+      {provide: DialogRef, useValue: dialogRef},
+      ...this._getAdditionalProviders(containerInstance, dialogRef, config),
+    ];
 
     if (
       config.direction &&
@@ -290,9 +292,13 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
     return Injector.create({parent: userInjector || this._injector, providers});
   }
 
-  /** Creates the handle object used to interact with the dialog. */
-  protected _createDialogRef(overlayRef: OverlayRef, config: DialogConfig): R {
-    return new DialogRef(overlayRef, config) as R;
+  /** Can be used by child classes to include additional providers in the custom injector. */
+  protected _getAdditionalProviders(
+    _containerInstance: BasePortalOutlet,
+    _dialogRef: R,
+    _config: DialogConfig<any>,
+  ): StaticProvider[] {
+    return [];
   }
 
   /**
@@ -357,7 +363,93 @@ export class Dialog<R extends DialogRef<unknown>, C extends Type<BasePortalOutle
       // runs on the next microtask, in addition to modifying the array as we're going
       // through it. We loop through all of them and call close without assuming that
       // they'll be removed from the list instantaneously.
-      dialogs[i].close();
+      this._closeDialog(dialogs[i]);
     }
+  }
+}
+
+@Injectable()
+export class Dialog extends DialogBase<DialogRef<any>, CdkDialogContainer> implements OnDestroy {
+  protected readonly _containerType = CdkDialogContainer;
+
+  /** Keeps track of the currently-open dialogs. */
+  override get openDialogs(): DialogRef<any>[] {
+    return super.openDialogs;
+  }
+
+  /** Stream that emits when a dialog has been opened. */
+  override get afterOpened(): Subject<DialogRef<any>> {
+    return super.afterOpened;
+  }
+
+  /**
+   * Stream that emits when all open dialog have finished closing.
+   * Will emit on subscribe if there are no open dialogs to begin with.
+   */
+  override readonly afterAllClosed: Observable<void>;
+
+  constructor(
+    overlay: Overlay,
+    injector: Injector,
+    defaultOptions: DialogConfig | undefined,
+    parentDialog: Dialog | undefined,
+    overlayContainer: OverlayContainer,
+    scrollStrategy: any,
+  ) {
+    super(overlay, injector, defaultOptions, parentDialog, overlayContainer, scrollStrategy);
+  }
+
+  /**
+   * Opens a modal dialog containing the given component.
+   * @param component Type of the component to load into the dialog.
+   * @param config Extra configuration options.
+   * @returns Reference to the newly-opened dialog.
+   */
+  open<T, D = any>(component: ComponentType<T>, config?: DialogConfig<D>): DialogRef<T, D>;
+
+  /**
+   * Opens a modal dialog containing the given template.
+   * @param template TemplateRef to instantiate as the dialog content.
+   * @param config Extra configuration options.
+   * @returns Reference to the newly-opened dialog.
+   */
+  open<T, D = any>(template: TemplateRef<T>, config?: DialogConfig<D>): DialogRef<T, D>;
+
+  open<T, D = any>(
+    componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
+    config?: DialogConfig<D>,
+  ): DialogRef<T, D> {
+    return super.openFrom<T, D>(componentOrTemplateRef, config);
+  }
+
+  /**
+   * Closes all of the currently-open dialogs.
+   */
+  override closeAll(): void {
+    super.closeAll();
+  }
+
+  /**
+   * Finds an open dialog by its id.
+   * @param id ID to use when looking up the dialog.
+   */
+  override getDialogById(id: string) {
+    return super.getDialogById(id);
+  }
+
+  protected _getClosedStream(ref: DialogRef<unknown>) {
+    return ref.closed;
+  }
+
+  protected _closeDialog(ref: DialogRef<unknown>) {
+    ref.close();
+  }
+
+  protected _createDialogRef(overlayRef: OverlayRef, config: DialogConfig<any>) {
+    return new DialogRef(overlayRef, config);
+  }
+
+  ngOnDestroy() {
+    super.destroy();
   }
 }

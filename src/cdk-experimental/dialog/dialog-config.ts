@@ -69,7 +69,7 @@ export class DialogConfig<D = any> {
   maxHeight?: number | string;
 
   /** Strategy to use when positioning the dialog. Defaults to centering it on the page. */
-  positionStrategy: PositionStrategy;
+  positionStrategy?: PositionStrategy;
 
   /** Data being injected into the child component. */
   data?: D | null = null;

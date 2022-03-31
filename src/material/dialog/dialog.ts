@@ -6,36 +6,28 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Directionality} from '@angular/cdk/bidi';
-import {
-  Overlay,
-  OverlayConfig,
-  OverlayContainer,
-  OverlayRef,
-  ScrollStrategy,
-} from '@angular/cdk/overlay';
-import {ComponentPortal, ComponentType, TemplatePortal} from '@angular/cdk/portal';
+import {Overlay, OverlayContainer, OverlayRef, ScrollStrategy} from '@angular/cdk/overlay';
+import {BasePortalOutlet, ComponentType} from '@angular/cdk/portal';
 import {Location} from '@angular/common';
 import {
   Directive,
   Inject,
   Injectable,
-  InjectFlags,
   InjectionToken,
   Injector,
   OnDestroy,
   Optional,
   SkipSelf,
-  StaticProvider,
   TemplateRef,
   Type,
 } from '@angular/core';
-import {defer, Observable, of as observableOf, Subject} from 'rxjs';
-import {startWith} from 'rxjs/operators';
+import {Observable, Subject} from 'rxjs';
 import {MatDialogConfig} from './dialog-config';
 import {MatDialogContainer, _MatDialogContainerBase} from './dialog-container';
 import {MatDialogRef} from './dialog-ref';
 import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
+
+import {DialogBase, DialogConfig} from '@angular/cdk-experimental/dialog';
 
 /** Injection token that can be used to access the data that was passed in to a dialog. */
 export const MAT_DIALOG_DATA = new InjectionToken<any>('MatDialogData');
@@ -69,31 +61,26 @@ export const MAT_DIALOG_SCROLL_STRATEGY_PROVIDER = {
   useFactory: MAT_DIALOG_SCROLL_STRATEGY_PROVIDER_FACTORY,
 };
 
+// Counter for unique dialog ids.
+let uniqueId = 0;
+
 /**
  * Base class for dialog services. The base dialog service allows
  * for arbitrary dialog refs and dialog container components.
  */
 @Directive()
-export abstract class _MatDialogBase<C extends _MatDialogContainerBase> implements OnDestroy {
-  private _openDialogsAtThisLevel: MatDialogRef<any>[] = [];
-  private readonly _afterAllClosedAtThisLevel = new Subject<void>();
-  private readonly _afterOpenedAtThisLevel = new Subject<MatDialogRef<any>>();
-  private _ariaHiddenElements = new Map<Element, string | null>();
-  private _scrollStrategy: () => ScrollStrategy;
-
+export abstract class _MatDialogBase<C extends _MatDialogContainerBase>
+  extends DialogBase<MatDialogRef<any>, C>
+  implements OnDestroy
+{
   /** Keeps track of the currently-open dialogs. */
-  get openDialogs(): MatDialogRef<any>[] {
-    return this._parentDialog ? this._parentDialog.openDialogs : this._openDialogsAtThisLevel;
+  override get openDialogs(): MatDialogRef<any>[] {
+    return super.openDialogs;
   }
 
   /** Stream that emits when a dialog has been opened. */
-  get afterOpened(): Subject<MatDialogRef<any>> {
-    return this._parentDialog ? this._parentDialog.afterOpened : this._afterOpenedAtThisLevel;
-  }
-
-  _getAfterAllClosed(): Subject<void> {
-    const parent = this._parentDialog;
-    return parent ? parent._getAfterAllClosed() : this._afterAllClosedAtThisLevel;
+  override get afterOpened(): Subject<MatDialogRef<any>> {
+    return super.afterOpened;
   }
 
   // TODO (jelbourn): tighten the typing right-hand side of this expression.
@@ -101,21 +88,17 @@ export abstract class _MatDialogBase<C extends _MatDialogContainerBase> implemen
    * Stream that emits when all open dialog have finished closing.
    * Will emit on subscribe if there are no open dialogs to begin with.
    */
-  readonly afterAllClosed: Observable<void> = defer(() =>
-    this.openDialogs.length
-      ? this._getAfterAllClosed()
-      : this._getAfterAllClosed().pipe(startWith(undefined)),
-  ) as Observable<any>;
+  override readonly afterAllClosed: Observable<void>;
 
   constructor(
-    private _overlay: Overlay,
-    private _injector: Injector,
-    private _defaultOptions: MatDialogConfig | undefined,
-    private _parentDialog: _MatDialogBase<C> | undefined,
-    private _overlayContainer: OverlayContainer,
+    overlay: Overlay,
+    injector: Injector,
+    defaultOptions: MatDialogConfig | undefined,
+    parentDialog: _MatDialogBase<C> | undefined,
+    overlayContainer: OverlayContainer,
     scrollStrategy: any,
     private _dialogRefConstructor: Type<MatDialogRef<any>>,
-    private _dialogContainerType: Type<C>,
+    protected readonly _containerType: Type<C>,
     private _dialogDataToken: InjectionToken<any>,
     /**
      * @deprecated No longer used. To be removed.
@@ -123,7 +106,8 @@ export abstract class _MatDialogBase<C extends _MatDialogContainerBase> implemen
      */
     _animationMode?: 'NoopAnimations' | 'BrowserAnimations',
   ) {
-    this._scrollStrategy = scrollStrategy;
+    // TODO: pass defaults
+    super(overlay, injector, undefined, parentDialog, overlayContainer, scrollStrategy);
   }
 
   /**
@@ -157,275 +141,62 @@ export abstract class _MatDialogBase<C extends _MatDialogContainerBase> implemen
     componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
     config?: MatDialogConfig<D>,
   ): MatDialogRef<T, R> {
-    config = _applyConfigDefaults(config, this._defaultOptions || new MatDialogConfig());
-
-    if (
-      config.id &&
-      this.getDialogById(config.id) &&
-      (typeof ngDevMode === 'undefined' || ngDevMode)
-    ) {
-      throw Error(`Dialog with id "${config.id}" exists already. The dialog id must be unique.`);
-    }
-
-    const overlayRef = this._createOverlay(config);
-    const dialogContainer = this._attachDialogContainer(overlayRef, config);
-    const dialogRef = this._attachDialogContent<T, R>(
-      componentOrTemplateRef,
-      dialogContainer,
-      overlayRef,
-      config,
-    );
-
-    // If this is the first dialog that we're opening, hide all the non-overlay content.
-    if (!this.openDialogs.length) {
-      this._hideNonDialogContentFromAssistiveTechnology();
-    }
-
-    this.openDialogs.push(dialogRef);
-    dialogRef.afterClosed().subscribe(() => this._removeOpenDialog(dialogRef));
-    this.afterOpened.next(dialogRef);
-
-    // Notify the dialog container that the content has been attached.
-    dialogContainer._initializeWithAttachedContent();
-
+    // config = _applyConfigDefaults(config, this._defaultOptions || new MatDialogConfig());
+    const dialogRef = super.openFrom(componentOrTemplateRef, {
+      ...config,
+      id: config?.id || `mat-dialog-${uniqueId++}`,
+      // TODO
+      // positionStrategy: this._overlay.position().global(),
+    });
+    dialogRef._containerInstance._matConfig = config!; // TODO: non-null should not be necessary
     return dialogRef;
   }
 
   /**
    * Closes all of the currently-open dialogs.
    */
-  closeAll(): void {
-    this._closeDialogs(this.openDialogs);
+  override closeAll(): void {
+    super.closeAll();
   }
 
   /**
    * Finds an open dialog by its id.
    * @param id ID to use when looking up the dialog.
    */
-  getDialogById(id: string): MatDialogRef<any> | undefined {
-    return this.openDialogs.find(dialog => dialog.id === id);
+  override getDialogById(id: string): MatDialogRef<any> | undefined {
+    return super.getDialogById(id);
   }
 
   ngOnDestroy() {
-    // Only close the dialogs at this level on destroy
-    // since the parent service may still be active.
-    this._closeDialogs(this._openDialogsAtThisLevel);
-    this._afterAllClosedAtThisLevel.complete();
-    this._afterOpenedAtThisLevel.complete();
+    super.destroy();
   }
 
-  /**
-   * Creates the overlay into which the dialog will be loaded.
-   * @param config The dialog configuration.
-   * @returns A promise resolving to the OverlayRef for the created overlay.
-   */
-  private _createOverlay(config: MatDialogConfig): OverlayRef {
-    const overlayConfig = this._getOverlayConfig(config);
-    return this._overlay.create(overlayConfig);
-  }
-
-  /**
-   * Creates an overlay config from a dialog config.
-   * @param dialogConfig The dialog configuration.
-   * @returns The overlay configuration.
-   */
-  private _getOverlayConfig(dialogConfig: MatDialogConfig): OverlayConfig {
-    const state = new OverlayConfig({
-      positionStrategy: this._overlay.position().global(),
-      scrollStrategy: dialogConfig.scrollStrategy || this._scrollStrategy(),
-      panelClass: dialogConfig.panelClass,
-      hasBackdrop: dialogConfig.hasBackdrop,
-      direction: dialogConfig.direction,
-      minWidth: dialogConfig.minWidth,
-      minHeight: dialogConfig.minHeight,
-      maxWidth: dialogConfig.maxWidth,
-      maxHeight: dialogConfig.maxHeight,
-      disposeOnNavigation: dialogConfig.closeOnNavigation,
-    });
-
-    if (dialogConfig.backdropClass) {
-      state.backdropClass = dialogConfig.backdropClass;
-    }
-
-    return state;
-  }
-
-  /**
-   * Attaches a dialog container to a dialog's already-created overlay.
-   * @param overlay Reference to the dialog's underlying overlay.
-   * @param config The dialog configuration.
-   * @returns A promise resolving to a ComponentRef for the attached container.
-   */
-  private _attachDialogContainer(overlay: OverlayRef, config: MatDialogConfig): C {
-    const userInjector = config.injector ?? config.viewContainerRef?.injector;
-    const injector = Injector.create({
-      parent: userInjector || this._injector,
-      providers: [{provide: MatDialogConfig, useValue: config}],
-    });
-
-    const containerPortal = new ComponentPortal(
-      this._dialogContainerType,
-      config.viewContainerRef,
-      injector,
-      config.componentFactoryResolver,
-    );
-    const containerRef = overlay.attach<C>(containerPortal);
-
-    return containerRef.instance;
-  }
-
-  /**
-   * Attaches the user-provided component to the already-created dialog container.
-   * @param componentOrTemplateRef The type of component being loaded into the dialog,
-   *     or a TemplateRef to instantiate as the content.
-   * @param dialogContainer Reference to the wrapping dialog container.
-   * @param overlayRef Reference to the overlay in which the dialog resides.
-   * @param config The dialog configuration.
-   * @returns A promise resolving to the MatDialogRef that should be returned to the user.
-   */
-  private _attachDialogContent<T, R>(
-    componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
-    dialogContainer: C,
-    overlayRef: OverlayRef,
-    config: MatDialogConfig,
-  ): MatDialogRef<T, R> {
-    // Create a reference to the dialog we're creating in order to give the user a handle
-    // to modify and close it.
-    const dialogRef = new this._dialogRefConstructor(overlayRef, dialogContainer, config.id);
-    const injector = this._createInjector<T>(config, dialogRef, dialogContainer);
-
-    if (componentOrTemplateRef instanceof TemplateRef) {
-      dialogContainer.attachTemplatePortal(
-        new TemplatePortal<T>(
-          componentOrTemplateRef,
-          null!,
-          <any>{
-            $implicit: config.data,
-            dialogRef,
-          },
-          injector,
-        ),
-      );
-    } else {
-      const contentRef = dialogContainer.attachComponentPortal<T>(
-        new ComponentPortal(
-          componentOrTemplateRef,
-          config.viewContainerRef,
-          injector,
-          config.componentFactoryResolver,
-        ),
-      );
-      dialogRef.componentInstance = contentRef.instance;
-    }
-
-    dialogRef.updateSize(config.width, config.height).updatePosition(config.position);
-
-    return dialogRef;
-  }
-
-  /**
-   * Creates a custom injector to be used inside the dialog. This allows a component loaded inside
-   * of a dialog to close itself and, optionally, to return a value.
-   * @param config Config object that is used to construct the dialog.
-   * @param dialogRef Reference to the dialog.
-   * @param dialogContainer Dialog container element that wraps all of the contents.
-   * @returns The custom injector that can be used inside the dialog.
-   */
-  private _createInjector<T>(
-    config: MatDialogConfig,
-    dialogRef: MatDialogRef<T>,
-    dialogContainer: C,
-  ): Injector {
-    const userInjector = config && config.viewContainerRef && config.viewContainerRef.injector;
-
-    // The dialog container should be provided as the dialog container and the dialog's
-    // content are created out of the same `ViewContainerRef` and as such, are siblings
-    // for injector purposes. To allow the hierarchy that is expected, the dialog
-    // container is explicitly provided in the injector.
-    const providers: StaticProvider[] = [
-      {provide: this._dialogContainerType, useValue: dialogContainer},
+  protected override _getAdditionalProviders(
+    containerInstance: BasePortalOutlet,
+    dialogRef: MatDialogRef<any, any>,
+    config: DialogConfig<any>,
+  ) {
+    return [
+      {provide: this._containerType, useValue: containerInstance},
       {provide: this._dialogDataToken, useValue: config.data},
       {provide: this._dialogRefConstructor, useValue: dialogRef},
     ];
-
-    if (
-      config.direction &&
-      (!userInjector ||
-        !userInjector.get<Directionality | null>(Directionality, null, InjectFlags.Optional))
-    ) {
-      providers.push({
-        provide: Directionality,
-        useValue: {value: config.direction, change: observableOf()},
-      });
-    }
-
-    return Injector.create({parent: userInjector || this._injector, providers});
   }
 
-  /**
-   * Removes a dialog from the array of open dialogs.
-   * @param dialogRef Dialog to be removed.
-   */
-  private _removeOpenDialog(dialogRef: MatDialogRef<any>) {
-    const index = this.openDialogs.indexOf(dialogRef);
-
-    if (index > -1) {
-      this.openDialogs.splice(index, 1);
-
-      // If all the dialogs were closed, remove/restore the `aria-hidden`
-      // to a the siblings and emit to the `afterAllClosed` stream.
-      if (!this.openDialogs.length) {
-        this._ariaHiddenElements.forEach((previousValue, element) => {
-          if (previousValue) {
-            element.setAttribute('aria-hidden', previousValue);
-          } else {
-            element.removeAttribute('aria-hidden');
-          }
-        });
-
-        this._ariaHiddenElements.clear();
-        this._getAfterAllClosed().next();
-      }
-    }
+  protected _getClosedStream(ref: MatDialogRef<unknown>) {
+    return ref.afterClosed();
   }
 
-  /**
-   * Hides all of the content that isn't an overlay from assistive technology.
-   */
-  private _hideNonDialogContentFromAssistiveTechnology() {
-    const overlayContainer = this._overlayContainer.getContainerElement();
-
-    // Ensure that the overlay container is attached to the DOM.
-    if (overlayContainer.parentElement) {
-      const siblings = overlayContainer.parentElement.children;
-
-      for (let i = siblings.length - 1; i > -1; i--) {
-        let sibling = siblings[i];
-
-        if (
-          sibling !== overlayContainer &&
-          sibling.nodeName !== 'SCRIPT' &&
-          sibling.nodeName !== 'STYLE' &&
-          !sibling.hasAttribute('aria-live')
-        ) {
-          this._ariaHiddenElements.set(sibling, sibling.getAttribute('aria-hidden'));
-          sibling.setAttribute('aria-hidden', 'true');
-        }
-      }
-    }
+  protected _closeDialog(ref: MatDialogRef<unknown>) {
+    ref.close();
   }
 
-  /** Closes all of the dialogs in an array. */
-  private _closeDialogs(dialogs: MatDialogRef<any>[]) {
-    let i = dialogs.length;
-
-    while (i--) {
-      // The `_openDialogs` property isn't updated after close until the rxjs subscription
-      // runs on the next microtask, in addition to modifying the array as we're going
-      // through it. We loop through all of them and call close without assuming that
-      // they'll be removed from the list instantaneously.
-      dialogs[i].close();
-    }
+  protected _createDialogRef(
+    overlayRef: OverlayRef,
+    config: DialogConfig<any>,
+    containerInstance: _MatDialogContainerBase,
+  ) {
+    return new MatDialogRef(overlayRef, containerInstance, config);
   }
 }
 
@@ -467,17 +238,4 @@ export class MatDialog extends _MatDialogBase<MatDialogContainer> {
       animationMode,
     );
   }
-}
-
-/**
- * Applies default options to the dialog config.
- * @param config Config to be modified.
- * @param defaultOptions Default options provided.
- * @returns The new configuration object.
- */
-function _applyConfigDefaults(
-  config?: MatDialogConfig,
-  defaultOptions?: MatDialogConfig,
-): MatDialogConfig {
-  return {...defaultOptions, ...config};
 }

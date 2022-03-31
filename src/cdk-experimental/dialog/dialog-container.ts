@@ -13,6 +13,7 @@ import {
   FocusTrapFactory,
   InteractivityChecker,
 } from '@angular/cdk/a11y';
+import {OverlayRef} from '@angular/cdk/overlay';
 import {_getFocusedElementPierceShadowDom} from '@angular/cdk/platform';
 import {
   BasePortalOutlet,
@@ -88,20 +89,18 @@ export class CdkDialogContainer extends BasePortalOutlet implements AfterViewIni
   /** ID of the element that should be considered as the dialog's label. */
   _ariaLabelledBy: string | null;
 
-  _config: DialogConfig;
-
   constructor(
     protected _elementRef: ElementRef,
     protected _focusTrapFactory: FocusTrapFactory,
     @Optional() @Inject(DOCUMENT) _document: any,
-    private _dialogRef: DialogRef<unknown>,
-    private readonly _interactivityChecker: InteractivityChecker,
-    private readonly _ngZone: NgZone,
+    private _interactivityChecker: InteractivityChecker,
+    readonly _config: DialogConfig,
+    private _ngZone: NgZone,
+    private _overlayRef: OverlayRef,
     private _focusMonitor?: FocusMonitor,
   ) {
     super();
-    this._config = _dialogRef.config;
-    this._ariaLabelledBy = this._config.ariaLabelledBy || null;
+    this._ariaLabelledBy = _config.ariaLabelledBy || null;
     this._document = _document;
   }
 
@@ -116,14 +115,13 @@ export class CdkDialogContainer extends BasePortalOutlet implements AfterViewIni
 
     // Clicking on the backdrop will move focus out of dialog.
     // Recapture it if closing via the backdrop is disabled.
-    this._dialogRef.backdropClick.subscribe(() => {
+    this._overlayRef.backdropClick().subscribe(() => {
       if (this._config.disableClose && !this._containsFocus()) {
         this._trapFocus();
       }
     });
 
-    // TODO: will probably have to allow this to be overwritten.
-    this._trapFocus();
+    this._trapInitialFocus();
   }
 
   ngOnDestroy() {
@@ -203,6 +201,10 @@ export class CdkDialogContainer extends BasePortalOutlet implements AfterViewIni
     if (elementToFocus) {
       this._forceFocus(elementToFocus, options);
     }
+  }
+
+  protected _trapInitialFocus() {
+    this._trapFocus();
   }
 
   /**

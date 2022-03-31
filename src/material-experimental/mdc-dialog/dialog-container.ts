@@ -5,22 +5,14 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-
-import {FocusMonitor, FocusTrapFactory, InteractivityChecker} from '@angular/cdk/a11y';
-import {DOCUMENT} from '@angular/common';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ElementRef,
-  Inject,
   OnDestroy,
-  Optional,
   ViewEncapsulation,
-  NgZone,
+  AfterViewInit,
 } from '@angular/core';
-import {MatDialogConfig, _MatDialogContainerBase} from '@angular/material/dialog';
-import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
+import {_MatDialogContainerBase} from '@angular/material/dialog';
 import {cssClasses, numbers} from '@material/dialog';
 
 /**
@@ -47,10 +39,10 @@ import {cssClasses, numbers} from '@material/dialog';
     '[class._mat-animation-noopable]': '!_animationsEnabled',
   },
 })
-export class MatDialogContainer extends _MatDialogContainerBase implements OnDestroy {
-  /** Whether animations are enabled. */
-  _animationsEnabled: boolean = this._animationMode !== 'NoopAnimations';
-
+export class MatDialogContainer
+  extends _MatDialogContainerBase
+  implements AfterViewInit, OnDestroy
+{
   /** Host element of the dialog container component. */
   private _hostElement: HTMLElement = this._elementRef.nativeElement;
   /** Duration of the dialog open animation. */
@@ -64,33 +56,11 @@ export class MatDialogContainer extends _MatDialogContainerBase implements OnDes
   /** Current timer for dialog animations. */
   private _animationTimer: number | null = null;
 
-  constructor(
-    elementRef: ElementRef,
-    focusTrapFactory: FocusTrapFactory,
-    changeDetectorRef: ChangeDetectorRef,
-    @Optional() @Inject(DOCUMENT) document: any,
-    config: MatDialogConfig,
-    checker: InteractivityChecker,
-    ngZone: NgZone,
-    @Optional() @Inject(ANIMATION_MODULE_TYPE) private _animationMode?: string,
-    focusMonitor?: FocusMonitor,
-  ) {
-    super(
-      elementRef,
-      focusTrapFactory,
-      changeDetectorRef,
-      document,
-      config,
-      checker,
-      ngZone,
-      focusMonitor,
-    );
-  }
-
-  override _initializeWithAttachedContent() {
+  override ngAfterViewInit(): void {
     // Delegate to the original dialog-container initialization (i.e. saving the
     // previous element, setting up the focus trap and moving focus to the container).
-    super._initializeWithAttachedContent();
+    super.ngAfterViewInit();
+
     // Note: Usually we would be able to use the MDC dialog foundation here to handle
     // the dialog animation for us, but there are a few reasons why we just leverage
     // their styles and not use the runtime foundation code:
@@ -103,7 +73,7 @@ export class MatDialogContainer extends _MatDialogContainerBase implements OnDes
     this._startOpenAnimation();
   }
 
-  ngOnDestroy() {
+  override ngOnDestroy() {
     if (this._animationTimer !== null) {
       clearTimeout(this._animationTimer);
     }

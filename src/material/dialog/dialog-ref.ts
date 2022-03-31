@@ -7,17 +7,14 @@
  */
 
 import {FocusOrigin} from '@angular/cdk/a11y';
-import {ESCAPE, hasModifierKey} from '@angular/cdk/keycodes';
 import {GlobalPositionStrategy, OverlayRef} from '@angular/cdk/overlay';
 import {Observable, Subject} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
-import {DialogPosition} from './dialog-config';
-import {_MatDialogContainerBase} from './dialog-container';
+import {MatDialogConfig, DialogPosition} from './dialog-config';
+
+import {DialogConfig, DialogRefBase} from '@angular/cdk-experimental/dialog';
 
 // TODO(jelbourn): resizing
-
-// Counter for unique dialog ids.
-let uniqueId = 0;
 
 /** Possible states of the lifecycle of a dialog. */
 export const enum MatDialogState {
@@ -26,15 +23,29 @@ export const enum MatDialogState {
   CLOSED,
 }
 
+export interface MatDialogContainerLike {
+  _animationStateChanged: Observable<DialogAnimationEvent>;
+  _startExitAnimation(): void;
+  _closeInteractionType: FocusOrigin;
+  _ariaLabelledBy: string | null;
+  _matConfig: MatDialogConfig;
+}
+
+/** Event that captures the state of dialog container animations. */
+export interface DialogAnimationEvent {
+  state: 'opened' | 'opening' | 'closing' | 'closed';
+  totalTime: number;
+}
+
 /**
  * Reference to a dialog opened via the MatDialog service.
  */
-export class MatDialogRef<T, R = any> {
-  /** The instance of component opened into the dialog. */
-  componentInstance: T;
-
+export class MatDialogRef<T, R = any> extends DialogRefBase<T, R> {
   /** Whether the user is allowed to close the dialog. */
-  disableClose: boolean | undefined = this._containerInstance._config.disableClose;
+  override disableClose: boolean | undefined;
+
+  /** Unique ID for the dialog. */
+  override readonly id: string;
 
   /** Subject for notifying the user that the dialog has finished opening. */
   private readonly _afterOpened = new Subject<void>();
@@ -55,13 +66,11 @@ export class MatDialogRef<T, R = any> {
   private _state = MatDialogState.OPEN;
 
   constructor(
-    private _overlayRef: OverlayRef,
-    public _containerInstance: _MatDialogContainerBase,
-    /** Id of the dialog. */
-    readonly id: string = `mat-dialog-${uniqueId++}`,
+    overlayRef: OverlayRef,
+    public _containerInstance: MatDialogContainerLike,
+    config: DialogConfig,
   ) {
-    // Pass the id along to the container.
-    _containerInstance._id = id;
+    super(overlayRef, config);
 
     // Emit when opening animation completes
     _containerInstance._animationStateChanged
@@ -82,10 +91,10 @@ export class MatDialogRef<T, R = any> {
       )
       .subscribe(() => {
         clearTimeout(this._closeFallbackTimeout);
-        this._finishDialogClose();
+        this._finishDialogClose(this._result);
       });
 
-    _overlayRef.detachments().subscribe(() => {
+    this._overlayRef.detachments().subscribe(() => {
       this._beforeClosed.next(this._result);
       this._beforeClosed.complete();
       this._afterClosed.next(this._result);
@@ -93,33 +102,13 @@ export class MatDialogRef<T, R = any> {
       this.componentInstance = null!;
       this._overlayRef.dispose();
     });
-
-    _overlayRef
-      .keydownEvents()
-      .pipe(
-        filter(event => {
-          return event.keyCode === ESCAPE && !this.disableClose && !hasModifierKey(event);
-        }),
-      )
-      .subscribe(event => {
-        event.preventDefault();
-        _closeDialogVia(this, 'keyboard');
-      });
-
-    _overlayRef.backdropClick().subscribe(() => {
-      if (this.disableClose) {
-        this._containerInstance._recaptureFocus();
-      } else {
-        _closeDialogVia(this, 'mouse');
-      }
-    });
   }
 
   /**
    * Close the dialog.
    * @param dialogResult Optional result to return to the dialog opener.
    */
-  close(dialogResult?: R): void {
+  override close(dialogResult?: R): void {
     this._result = dialogResult;
 
     // Transition the backdrop in parallel to the dialog.
@@ -139,7 +128,7 @@ export class MatDialogRef<T, R = any> {
         // amount of time plus 100ms. We don't need to run this outside the NgZone, because for the
         // vast majority of cases the timeout will have been cleared before it has the chance to fire.
         this._closeFallbackTimeout = setTimeout(
-          () => this._finishDialogClose(),
+          () => this._finishDialogClose(dialogResult),
           event.totalTime + 100,
         );
       });
@@ -187,7 +176,7 @@ export class MatDialogRef<T, R = any> {
    * Updates the dialog's position.
    * @param position New dialog position.
    */
-  updatePosition(position?: DialogPosition): this {
+  override updatePosition(position?: DialogPosition): this {
     let strategy = this._getPositionStrategy();
 
     if (position && (position.left || position.right)) {
@@ -212,22 +201,18 @@ export class MatDialogRef<T, R = any> {
    * @param width New width of the dialog.
    * @param height New height of the dialog.
    */
-  updateSize(width: string = '', height: string = ''): this {
-    this._overlayRef.updateSize({width, height});
-    this._overlayRef.updatePosition();
-    return this;
+  override updateSize(width: string = '', height: string = ''): this {
+    return super.updateSize(width, height);
   }
 
   /** Add a CSS class or an array of classes to the overlay pane. */
-  addPanelClass(classes: string | string[]): this {
-    this._overlayRef.addPanelClass(classes);
-    return this;
+  override addPanelClass(classes: string | string[]): this {
+    return super.addPanelClass(classes);
   }
 
   /** Remove a CSS class or an array of classes from the overlay pane. */
-  removePanelClass(classes: string | string[]): this {
-    this._overlayRef.removePanelClass(classes);
-    return this;
+  override removePanelClass(classes: string | string[]): this {
+    return super.removePanelClass(classes);
   }
 
   /** Gets the current state of the dialog's lifecycle. */
@@ -239,9 +224,9 @@ export class MatDialogRef<T, R = any> {
    * Finishes the dialog close by updating the state of the dialog
    * and disposing the overlay.
    */
-  private _finishDialogClose() {
+  private _finishDialogClose(result?: R) {
     this._state = MatDialogState.CLOSED;
-    this._overlayRef.dispose();
+    super.close(result);
   }
 
   /** Fetches the position strategy object from the overlay ref. */
@@ -255,7 +240,7 @@ export class MatDialogRef<T, R = any> {
  * `MatDialogRef` as that would conflict with custom dialog ref mocks provided in tests.
  * More details. See: https://github.com/angular/components/pull/9257#issuecomment-651342226.
  */
-// TODO: TODO: Move this back into `MatDialogRef` when we provide an official mock dialog ref.
+// TODO: Move this back into `MatDialogRef` when we provide an official mock dialog ref.
 export function _closeDialogVia<R>(ref: MatDialogRef<R>, interactionType: FocusOrigin, result?: R) {
   // Some mock dialog ref instances in tests do not have the `_containerInstance` property.
   // For those, we keep the behavior as is and do not deal with the interaction type.
