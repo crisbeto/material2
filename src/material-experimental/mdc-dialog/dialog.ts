@@ -6,13 +6,12 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Overlay, OverlayContainer, ScrollStrategy} from '@angular/cdk/overlay';
-import {Location} from '@angular/common';
+import {Overlay, ScrollStrategy} from '@angular/cdk/overlay';
 import {Inject, Injectable, InjectionToken, Injector, Optional, SkipSelf} from '@angular/core';
 import {_MatDialogBase, MatDialogConfig} from '@angular/material/dialog';
 import {MatDialogContainer} from './dialog-container';
 import {MatDialogRef} from './dialog-ref';
-import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
+import {Dialog} from '@angular/cdk-experimental/dialog';
 
 /** Injection token that can be used to access the data that was passed in to a dialog. */
 export const MAT_DIALOG_DATA = new InjectionToken<any>('MatMdcDialogData');
@@ -46,37 +45,24 @@ export const MAT_DIALOG_SCROLL_STRATEGY_PROVIDER = {
  */
 @Injectable()
 export class MatDialog extends _MatDialogBase<MatDialogContainer> {
+  protected readonly _idPrefix = 'mat-mdc-dialog-';
+
   constructor(
     overlay: Overlay,
     injector: Injector,
-    /**
-     * @deprecated `_location` parameter to be removed.
-     * @breaking-change 10.0.0
-     */
-    @Optional() location: Location,
     @Optional() @Inject(MAT_DIALOG_DEFAULT_OPTIONS) defaultOptions: MatDialogConfig,
     @Inject(MAT_DIALOG_SCROLL_STRATEGY) scrollStrategy: any,
     @Optional() @SkipSelf() parentDialog: MatDialog,
-    overlayContainer: OverlayContainer,
-    /**
-     * @deprecated No longer used. To be removed.
-     * @breaking-change 14.0.0
-     */
-    @Optional()
-    @Inject(ANIMATION_MODULE_TYPE)
-    animationMode?: 'NoopAnimations' | 'BrowserAnimations',
   ) {
     super(
       overlay,
-      injector,
+      injector.get(Dialog),
       defaultOptions,
       parentDialog,
-      overlayContainer,
       scrollStrategy,
       MatDialogRef,
       MatDialogContainer,
       MAT_DIALOG_DATA,
-      animationMode,
     );
   }
 }

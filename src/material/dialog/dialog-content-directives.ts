@@ -16,7 +16,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import {MatDialog} from './dialog';
-import {_closeDialogVia, MatDialogRef} from './dialog-ref';
+import {MatDialogRef} from './dialog-ref';
 
 /** Counter used to generate unique IDs for dialog elements. */
 let dialogElementUid = 0;
@@ -82,11 +82,9 @@ export class MatDialogClose implements OnInit, OnChanges {
     // result in incorrect origins. Most of the time, close buttons will be auto focused in the
     // dialog, and therefore clicking the button won't result in a focus change. This means that
     // the FocusMonitor won't detect any origin change, and will always output `program`.
-    _closeDialogVia(
-      this.dialogRef,
-      event.screenX === 0 && event.screenY === 0 ? 'keyboard' : 'mouse',
-      this.dialogResult,
-    );
+    this.dialogRef.close(this.dialogResult, {
+      focusOrigin: event.screenX === 0 && event.screenY === 0 ? 'keyboard' : 'mouse',
+    });
   }
 }
 

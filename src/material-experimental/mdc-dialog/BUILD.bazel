@@ -62,6 +62,7 @@ ng_test_library(
     ),
     deps = [
         ":mdc-dialog",
+        "//src/cdk-experimental/dialog",
         "//src/cdk/a11y",
         "//src/cdk/bidi",
         "//src/cdk/keycodes",
