@@ -66,6 +66,7 @@ export class CdkDialogContainer<C extends DialogConfig = DialogConfig> extends B
     // (undocumented)
     ngOnDestroy(): void;
     _portalOutlet: CdkPortalOutlet;
+    _recaptureFocus(): void;
     protected _trapFocus(): void;
     // (undocumented)
     static ɵcmp: i0.ɵɵComponentDeclaration<CdkDialogContainer<any>, "cdk-dialog-container", never, {}, {}, never, never, false>;
@@ -177,6 +178,7 @@ export class DialogRef<R = unknown, C = unknown> {
         _closeInteractionType?: FocusOrigin;
     };
     disableClose: boolean | undefined;
+    dispose(): void;
     readonly id: string;
     readonly keydownEvents: Observable<KeyboardEvent>;
     readonly outsidePointerEvents: Observable<MouseEvent>;

@@ -161,6 +161,14 @@ export class CdkDialogContainer<C extends DialogConfig = DialogConfig>
     return this._portalOutlet.attachDomPortal(portal);
   };
 
+  // TODO(crisbeto): this shouldn't be exposed, but there are internal references to it.
+  /** Captures focus if it isn't already inside the dialog. */
+  _recaptureFocus() {
+    if (!this._containsFocus()) {
+      this._trapFocus();
+    }
+  }
+
   /**
    * Focuses the provided element. If the element is not focusable, it will add a tabIndex
    * attribute to forcefully focus it. The attribute is removed after focus is moved.
@@ -316,8 +324,8 @@ export class CdkDialogContainer<C extends DialogConfig = DialogConfig>
     // Clicking on the backdrop will move focus out of dialog.
     // Recapture it if closing via the backdrop is disabled.
     this._overlayRef.backdropClick().subscribe(() => {
-      if (this._config.disableClose && !this._containsFocus()) {
-        this._trapFocus();
+      if (this._config.disableClose) {
+        this._recaptureFocus();
       }
     });
   }
