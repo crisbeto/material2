@@ -43,21 +43,21 @@
   $config: mat.get-color-config($config-or-theme);
   @include mdc-helpers.mat-using-mdc-theme($config) {
     @include mdc-text-field-theme-variable-refresh.private-text-field-refresh-theme-variables() {
-      @include mdc-textfield.without-ripple($query: mdc-helpers.$mat-theme-styles-query);
-      @include mdc-floating-label.core-styles($query: mdc-helpers.$mat-theme-styles-query);
-      @include mdc-notched-outline.core-styles($query: mdc-helpers.$mat-theme-styles-query);
-      @include mdc-line-ripple.core-styles($query: mdc-helpers.$mat-theme-styles-query);
-      @include form-field-subscript.private-form-field-subscript-color();
-      @include form-field-focus-overlay.private-form-field-focus-overlay-color();
-      @include form-field-native-select.private-form-field-native-select-color($config);
+      // @include mdc-textfield.without-ripple($query: mdc-helpers.$mat-theme-styles-query);
+      // @include mdc-floating-label.core-styles($query: mdc-helpers.$mat-theme-styles-query);
+      // @include mdc-notched-outline.core-styles($query: mdc-helpers.$mat-theme-styles-query);
+      // @include mdc-line-ripple.core-styles($query: mdc-helpers.$mat-theme-styles-query);
+      // @include form-field-subscript.private-form-field-subscript-color();
+      // @include form-field-focus-overlay.private-form-field-focus-overlay-color();
+      // @include form-field-native-select.private-form-field-native-select-color($config);
 
-      .mat-mdc-form-field.mat-accent {
-        @include _color-styles(secondary);
-      }
+      // .mat-mdc-form-field.mat-accent {
+      //   @include _color-styles(secondary);
+      // }
 
-      .mat-mdc-form-field.mat-warn {
-        @include _color-styles(error);
-      }
+      // .mat-mdc-form-field.mat-warn {
+      //   @include _color-styles(error);
+      // }
     }
   }
 }
