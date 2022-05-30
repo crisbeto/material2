@@ -68,7 +68,7 @@ describe('MDC-based MatSelectionList without forms', () => {
       return listOptions.findIndex(o => document.activeElement === o.nativeElement);
     }
 
-    it('should be able to set a value on a list option', () => {
+    fit('should be able to set a value on a list option', () => {
       const optionValues = ['inbox', 'starred', 'sent-mail', 'archive', 'drafts'];
 
       optionValues.forEach((optionValue, index) => {

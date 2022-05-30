@@ -16,6 +16,7 @@ import {
   ContentChildren,
   ElementRef,
   EventEmitter,
+  inject,
   Inject,
   InjectionToken,
   Input,
@@ -160,24 +161,27 @@ export class MatListOption extends MatListItemBase implements ListOption, OnInit
    */
   private _inputsInitialized = false;
 
-  constructor(
-    elementRef: ElementRef<HTMLElement>,
-    ngZone: NgZone,
-    @Inject(SELECTION_LIST) private _selectionList: SelectionList,
-    platform: Platform,
-    private _changeDetectorRef: ChangeDetectorRef,
-    @Optional()
-    @Inject(MAT_RIPPLE_GLOBAL_OPTIONS)
-    globalRippleOptions?: RippleGlobalOptions,
-    @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
-  ) {
-    super(elementRef, ngZone, _selectionList, platform, globalRippleOptions, animationMode);
-  }
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private _selectionList = inject(SELECTION_LIST);
+
+  // constructor(
+  //   elementRef: ElementRef<HTMLElement>,
+  //   ngZone: NgZone,
+  //   @Inject(SELECTION_LIST) private _selectionList: SelectionList,
+  //   platform: Platform,
+  //   private _changeDetectorRef: ChangeDetectorRef,
+  //   @Optional()
+  //   @Inject(MAT_RIPPLE_GLOBAL_OPTIONS)
+  //   globalRippleOptions?: RippleGlobalOptions,
+  //   @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
+  // ) {
+  //   super(elementRef, ngZone, _selectionList, platform, globalRippleOptions, animationMode);
+  // }
 
   ngOnInit() {
     const list = this._selectionList;
 
-    if (list._value && list._value.some(value => list.compareWith(this._value, value))) {
+    if (list._value && list._value.some((value: any) => list.compareWith(this._value, value))) {
       this._setSelected(true);
     }
 

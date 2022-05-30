@@ -274,6 +274,8 @@ export abstract class MatListItemBase implements AfterViewInit, OnDestroy, Rippl
   }
 }
 
+// Move this before MatListItemBase to fix the error.
+
 @Directive({
   host: {
     '[class.mat-mdc-list-non-interactive]': '_isNonInteractive',
