@@ -178,13 +178,6 @@ export const config = {
       // TODO: the focus origin functionality has to be implemeted for the MDC slide toggle.
       'should not change focus origin if origin not specified',
     ],
-    'mdc-snack-bar': [
-      // These tests are verifying implementation details that are not relevant for MDC.
-      'should set the animation state to visible on entry',
-      'should set the animation state to complete on exit',
-      'should set the old snack bar animation state to complete and the new snack bar ' +
-        'animation state to visible on entry of new snack bar',
-    ],
     'mdc-tabs': [
       // These tests are excluded because they are verifying behavior that is not supported in MDC.
       'should have no explicit roles',
