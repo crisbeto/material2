@@ -46,6 +46,14 @@ export class DragAndDropDemo {
 
   ages = ['Stone age', 'Bronze age', 'Iron age', 'Middle ages'];
   preferredAges = ['Modern period', 'Renaissance'];
+  constrainPosition = (point: any) => {
+    const targetRect = document.querySelector('.target')!.getBoundingClientRect();
+
+    return {
+      x: Math.min(Math.max(targetRect.left, point.x), targetRect.right),
+      y: Math.min(Math.max(targetRect.top, point.y), targetRect.bottom),
+    };
+  };
 
   constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
     iconRegistry.addSvgIconLiteral(
