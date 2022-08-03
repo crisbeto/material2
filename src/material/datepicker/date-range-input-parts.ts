@@ -16,6 +16,7 @@ import {
   Injector,
   InjectFlags,
   DoCheck,
+  inject,
 } from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
@@ -36,9 +37,10 @@ import {
   MatDateFormats,
   ErrorStateMatcher,
 } from '@angular/material/core';
-import {BACKSPACE} from '@angular/cdk/keycodes';
+import {BACKSPACE, LEFT_ARROW, RIGHT_ARROW} from '@angular/cdk/keycodes';
 import {MatDatepickerInputBase, DateFilterFn} from './datepicker-input-base';
 import {DateRange, DateSelectionModelChange} from './date-selection-model';
+import {Directionality} from '@angular/cdk/bidi';
 
 /** Parent component that should be wrapped around `MatStartDate` and `MatEndDate`. */
 export interface MatDateRangeInputParent<D> {
@@ -81,6 +83,8 @@ abstract class MatDateRangeInputPartBase<D>
 
   /** @docs-private */
   abstract updateErrorState(): void;
+
+  protected _dir = inject(Directionality, InjectFlags.Optional);
 
   protected abstract override _validator: ValidatorFn | null;
   protected abstract override _assignValueToModel(value: D | null): void;
@@ -284,6 +288,26 @@ export class MatStartDate<D> extends _MatDateRangeInputBase<D> implements CanUpd
     const value = element.value;
     return value.length > 0 ? value : element.placeholder;
   }
+
+  override _onKeydown(event: KeyboardEvent) {
+    const endInput = this._rangeInput._endInput;
+    const element = this._elementRef.nativeElement;
+    const isLtr = this._dir?.value !== 'rtl';
+
+    // If the user hits RIGHT (LTR) when at the end of the input (and no
+    // selection), move the cursor to the start of the end input.
+    if (
+      ((event.keyCode === RIGHT_ARROW && isLtr) || (event.keyCode === LEFT_ARROW && !isLtr)) &&
+      element.selectionStart === element.value.length &&
+      element.selectionEnd === element.value.length
+    ) {
+      event.preventDefault();
+      endInput._elementRef.nativeElement.setSelectionRange(0, 0);
+      endInput.focus();
+    } else {
+      super._onKeydown(event);
+    }
+  }
 }
 
 /** Input for entering the end date in a `mat-date-range-input`. */
@@ -370,11 +394,26 @@ export class MatEndDate<D> extends _MatDateRangeInputBase<D> implements CanUpdat
   }
 
   override _onKeydown(event: KeyboardEvent) {
-    // If the user is pressing backspace on an empty end input, move focus back to the start.
-    if (event.keyCode === BACKSPACE && !this._elementRef.nativeElement.value) {
-      this._rangeInput._startInput.focus();
-    }
+    const element = this._elementRef.nativeElement;
+    const isLtr = this._dir?.value !== 'rtl';
 
-    super._onKeydown(event);
+    // If the user is pressing backspace on an empty end input, move focus back to the start.
+    if (event.keyCode === BACKSPACE && !element.value) {
+      this._rangeInput._startInput.focus();
+    } else if (
+      ((event.keyCode === LEFT_ARROW && isLtr) || (event.keyCode === RIGHT_ARROW && !isLtr)) &&
+      element.selectionStart === 0 &&
+      element.selectionEnd === 0
+    ) {
+      // If the user hits LEFT (LTR) when at the start of the input (and no
+      // selection), move the cursor to the end of the start input.
+      const startInput = this._rangeInput._startInput;
+      const length = startInput._elementRef.nativeElement.value.length;
+      event.preventDefault();
+      startInput._elementRef.nativeElement.setSelectionRange(length, length);
+      startInput.focus();
+    } else {
+      super._onKeydown(event);
+    }
   }
 }

@@ -225,7 +225,7 @@ export abstract class MatDatepickerInputBase<S, D = ExtractDateTypeFromSelection
   protected _lastValueValid = false;
 
   constructor(
-    protected _elementRef: ElementRef<HTMLInputElement>,
+    public _elementRef: ElementRef<HTMLInputElement>,
     @Optional() public _dateAdapter: DateAdapter<D>,
     @Optional() @Inject(MAT_DATE_FORMATS) private _dateFormats: MatDateFormats,
   ) {
