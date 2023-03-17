@@ -26,6 +26,7 @@ import {
   QueryList,
   ViewChild,
   ViewEncapsulation,
+  inject,
 } from '@angular/core';
 import {AbstractControlDirective} from '@angular/forms';
 import {ThemePalette} from '@angular/material/core';
@@ -48,6 +49,7 @@ import {
   getMatFormFieldDuplicatedHintError,
   getMatFormFieldMissingControlError,
 } from './form-field-errors';
+import {_CoalescedStyleScheduler} from './directives/coalesced-style-scheduler';
 
 /** Type for the available floatLabel values. */
 export type FloatLabelType = 'always' | 'auto';
@@ -267,9 +269,6 @@ export class MatFormField
   /** State of the mat-hint and mat-error animations. */
   _subscriptAnimationState = '';
 
-  /** Width of the label element (at scale=1). */
-  _labelWidth = 0;
-
   /** Gets the current form field control */
   get _control(): MatFormFieldControl<any> {
     return this._explicitFormFieldControl || this._formFieldControl;
@@ -282,6 +281,7 @@ export class MatFormField
   private _isFocused: boolean | null = null;
   private _explicitFormFieldControl: MatFormFieldControl<any>;
   private _needsOutlineLabelOffsetUpdateOnStable = false;
+  private _scheduler = inject(_CoalescedStyleScheduler);
 
   constructor(
     public _elementRef: ElementRef,
@@ -318,15 +318,17 @@ export class MatFormField
     // _refreshOutlineNotchWidth is needed for this to work properly in async tests.
     // Furthermore if the font takes a long time to load we want the outline notch to be close
     // to the correct width from the start then correct itself when the fonts load.
-    if (this._document?.fonts?.ready) {
-      this._document.fonts.ready.then(() => {
-        this._refreshOutlineNotchWidth();
-        this._changeDetectorRef.markForCheck();
-      });
-    } else {
-      // FontFaceSet is not supported in IE
-      setTimeout(() => this._refreshOutlineNotchWidth(), 100);
-    }
+    // this._scheduler.schedule(() => {
+    // if (this._document?.fonts?.ready) {
+    //   this._document.fonts.ready.then(() => {
+    //     this._refreshOutlineNotchWidth();
+    //     this._changeDetectorRef.markForCheck();
+    //   });
+    // } else {
+    //   // FontFaceSet is not supported in IE
+    //   setTimeout(() => this._refreshOutlineNotchWidth(), 100);
+    // }
+    // });
     // Enable animations now. This ensures we don't animate on initial render.
     this._subscriptAnimationState = 'enter';
     // Because the above changes a value used in the template after it was checked, we need
@@ -555,7 +557,10 @@ export class MatFormField
     if (!this._hasOutline() || !this._floatingLabel) {
       return;
     }
-    this._labelWidth = this._floatingLabel.getWidth();
+
+    this._scheduler.schedule(() => {
+      this._notchedOutline?._setNotchWidth(this._floatingLabel!.getWidth());
+    });
   }
 
   /** Does any extra processing that is required when handling the hints. */

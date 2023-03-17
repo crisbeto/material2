@@ -69,6 +69,9 @@ export class InputDemo {
   showSecondPrefix = false;
   showPrefix = true;
 
+  fields = new Array(100).fill('');
+  isShown = false;
+
   name: string;
   errorMessageExample1: string;
   errorMessageExample2: string;
