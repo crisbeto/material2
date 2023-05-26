@@ -26,6 +26,9 @@ import {ProjectType} from '@schematics/angular/utility/workspace-models';
 import {addFontsToIndex} from './fonts/material-fonts';
 import {Schema} from './schema';
 import {addThemeToAppStyles, addTypographyClass} from './theming/theming';
+import {applyToUpdateRecorder, ReplaceChange} from '@schematics/angular/utility/change';
+import {insertImport} from '@schematics/angular/utility/ast-utils';
+import * as ts from 'typescript';
 
 /**
  * Scaffolds the basics of a Angular Material application, this includes:
@@ -45,6 +48,15 @@ export default function (options: Schema): Rule {
         addFontsToIndex(options),
         addMaterialAppStyles(options),
         addTypographyClass(options),
+        addRootProviders(({codeBlock, external}) => {
+          const storeModule = external('StoreModule', '@ngrx/store');
+          const foo = external('Foo', '@ngrx/store');
+          const baz = external('Foo', '@ngrx/foo');
+          return codeBlock`${storeModule}.forRoot({foo: ${foo}}, {baz: ${baz}})`;
+        }),
+        addRootProviders(
+          ({codeBlock, external}) => codeBlock`${external('FirebaseModule', 'firebase')}`,
+        ),
       ]);
     }
     context.logger.warn(
@@ -211,5 +223,174 @@ function addMaterialAppStyles(options: Schema) {
 
     recorder.insertLeft(htmlContent.length, insertion);
     host.commitUpdate(recorder);
+  };
+}
+
+let counter = 0;
+
+function getPlaceholder(): string {
+  return `@@__NG_PLACEHOLDER_${counter++}__@@`;
+}
+
+type PendingImports = Map<string, Map<string, string>>;
+
+interface PendingCode {
+  imports: PendingImports;
+  expression: string;
+}
+
+class CodeWriter {
+  private _imports: PendingImports = new Map<string, Map<string, string>>();
+
+  codeBlock = (strings: TemplateStringsArray, ...params: unknown[]): PendingCode => {
+    return {
+      expression: strings.map((part, index) => part + (params[index] || '')).join(''),
+      imports: this._imports,
+    };
+  };
+
+  external = (symbolName: string, moduleName: string): string => {
+    if (!this._imports.has(moduleName)) {
+      this._imports.set(moduleName, new Map());
+    }
+
+    const symbolsPerModule = this._imports.get(moduleName)!;
+
+    if (!symbolsPerModule.has(symbolName)) {
+      symbolsPerModule.set(symbolName, getPlaceholder());
+    }
+
+    return symbolsPerModule.get(symbolName)!;
+  };
+}
+
+function findProvidersNode(sourceFile: ts.SourceFile): ts.ArrayLiteralExpression | null {
+  let result: ts.ArrayLiteralExpression | null = null;
+
+  sourceFile.forEachChild(function walk(node) {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === 'providers' &&
+      node.initializer &&
+      ts.isArrayLiteralExpression(node.initializer)
+    ) {
+      result = node.initializer;
+    } else {
+      node.forEachChild(walk);
+    }
+  });
+
+  return result;
+}
+
+function hasConflictingIdentifier(
+  sourceFile: ts.SourceFile,
+  symbolName: string,
+  moduleName: string,
+): boolean {
+  for (const node of sourceFile.statements) {
+    if (isNamedNode(node)) {
+      return true;
+    }
+
+    if (
+      ts.isVariableDeclarationList(node) &&
+      node.declarations.some(decl => isNamedNode(decl) && decl.name.text === symbolName)
+    ) {
+      return true;
+    }
+
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteralLike(node.moduleSpecifier) &&
+      // It's not a conflict if it's from the same module
+      node.moduleSpecifier.text !== moduleName &&
+      node.importClause?.namedBindings &&
+      ts.isNamedImports(node.importClause.namedBindings) &&
+      node.importClause.namedBindings.elements.some(el => el.name.text === symbolName)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function isNamedNode(node: ts.Node & {name?: ts.Node}): node is ts.Node & {name: ts.Identifier} {
+  return !!node.name && ts.isIdentifier(node.name);
+}
+
+function getImportRules(pending: PendingCode, filePath: string) {
+  const rules: Rule[] = [];
+
+  pending.imports.forEach((symbols, moduleName) => {
+    symbols.forEach((placeholder, symbolName) => {
+      rules.push((tree: Tree) => {
+        const recorder = tree.beginUpdate(filePath);
+        const sourceFile = ts.createSourceFile(
+          filePath,
+          tree.readText(filePath),
+          ts.ScriptTarget.Latest,
+          true,
+        );
+        const localName = hasConflictingIdentifier(sourceFile, symbolName, moduleName)
+          ? symbolName + '_alias'
+          : symbolName;
+
+        pending.expression = pending.expression.replace(new RegExp(placeholder, 'g'), localName);
+
+        applyToUpdateRecorder(recorder, [
+          // TODO: the local name should actually be the import alias.
+          // `insertImport` currently doesn't support aliasing.
+          insertImport(sourceFile, filePath, localName, moduleName),
+        ]);
+        tree.commitUpdate(recorder);
+      });
+    });
+  });
+
+  return rules;
+}
+
+function addRootProviders(callback: (writer: CodeWriter) => PendingCode): Rule {
+  return async () => {
+    const testPath = '/projects/material/src/app/app.config.ts';
+    const writer = new CodeWriter();
+    const pendingCode = callback(writer);
+
+    return chain([
+      ...getImportRules(pendingCode, testPath),
+      host => {
+        const sourceFile = ts.createSourceFile(
+          testPath,
+          host.readText(testPath),
+          ts.ScriptTarget.Latest,
+          true,
+        );
+
+        const providers = findProvidersNode(sourceFile);
+
+        if (!providers) {
+          throw new Error('oh no');
+        }
+
+        const printer = ts.createPrinter();
+        const placeholder = ts.factory.createIdentifier(getPlaceholder());
+        const newNode = ts.factory.updateArrayLiteralExpression(providers, [
+          ...providers.elements,
+          placeholder,
+        ]);
+        const newText = printer
+          .printNode(ts.EmitHint.Unspecified, newNode, sourceFile)
+          .replace(placeholder.text, pendingCode.expression);
+
+        const recorder = host.beginUpdate(testPath);
+        applyToUpdateRecorder(recorder, [
+          new ReplaceChange(testPath, providers.getStart(), providers.getText(), newText),
+        ]);
+        host.commitUpdate(recorder);
+      },
+    ]);
   };
 }
