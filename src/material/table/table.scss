@@ -1,12 +1,13 @@
 @use '@material/data-table/data-table' as mdc-data-table;
+@use '@material/data-table/data-table-cell' as mdc-data-table-cell;
+@use '@material/data-table/data-table-header-cell' as mdc-data-table-header-cell;
+@use '@material/data-table' as mdc-data-table-theme;
+@use '@material/theme/custom-properties' as mdc-custom-properties;
 @use '../core/mdc-helpers/mdc-helpers';
+@use '../core/tokens/token-utils';
+@use '../core/tokens/m2/mdc/data-table' as tokens-mdc-data-table;
+@use '../core/tokens/m2/mat/table' as tokens-mat-table;
 @use './table-flex-styles';
-
-@include mdc-helpers.disable-mdc-fallback-declarations {
-  @include mdc-data-table.table-styles(
-    $query: mdc-helpers.$mdc-base-styles-without-animation-query);
-  @include table-flex-styles.private-table-flex-styles();
-}
 
 .mat-mdc-table-sticky {
   // Note that the table can either set this class or an inline style to make something sticky.
@@ -15,16 +16,37 @@
   position: sticky !important;
 }
 
-.mat-mdc-table {
-  // MDC Table applies `table-layout: fixed`, but this is a backwards incompatible
-  // change since the table did not previously apply it.
-  // TODO: Add a mixin to MDC to set the layout instead of including this override,
-  // see this issue: https://github.com/material-components/material-components-web/issues/6412
-  table-layout: auto;
+@include mdc-custom-properties.configure($emit-fallback-values: false, $emit-fallback-vars: false) {
+  @include mdc-data-table.static-styles($query: mdc-helpers.$mdc-base-styles-query);
+  @include mdc-data-table-cell.static-styles($query: mdc-helpers.$mdc-base-styles-query);
+  @include mdc-data-table-header-cell.static-styles($query: mdc-helpers.$mdc-base-styles-query);
+  @include mdc-data-table-theme.cell-padding(
+    $leading-padding: mdc-data-table-theme.$cell-leading-padding,
+    $trailing-padding: mdc-data-table-theme.$cell-trailing-padding,
+    $query: mdc-helpers.$mdc-base-styles-query
+  );
+  @include table-flex-styles.private-table-flex-styles();
 
-  // The MDC table does not allow text to wrap within the cell. This allows for text to
-  // wrap when the cell reaches its maximum width.
-  white-space: normal;
+  .mat-mdc-table {
+    @include mdc-data-table-theme.theme(tokens-mdc-data-table.get-unthemable-tokens());
+    @include mdc-data-table-theme.theme-styles(tokens-mdc-data-table.get-token-slots());
+    @include token-utils.create-token-values(
+      tokens-mat-table.$prefix, tokens-mat-table.get-unthemable-tokens());
+
+    // MDC Table applies `table-layout: fixed`, but this is a backwards incompatible
+    // change since the table did not previously apply it.
+    // TODO: Add a mixin to MDC to set the layout instead of including this override,
+    // see this issue: https://github.com/material-components/material-components-web/issues/6412
+    table-layout: auto;
+
+    // The MDC table does not allow text to wrap within the cell. This allows for text to
+    // wrap when the cell reaches its maximum width.
+    white-space: normal;
+
+    @include token-utils.use-tokens(tokens-mat-table.$prefix, tokens-mat-table.get-token-slots()) {
+      @include token-utils.create-token-slot(background-color, background-color);
+    }
+  }
 }
 
 // MDC table rows are styled with a top border, whereas our legacy flex table styles rows with
@@ -41,13 +63,6 @@ mat-row.mat-mdc-row, mat-header-row.mat-mdc-header-row, mat-footer-row.mat-mdc-f
 .mat-mdc-header-row, .mat-mdc-row, .mat-mdc-footer-row,
 .mat-mdc-table .mat-mdc-header-cell {
   background: inherit;
-}
-
-// Disable hover styling while MDC uses an opacity for its color.
-// When the hover style is used with sticky cells, the opacity shows the cells overlapping.
-.mat-mdc-table .mat-mdc-row:hover,
-.mat-mdc-table .mat-mdc-footer-row:hover {
-  background-color: inherit;
 }
 
 // Flex rows should not set a definite height, but instead stretch to the height of their

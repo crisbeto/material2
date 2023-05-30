@@ -12,7 +12,7 @@
   margin: 8px;
 }
 
-.mat-column-filler {
+.mat-mdc-table .mat-column-filler {
   padding: 0 8px;
   font-size: 10px;
   text-align: center;
@@ -23,18 +23,18 @@
   box-sizing: border-box;
 }
 
-.mat-mdc-table-sticky-border-elem-top {
+.mat-mdc-table .mat-mdc-table-sticky-border-elem-top {
   border-bottom: 2px solid midnightblue;
 }
 
-.mat-mdc-table-sticky-border-elem-right {
+.mat-mdc-table .mat-mdc-table-sticky-border-elem-right {
   border-left: 2px solid midnightblue;
 }
 
-.mat-mdc-table-sticky-border-elem-bottom {
+.mat-mdc-table .mat-mdc-table-sticky-border-elem-bottom {
   border-top: 2px solid midnightblue;
 }
 
-.mat-mdc-table-sticky-border-elem-left {
+.mat-mdc-table .mat-mdc-table-sticky-border-elem-left {
   border-right: 2px solid midnightblue;
 }
