@@ -18,6 +18,7 @@ ng_module(
         "//src/material/checkbox",
         "//src/material/form-field",
         "//src/material/icon",
+        "//src/material/select",
         "//src/material/input",
         "//src/material/tabs",
         "//src/material/toolbar",
