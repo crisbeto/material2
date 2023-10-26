@@ -676,10 +676,12 @@ class GridListWithRowspanBinding {
   template: `
     <div style="width:400px">
       <mat-grid-list cols="4" rowHeight="100px">
-        <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows"
+        @for (tile of tiles; track tile) {
+  <mat-grid-tile [colspan]="tile.cols" [rowspan]="tile.rows"
                       [style.background]="tile.color">
           {{tile.text}}
         </mat-grid-tile>
+}
       </mat-grid-list>
     </div>`,
 })
@@ -744,10 +746,12 @@ class GridListWithFooterContainingTwoLines {}
     <mat-grid-list cols="1">
       <mat-grid-tile>
         <mat-grid-tile-footer>
-          <ng-container [ngSwitch]="true">
+          
+@switch (true) {
             <h3 mat-line>First line</h3>
             <span mat-line>Second line</span>
-          </ng-container>
+          }
+
         </mat-grid-tile-footer>
       </mat-grid-tile>
     </mat-grid-list>`,
@@ -783,9 +787,11 @@ class GridListWithRtl {}
   template: `
     <div style="width:200px">
       <mat-grid-list cols="1">
-        <ng-container [ngSwitch]="true">
+        
+@switch (true) {
           <mat-grid-tile></mat-grid-tile>
-        </ng-container>
+        }
+
       </mat-grid-list>
     </div>
   `,

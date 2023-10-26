@@ -554,7 +554,8 @@ describe('YoutubePlayer', () => {
 @Component({
   selector: 'test-app',
   template: `
-    <youtube-player #player [videoId]="videoId" *ngIf="visible" [width]="width" [height]="height"
+    @if (visible) {
+<youtube-player #player [videoId]="videoId" [width]="width" [height]="height"
       [startSeconds]="startSeconds" [endSeconds]="endSeconds" [suggestedQuality]="suggestedQuality"
       [playerVars]="playerVars"
       [disableCookies]="disableCookies"
@@ -565,6 +566,7 @@ describe('YoutubePlayer', () => {
       (error)="onError($event)"
       (apiChange)="onApiChange($event)">
     </youtube-player>
+}
   `,
 })
 class TestApp {

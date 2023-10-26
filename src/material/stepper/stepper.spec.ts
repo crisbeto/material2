@@ -1894,7 +1894,8 @@ class SimpleMatHorizontalStepperApp {
           <button mat-button matStepperNext>Next</button>
         </div>
       </mat-step>
-      <mat-step *ngIf="showStepTwo" [color]="secondStepTheme">
+      @if (showStepTwo) {
+<mat-step [color]="secondStepTheme">
         <ng-template matStepLabel>Step 2</ng-template>
         Content 2
         <div>
@@ -1902,6 +1903,7 @@ class SimpleMatHorizontalStepperApp {
           <button mat-button matStepperNext>Next</button>
         </div>
       </mat-step>
+}
       <mat-step [label]="inputLabel">
         Content 3
         <div>
@@ -1988,10 +1990,12 @@ class SimplePreselectedMatHorizontalStepperApp {
 @Component({
   template: `
     <mat-stepper linear>
-      <mat-step
-        *ngFor="let step of steps"
+      @for (step of steps; track step) {
+  <mat-step
+       
         [label]="step.label"
         [completed]="step.completed"></mat-step>
+}
     </mat-stepper>
   `,
 })
@@ -2006,11 +2010,13 @@ class SimpleStepperWithoutStepControl {
 @Component({
   template: `
     <mat-stepper linear>
-      <mat-step
-        *ngFor="let step of steps"
+      @for (step of steps; track step) {
+  <mat-step
+       
         [label]="step.label"
         [stepControl]="step.control"
         [completed]="step.completed"></mat-step>
+}
     </mat-stepper>
   `,
 })
@@ -2058,13 +2064,15 @@ class IconOverridesStepper {
 @Component({
   template: `
     <mat-stepper>
-      <ng-container [ngSwitch]="true">
+      
+@switch (true) {
         <ng-template matStepperIcon="edit">Custom edit</ng-template>
         <ng-template matStepperIcon="done">Custom done</ng-template>
         <ng-template matStepperIcon="number" let-index="index">
           {{getRomanNumeral(index + 1)}}
         </ng-template>
-      </ng-container>
+      }
+
 
       <mat-step>Content 1</mat-step>
       <mat-step>Content 2</mat-step>
@@ -2103,11 +2111,13 @@ class StepperWithAriaInputs {
 @Component({
   template: `
     <mat-stepper orientation="vertical">
-      <ng-container [ngSwitch]="true">
+      
+@switch (true) {
         <mat-step label="Step 1">Content 1</mat-step>
         <mat-step label="Step 2">Content 2</mat-step>
         <mat-step label="Step 3">Content 3</mat-step>
-      </ng-container>
+      }
+
     </mat-stepper>
   `,
 })
@@ -2120,9 +2130,11 @@ class StepperWithIndirectDescendantSteps {}
         <ng-template matStepLabel>Step 1</ng-template>
       </mat-step>
 
-      <mat-step *ngIf="showStep2">
+      @if (showStep2) {
+<mat-step>
         <ng-template matStepLabel>Step 2</ng-template>
       </mat-step>
+}
     </mat-stepper>
   `,
 })
@@ -2187,7 +2199,9 @@ class StepperWithLazyContent {
   template: `
     <mat-stepper>
       <mat-step label="Step 1">Content 1</mat-step>
-      <mat-step label="Step 2" *ngIf="renderSecondStep">Content 2</mat-step>
+      @if (renderSecondStep) {
+<mat-step label="Step 2">Content 2</mat-step>
+}
       <mat-step label="Step 3">Content 3</mat-step>
     </mat-stepper>
   `,

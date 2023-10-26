@@ -15,12 +15,14 @@
 <mat-form-field class="example-chip-list" appearance="fill">
     <mat-label>Favorite Fruits</mat-label>
     <mat-chip-grid #fruitChipList aria-label="Fruit selection">
-        <mat-chip-row *ngFor="let fruit of fruits" (removed)="remove(fruit)">
+        @for (fruit of fruits; track fruit) {
+  <mat-chip-row (removed)="remove(fruit)">
             {{fruit.name}}
             <button matChipRemove>
                 <mat-icon>cancel</mat-icon>
             </button>
         </mat-chip-row>
+}
         <input placeholder="New fruit..."
             [matChipInputFor]="fruitChipList"
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"

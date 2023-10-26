@@ -109,9 +109,11 @@ describe('MDC-based MatChipSet', () => {
 @Component({
   template: `
       <mat-chip-set>
-        <mat-chip *ngFor="let i of chips">
+        @for (i of chips; track i) {
+  <mat-chip>
           {{name}} {{i + 1}}
         </mat-chip>
+}
       </mat-chip-set>
   `,
 })
@@ -123,11 +125,15 @@ class BasicChipSet {
 @Component({
   template: `
     <mat-chip-set>
-      <ng-container [ngSwitch]="true">
-        <mat-chip *ngFor="let i of chips">
+      
+@switch (true) {
+        @for (i of chips; track i) {
+  <mat-chip>
           {{name}} {{i + 1}}
         </mat-chip>
-      </ng-container>
+}
+      }
+
     </mat-chip-set>
   `,
 })

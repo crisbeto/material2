@@ -799,7 +799,9 @@ class ArbitraryViewContainerRefComponent {
 
   <ng-template cdk-portal>
     <ul>
-      <li *ngFor="let fruitName of fruits"> {{fruitName}} </li>
+      @for (fruitName of fruits; track fruitName) {
+  <li> {{fruitName}} </li>
+}
     </ul>
   </ng-template>
 

@@ -8,7 +8,9 @@
   <li>
     <button mat-raised-button (click)="openDialog()">Pick one</button>
   </li>
-  <li *ngIf="animal">
+  @if (animal) {
+<li>
     You chose: <em>{{animal}}</em>
   </li>
+}
 </ol>

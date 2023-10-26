@@ -1284,7 +1284,9 @@ class DrawerWithoutFocusableElements {}
 @Component({
   template: `
     <mat-drawer-container>
-      <mat-drawer *ngIf="showDrawer" #drawer mode="side">Drawer</mat-drawer>
+      @if (showDrawer) {
+<mat-drawer #drawer mode="side">Drawer</mat-drawer>
+}
     </mat-drawer-container>
   `,
 })
@@ -1296,7 +1298,9 @@ class DrawerDelayed {
 @Component({
   template: `
     <mat-drawer-container [dir]="direction">
-      <mat-drawer *ngIf="renderDrawer" [mode]="mode" style="width:100px"></mat-drawer>
+      @if (renderDrawer) {
+<mat-drawer [mode]="mode" style="width:100px"></mat-drawer>
+}
     </mat-drawer-container>`,
 })
 class DrawerContainerStateChangesTestApp {
@@ -1340,9 +1344,11 @@ class DrawerContainerWithContent {
   // there's a directive between the container and the drawer.
   template: `
     <mat-drawer-container #container>
-      <ng-container [ngSwitch]="true">
+      
+@switch (true) {
         <mat-drawer #drawer>Drawer</mat-drawer>
-      </ng-container>
+      }
+
     </mat-drawer-container>`,
 })
 class IndirectDescendantDrawer {

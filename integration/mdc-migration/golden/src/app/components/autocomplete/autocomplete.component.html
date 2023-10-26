@@ -9,9 +9,11 @@
       [formControl]="myControl"
       [matAutocomplete]="auto">
     <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+      @for (option of filteredOptions | async; track option) {
+  <mat-option [value]="option">
         {{option}}
       </mat-option>
+}
     </mat-autocomplete>
   </mat-form-field>
 </form>

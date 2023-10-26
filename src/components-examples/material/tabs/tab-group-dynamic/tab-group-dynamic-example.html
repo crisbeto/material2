@@ -14,7 +14,8 @@
 
 <mat-tab-group [selectedIndex]="selected.value"
                (selectedIndexChange)="selected.setValue($event)">
-  <mat-tab *ngFor="let tab of tabs; let index = index" [label]="tab">
+  @for (tab of tabs; track tab; let index = $index) {
+  <mat-tab [label]="tab">
     Contents for {{tab}} tab
 
     <button mat-raised-button
@@ -24,4 +25,5 @@
       Delete Tab
     </button>
   </mat-tab>
+}
 </mat-tab-group>

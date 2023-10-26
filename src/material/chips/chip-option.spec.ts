@@ -398,16 +398,20 @@ describe('MDC-based Option Chips', () => {
 @Component({
   template: `
     <mat-chip-listbox>
-      <div *ngIf="shouldShow">
+      @if (shouldShow) {
+<div>
         <mat-chip-option [selectable]="selectable"
                  [color]="color" [selected]="selected" [disabled]="disabled"
                  (destroyed)="chipDestroy($event)"
                  (selectionChange)="chipSelectionChange($event)"
                  [aria-label]="ariaLabel" [aria-description]="ariaDescription">
-          <span class="avatar" matChipAvatar *ngIf="avatarLabel">{{avatarLabel}}</span>
+          @if (avatarLabel) {
+<span class="avatar" matChipAvatar>{{avatarLabel}}</span>
+}
           {{name}}
         </mat-chip-option>
       </div>
+}
     </mat-chip-listbox>`,
 })
 class SingleChip {

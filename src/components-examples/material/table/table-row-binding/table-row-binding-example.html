@@ -38,12 +38,16 @@
   </h3>
 </div>
 
-<div *ngIf="!clickedRows.size">
+@if (!clickedRows.size) {
+<div>
   Clicked rows will be logged here
 </div>
+}
 
 <ul>
-  <li *ngFor="let clickedRow of clickedRows">
+  @for (clickedRow of clickedRows; track clickedRow) {
+  <li>
     Clicked on {{clickedRow.name}}
   </li>
+}
 </ul>

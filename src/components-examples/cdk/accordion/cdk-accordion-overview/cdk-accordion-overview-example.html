@@ -1,6 +1,7 @@
 <cdk-accordion class="example-accordion">
+  @for (item of items; track item; let index = $index) {
   <cdk-accordion-item
-    *ngFor="let item of items; let index = index;"
+   
     #accordionItem="cdkAccordionItem"
     class="example-accordion-item"
     role="button"
@@ -25,5 +26,6 @@
       veritatis illo autem iure aliquid ullam rem tenetur deserunt velit culpa?
     </div>
   </cdk-accordion-item>
+}
 </cdk-accordion>
 

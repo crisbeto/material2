@@ -185,7 +185,8 @@ describe('MDC-based MatChip', () => {
 @Component({
   template: `
     <mat-chip-set>
-      <div *ngIf="shouldShow">
+      @if (shouldShow) {
+<div>
         <mat-chip [removable]="removable"
                  [color]="color" [disabled]="disabled"
                  (destroyed)="chipDestroy($event)"
@@ -193,6 +194,7 @@ describe('MDC-based MatChip', () => {
           {{name}}
         </mat-chip>
       </div>
+}
     </mat-chip-set>`,
 })
 class SingleChip {

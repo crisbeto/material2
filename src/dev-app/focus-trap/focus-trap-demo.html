@@ -65,8 +65,10 @@
 
   <mat-card class="demo-mat-card">
     <mat-toolbar color="primary">Shadow DOMs</mat-toolbar>
-    <mat-card-content class="demo-mat-card-content" [ngSwitch]="_supportsShadowDom">
-      <ng-container *ngSwitchCase="true">
+    <mat-card-content class="demo-mat-card-content">
+@switch (_supportsShadowDom) {
+      @case (true) {
+  
         <button mat-raised-button (click)="toggleFocus(shadowDomFocusTrap)">
           {{shadowDomFocusTrap && shadowDomFocusTrap.enabled ? "Disable" : "Enable"}} FocusTrap
         </button>
@@ -83,9 +85,13 @@
         <shadow-dom-demo>
           <textarea class="demo-focus-trap-element" placeholder="I am in a shadow DOM"></textarea>
         </shadow-dom-demo>
-      </ng-container>
-      <ng-container *ngSwitchCase="false">Shadow DOM not supported</ng-container>
-    </mat-card-content>
+      
+}
+      @case (false) {
+  Shadow DOM not supported
+}
+    }
+</mat-card-content>
   </mat-card>
 
   <mat-card class="demo-mat-card">

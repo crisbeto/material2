@@ -360,10 +360,12 @@ class FocusTrapWithAutoCaptureInShadowDom extends FocusTrapWithAutoCapture {}
 
 @Component({
   template: `
-    <div *ngIf="renderFocusTrap" [cdkTrapFocus]="_isFocusTrapEnabled">
+    @if (renderFocusTrap) {
+<div [cdkTrapFocus]="_isFocusTrapEnabled">
       <input>
       <button>SAVE</button>
     </div>
+}
     `,
 })
 class FocusTrapWithBindings {

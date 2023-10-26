@@ -36,7 +36,8 @@
 </div>
 
 <section class="example-container mat-elevation-z8" tabindex="0">
-  <mat-table [dataSource]="dataSource" *ngFor="let table of tables">
+  @for (table of tables; track table) {
+  <mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="position" [sticky]="isSticky(stickyColumns, 'position')">
       <mat-header-cell *matHeaderCellDef> Position </mat-header-cell>
       <mat-cell *matCellDef="let element"> {{element.position}} </mat-cell>
@@ -75,4 +76,5 @@
     <mat-footer-row *matFooterRowDef="displayedColumns; sticky: isSticky(stickyFooters, 'footer-1')"></mat-footer-row>
     <mat-footer-row *matFooterRowDef="displayedColumns; sticky: isSticky(stickyFooters, 'footer-2')"></mat-footer-row>
   </mat-table>
+}
 </section>

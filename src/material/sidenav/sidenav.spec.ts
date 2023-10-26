@@ -109,9 +109,11 @@ class SidenavWithFixedPosition {
   // there's a directive between the container and the sidenav.
   template: `
     <mat-sidenav-container #container>
-      <ng-container [ngSwitch]="true">
+      
+@switch (true) {
         <mat-sidenav #sidenav>Sidenav.</mat-sidenav>
-      </ng-container>
+      }
+
       <mat-sidenav-content>Some content.</mat-sidenav-content>
     </mat-sidenav-container>`,
 })
