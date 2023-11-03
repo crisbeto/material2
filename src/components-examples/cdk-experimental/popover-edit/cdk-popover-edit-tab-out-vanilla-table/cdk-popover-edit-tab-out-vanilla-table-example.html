@@ -23,7 +23,8 @@
     <th> Symbol </th>
   </tr>
   
-  <tr *ngFor="let element of elements">
+  @for (element of elements; track element) {
+  <tr>
     <td> {{element.position}} </td>
     
     <td [cdkPopoverEdit]="nameEdit" cdkPopoverEditTabOut cdkEditOpen>
@@ -53,4 +54,5 @@
 
     <td> {{element.symbol}} </td>
   </tr>
+}
 </table>

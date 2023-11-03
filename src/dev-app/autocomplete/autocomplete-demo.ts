@@ -224,9 +224,11 @@ export class AutocompleteDemo {
         <mat-label>T-Shirt Size</mat-label>
         <input matInput [matAutocomplete]="tdAuto" [(ngModel)]="currentSize" name="size">
         <mat-autocomplete #tdAuto="matAutocomplete">
-          <mat-option *ngFor="let size of sizes" [value]="size">
+          @for (size of sizes; track size) {
+  <mat-option [value]="size">
             {{size}}
           </mat-option>
+}
         </mat-autocomplete>
       </mat-form-field>
 

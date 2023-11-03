@@ -35,9 +35,10 @@
   </mat-button-toggle-group>
 </div>
 
-<div class="example-container mat-elevation-z8"
+@for (table of tables; track table) {
+  <div class="example-container mat-elevation-z8"
     cdkTableScrollContainer
-    *ngFor="let table of tables">
+   >
   <table mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="position" [sticky]="isSticky(stickyColumns, 'position')">
       <th mat-header-cell *matHeaderCellDef> Position </th>
@@ -78,3 +79,4 @@
     <tr mat-footer-row *matFooterRowDef="displayedColumns; sticky: isSticky(stickyFooters, 'footer-2')"></tr>
   </table>
 </div>
+}

@@ -442,7 +442,8 @@ describe('cdkSelectionColumn with multiple = false', () => {
       <button cdkSelectAll #toggleAll="cdkSelectAll" (click)="toggleAll.toggle($event)">
         {{selectAllState(toggleAll.indeterminate | async, toggleAll.checked | async)}}
       </button>
-      <li *ngFor="let item of data; index as i">
+      @for (item of data; track item; let i = $index) {
+  <li>
         <button cdkSelectionToggle #toggle="cdkSelectionToggle"
             [cdkSelectionToggleValue]="item"
             [cdkSelectionToggleIndex]="i"
@@ -451,6 +452,7 @@ describe('cdkSelectionColumn with multiple = false', () => {
         </button>
         {{item}}
       </li>
+}
     </ul>`,
 })
 class ListWithMultiSelection {
@@ -502,7 +504,8 @@ class ListWithMultiSelection {
   template: `
     <ul cdkSelection [dataSource]="data" [cdkSelectionMultiple]="false"
         (cdkSelectionChange)="selectionChange = $event" >
-      <li *ngFor="let item of data; index as i">
+      @for (item of data; track item; let i = $index) {
+  <li>
         <button cdkSelectionToggle #toggle="cdkSelectionToggle"
             [cdkSelectionToggleValue]="item"
             [cdkSelectionToggleIndex]="i"
@@ -511,6 +514,7 @@ class ListWithMultiSelection {
         </button>
         {{item}}
       </li>
+}
     </ul>`,
 })
 class ListWithSingleSelection {

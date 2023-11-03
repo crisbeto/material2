@@ -55,10 +55,12 @@
     <mat-card-title>Fixed-height grid list</mat-card-title>
     <mat-card-content>
       <mat-grid-list [cols]="fixedCols" [rowHeight]="fixedRowHeight">
-        <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows"
+        @for (tile of tiles; track tile) {
+  <mat-grid-tile [colspan]="tile.cols" [rowspan]="tile.rows"
                       [style.background]="tile.color">
           {{tile.text}}
         </mat-grid-tile>
+}
       </mat-grid-list>
     </mat-card-content>
     <mat-card-actions>
@@ -72,9 +74,11 @@
     <mat-card-title>Ratio-height grid list</mat-card-title>
     <mat-card-content>
       <mat-grid-list cols="2" [rowHeight]="ratio" gutterSize="4px">
-        <mat-grid-tile *ngFor="let tile of tiles" [style.background]="'lightblue'">
+        @for (tile of tiles; track tile) {
+  <mat-grid-tile [style.background]="'lightblue'">
           {{tile.text}}
         </mat-grid-tile>
+}
       </mat-grid-list>
     </mat-card-content>
     <mat-card-actions>
@@ -87,9 +91,11 @@
     <mat-card-content>
       <mat-grid-list cols="2" rowHeight="fit" [gutterSize]="ratioGutter"
                     [style.height]="fitListHeight">
-        <mat-grid-tile *ngFor="let tile of tiles" [style.background]="'#F1EBBA'">
+        @for (tile of tiles; track tile) {
+  <mat-grid-tile [style.background]="'#F1EBBA'">
           {{tile.text}}
         </mat-grid-tile>
+}
       </mat-grid-list>
     </mat-card-content>
     <mat-card-actions>
@@ -102,12 +108,14 @@
     <mat-card-title>Grid list with header</mat-card-title>
     <mat-card-content>
       <mat-grid-list cols="3" rowHeight="200px">
-        <mat-grid-tile *ngFor="let dog of dogs" style="background:gray">
+        @for (dog of dogs; track dog) {
+  <mat-grid-tile style="background:gray">
           <mat-grid-tile-header>
             <mat-icon mat-grid-avatar>info_outline</mat-icon>
             {{dog.name}}
           </mat-grid-tile-header>
         </mat-grid-tile>
+}
       </mat-grid-list>
     </mat-card-content>
   </mat-card>
@@ -116,7 +124,8 @@
     <mat-card-title>Grid list with footer</mat-card-title>
     <mat-card-content>
       <mat-grid-list cols="3" rowHeight="200px">
-        <mat-grid-tile *ngFor="let dog of dogs">
+        @for (dog of dogs; track dog) {
+  <mat-grid-tile>
           <img [alt]="dog.name" src="https://material.angularjs.org/material2_assets/ngconf/{{dog.name}}.png">
           <mat-grid-tile-footer>
             <h3 mat-line>{{dog.name}}</h3>
@@ -124,6 +133,7 @@
             <mat-icon>star_border</mat-icon>
           </mat-grid-tile-footer>
         </mat-grid-tile>
+}
       </mat-grid-list>
     </mat-card-content>
   </mat-card>

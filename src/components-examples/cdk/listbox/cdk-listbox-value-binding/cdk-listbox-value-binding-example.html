@@ -8,11 +8,13 @@
       (cdkListboxValueChange)="starter = $event.value"
       aria-labelledby="example-starter-pokemon-label"
       class="example-listbox">
-    <li *ngFor="let pokemon of starters"
+    @for (pokemon of starters; track pokemon) {
+  <li
         [cdkOption]="pokemon"
         class="example-option">
       {{pokemon}}
     </li>
+}
   </ul>
   <!-- #enddocregion listbox -->
 </div>

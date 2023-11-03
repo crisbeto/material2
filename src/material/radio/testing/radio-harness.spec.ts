@@ -264,7 +264,8 @@ describe('radio harness', () => {
 
 @Component({
   template: `
-    <mat-radio-button *ngFor="let value of values, let i = index"
+    @for (value of values, let i = index; track value) {
+  <mat-radio-button
                       [name]="value === 'opt3' ? 'group2' : 'group1'"
                       [disabled]="disableAll"
                       [checked]="value === 'opt2'"
@@ -273,14 +274,17 @@ describe('radio harness', () => {
                       [value]="value">
       Option #{{i + 1}}
     </mat-radio-button>
+}
 
     <mat-radio-group id="my-group-1" name="my-group-1-name">
-      <mat-radio-button *ngFor="let value of values"
+      @for (value of values; track value) {
+  <mat-radio-button
                         [checked]="value === 'opt2'"
                         [value]="value"
                         [id]="value + '-group-one'">
         {{value}}
       </mat-radio-button>
+}
     </mat-radio-group>
 
 

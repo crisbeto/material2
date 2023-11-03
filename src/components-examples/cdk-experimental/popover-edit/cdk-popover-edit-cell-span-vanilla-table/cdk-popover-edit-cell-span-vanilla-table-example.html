@@ -34,7 +34,8 @@
     <th> Last name </th>
   </tr>
   
-  <tr *ngFor="let person of persons">
+  @for (person of persons; track person) {
+  <tr>
     <td> {{person.id}} </td>
 
     <td [cdkPopoverEdit]="nameEdit"
@@ -67,4 +68,5 @@
       </span>
     </td>
   </tr>
+}
 </table>

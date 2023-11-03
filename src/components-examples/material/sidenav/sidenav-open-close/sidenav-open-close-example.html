@@ -1,4 +1,5 @@
-<mat-sidenav-container class="example-container" *ngIf="shouldRun">
+@if (shouldRun) {
+<mat-sidenav-container class="example-container">
   <mat-sidenav #sidenav mode="side" [(opened)]="opened" (opened)="events.push('open!')"
                (closed)="events.push('close!')">
     Sidenav content
@@ -9,9 +10,14 @@
     <p><button mat-button (click)="sidenav.toggle()">sidenav.toggle()</button></p>
     <p>Events:</p>
     <div class="example-events">
-      <div *ngFor="let e of events">{{e}}</div>
+      @for (e of events; track e) {
+  <div>{{e}}</div>
+}
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+}
 
-<div *ngIf="!shouldRun">Please open on Stackblitz to see result</div>
+@if (!shouldRun) {
+<div>Please open on Stackblitz to see result</div>
+}

@@ -6725,10 +6725,12 @@ class StandaloneDraggableWithPreDisabledHandle {
   template: `
     <div #dragElement cdkDrag
       style="width: 100px; height: 100px; background: red; position: relative">
-      <div
+      @if (showHandle) {
+<div
         #handleElement
-        *ngIf="showHandle"
+
         cdkDragHandle style="width: 10px; height: 10px; background: green;"></div>
+}
     </div>
   `,
 })
@@ -6955,16 +6957,20 @@ class DraggableInScrollableParentContainer extends DraggableInDropZone implement
       [cdkDropListData]="items"
       (cdkDropListSorted)="sortedSpy($event)"
       (cdkDropListDropped)="droppedSpy($event)">
-        <ng-container [ngSwitch]="true">
-          <div
-            *ngFor="let item of items"
+
+@if (true) {
+          @for (item of items; track item) {
+  <div
+
             cdkDrag
             [cdkDragData]="item"
             [cdkDragBoundary]="boundarySelector"
             [style.height.px]="item.height"
             [style.margin-bottom.px]="item.margin"
             style="width: 100%; background: red;">{{item.value}}</div>
-        </ng-container>
+}
+        }
+
     </div>
   `,
 })
@@ -7323,14 +7329,18 @@ class ConnectedDropZonesInsideShadowRootWithNgIf extends ConnectedDropZones {}
         cdkDropList
         [cdkDropListData]="todo"
         (cdkDropListDropped)="droppedSpy($event)">
-        <div [cdkDragData]="item" *ngFor="let item of todo" cdkDrag>{{item}}</div>
+        @for (item of todo; track item) {
+  <div [cdkDragData]="item" cdkDrag>{{item}}</div>
+}
       </div>
 
       <div
         cdkDropList
         [cdkDropListData]="done"
         (cdkDropListDropped)="droppedSpy($event)">
-        <div [cdkDragData]="item" *ngFor="let item of done" cdkDrag>{{item}}</div>
+        @for (item of done; track item) {
+  <div [cdkDragData]="item" cdkDrag>{{item}}</div>
+}
       </div>
     </div>
   `,
@@ -7445,10 +7455,12 @@ class DropListOnNgContainer {}
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div cdkDropList style="width: 100px; background: pink;">
-      <div *ngFor="let item of items"
+      @for (item of items; track item) {
+  <div
         cdkDrag
         [style.height.px]="item.height"
         style="width: 100%; background: red;">{{item.value}}</div>
+}
     </div>
   `,
 })
@@ -7503,8 +7515,9 @@ class ConnectedWrappedDropZones {
       [cdkDropListData]="items"
       (cdkDropListSorted)="sortedSpy($event)"
       (cdkDropListDropped)="droppedSpy($event)">
-      <div
-        *ngFor="let item of items"
+      @for (item of items; track item) {
+  <div
+
         cdkDrag
         [cdkDragData]="item"
         [style.height.px]="item.height"
@@ -7513,6 +7526,7 @@ class ConnectedWrappedDropZones {
           {{item.value}}
           <canvas width="100px" height="100px"></canvas>
         </div>
+}
     </div>
   `,
 })
@@ -7546,8 +7560,9 @@ class DraggableWithCanvasInDropZone extends DraggableInDropZone implements After
       [cdkDropListData]="items"
       (cdkDropListSorted)="sortedSpy($event)"
       (cdkDropListDropped)="droppedSpy($event)">
-      <div
-        *ngFor="let item of items"
+      @for (item of items; track item) {
+  <div
+
         cdkDrag
         [cdkDragData]="item"
         [style.height.px]="item.height"
@@ -7556,6 +7571,7 @@ class DraggableWithCanvasInDropZone extends DraggableInDropZone implements After
           {{item.value}}
           <canvas width="0" height="0"></canvas>
         </div>
+}
     </div>
   `,
 })
@@ -7576,7 +7592,9 @@ class PassthroughComponent {}
   selector: 'wrapped-drop-container',
   template: `
     <div cdkDropList [cdkDropListData]="items">
-      <div *ngFor="let item of items" cdkDrag>{{item}}</div>
+      @for (item of items; track item) {
+  <div cdkDrag>{{item}}</div>
+}
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -7743,13 +7761,15 @@ class PlainStandaloneDropList {
   ],
   template: `
     <div class="list" cdkDropList cdkDropListOrientation="horizontal">
-      <div *ngFor="let item of items" class="item" cdkDrag>
+      @for (item of items; track item) {
+  <div class="item" cdkDrag>
         {{item}}
 
         <ng-template cdkDragPreview [matchSize]="true">
           <div class="item">{{item}}</div>
         </ng-template>
       </div>
+}
     </div>
   `,
 })
@@ -7768,11 +7788,13 @@ class DraggableInHorizontalFlexDropZoneWithMatchSizePreview {
       [cdkDropListConnectedTo]="[doneZone]"
       (cdkDropListDropped)="droppedSpy($event)"
       (cdkDropListEntered)="enteredSpy($event)">
-      <div
+      @for (item of todo; track item) {
+  <div
         [cdkDragData]="item"
         (cdkDragEntered)="itemEnteredSpy($event)"
-        *ngFor="let item of todo"
+
         cdkDrag>{{item}}</div>
+}
     </div>
 
     <div
@@ -7785,11 +7807,13 @@ class DraggableInHorizontalFlexDropZoneWithMatchSizePreview {
 
       <div>Hello there</div>
       <div>
-        <div
+        @for (item of done; track item) {
+  <div
           [cdkDragData]="item"
           (cdkDragEntered)="itemEnteredSpy($event)"
-          *ngFor="let item of done"
+
           cdkDrag>{{item}}</div>
+}
       </div>
     </div>
   `,
@@ -7824,8 +7848,9 @@ class DraggableWithAlternateRootAndSelfHandle {
       [cdkDropListData]="items"
       (cdkDropListSorted)="sortedSpy($event)"
       (cdkDropListDropped)="droppedSpy($event)">
-      <div
-        *ngFor="let item of items"
+      @for (item of items; track item) {
+  <div
+
         cdkDrag
         [cdkDragData]="item"
         [style.height.px]="item.height"
@@ -7839,6 +7864,7 @@ class DraggableWithAlternateRootAndSelfHandle {
             <option value="hello">Hello</option>
           </select>
         </div>
+}
     </div>
   `,
 })
@@ -7852,13 +7878,15 @@ class DraggableWithInputsInDropZone extends DraggableInDropZone {
       cdkDropList
       class="drop-list scroll-container"
       [cdkDropListData]="items">
-      <div
-        *ngFor="let item of items"
+      @for (item of items; track item) {
+  <div
+
         cdkDrag
         [cdkDragData]="item">
           {{item.id}}
           <input type="radio" name="radio" [checked]="item.checked"/>
         </div>
+}
     </div>
   `,
 })

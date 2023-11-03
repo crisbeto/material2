@@ -1,5 +1,6 @@
 <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 demo-table">
-  <ng-container *ngFor="let column of columns" [matColumnDef]="column.columnDef">
+  @for (column of columns; track column) {
+  <ng-container [matColumnDef]="column.columnDef">
     <th mat-header-cell *matHeaderCellDef>
       {{column.header}}
     </th>
@@ -7,6 +8,7 @@
       {{column.cell(row)}}
     </td>
   </ng-container>
+}
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>

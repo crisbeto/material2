@@ -1,9 +1,11 @@
 <mat-form-field class="example-user-input">
   <mat-label>Tooltip position</mat-label>
   <mat-select [formControl]="position">
-    <mat-option *ngFor="let positionOption of positionOptions" [value]="positionOption">
+    @for (positionOption of positionOptions; track positionOption) {
+  <mat-option [value]="positionOption">
       {{positionOption}}
     </mat-option>
+}
   </mat-select>
 </mat-form-field>
 

@@ -20,7 +20,8 @@ import {Example} from './example';
   imports: [CommonModule, MatExpansionModule, Example],
   template: `
     <mat-accordion multi>
-      <mat-expansion-panel *ngFor="let id of ids" [expanded]="expandAll">
+      @for (id of ids; track id) {
+  <mat-expansion-panel [expanded]="expandAll">
         <mat-expansion-panel-header>
           <div class="header">
             <div class="title">{{_getTitle(id)}}</div>
@@ -32,6 +33,7 @@ import {Example} from './example';
           <material-example [id]="id"></material-example>
         </ng-template>
       </mat-expansion-panel>
+}
     </mat-accordion>
   `,
   styles: [
