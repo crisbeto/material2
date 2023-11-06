@@ -1,5 +1,7 @@
 <div cdkDropListGroup>
-  <div class="demo-list">
+  {{todo.length}}
+
+  <div class="demo-list" *ngIf="hasTodo">
     <h2>To do</h2>
     <div
       cdkDropList
@@ -7,7 +9,15 @@
       [cdkDropListLockAxis]="axisLock"
       [cdkDropListData]="todo"
     >
-      <div *ngFor="let item of todo" cdkDrag>
+      <!-- To reproduce -->
+      <!-- @for (item of todo; track item) {
+        <div cdkDrag (cdkDragStarted)="started()">
+          {{item}}
+          <mat-icon cdkDragHandle svgIcon="dnd-move"></mat-icon>
+        </div>
+      } -->
+
+      <div cdkDrag (cdkDragStarted)="started()" *ngFor="let item of todo">
         {{item}}
         <mat-icon cdkDragHandle svgIcon="dnd-move"></mat-icon>
       </div>

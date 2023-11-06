@@ -6,7 +6,13 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Component, ViewEncapsulation, ChangeDetectionStrategy} from '@angular/core';
+import {
+  Component,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+  NgZone,
+  ChangeDetectorRef,
+} from '@angular/core';
 import {MatIconModule, MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 import {
@@ -48,8 +54,14 @@ export class DragAndDropDemo {
 
   ages = ['Stone age', 'Bronze age', 'Iron age', 'Middle ages'];
   preferredAges = ['Modern period', 'Renaissance'];
+  hasTodo = true;
 
-  constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
+  constructor(
+    iconRegistry: MatIconRegistry,
+    sanitizer: DomSanitizer,
+    private _zone: NgZone,
+    private _changeDetectorRef: ChangeDetectorRef,
+  ) {
     iconRegistry.addSvgIconLiteral(
       'dnd-move',
       sanitizer.bypassSecurityTrustHtml(
@@ -75,6 +87,16 @@ export class DragAndDropDemo {
         event.currentIndex,
       );
     }
+  }
+
+  started() {
+    this._zone.run(() => {
+      setTimeout(() => {
+        console.log('swapping', NgZone.isInAngularZone());
+        this.todo = ['one', 'two'];
+        this._changeDetectorRef.markForCheck();
+      }, 2000);
+    });
   }
 
   constrainPosition(

@@ -4875,7 +4875,7 @@ describe('CdkDrag', () => {
       expect(styles.scrollSnapType || styles.msScrollSnapType).toBe('block');
     }));
 
-    it('should be able to start dragging again if the dragged item is destroyed', fakeAsync(() => {
+    fit('should be able to start dragging again if the dragged item is destroyed', fakeAsync(() => {
       const fixture = createComponent(DraggableInDropZone);
       fixture.detectChanges();
 
@@ -6815,17 +6815,19 @@ const DROP_ZONE_FIXTURE_TEMPLATE = `
     [cdkDropListData]="items"
     (cdkDropListSorted)="sortedSpy($event)"
     (cdkDropListDropped)="droppedSpy($event)">
-    <div
-      *ngFor="let item of items"
-      cdkDrag
-      [cdkDragData]="item"
-      [cdkDragBoundary]="boundarySelector"
-      [cdkDragPreviewClass]="previewClass"
-      [cdkDragPreviewContainer]="previewContainer"
-      [style.height.px]="item.height"
-      [style.margin-bottom.px]="item.margin"
-      (cdkDragStarted)="startedSpy($event)"
-      style="width: 100%; background: red;">{{item.value}}</div>
+
+    @for (item of items; track item) {
+      <div
+        cdkDrag
+        [cdkDragData]="item"
+        [cdkDragBoundary]="boundarySelector"
+        [cdkDragPreviewClass]="previewClass"
+        [cdkDragPreviewContainer]="previewContainer"
+        [style.height.px]="item.height"
+        [style.margin-bottom.px]="item.margin"
+        (cdkDragStarted)="startedSpy($event)"
+        style="width: 100%; background: red;">{{item.value}}</div>
+    }
   </div>
 
   <div #alternatePreviewContainer></div>
