@@ -8,6 +8,7 @@
 
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChild,
   Inject,
@@ -23,11 +24,14 @@ import {
   ViewContainerRef,
   ViewEncapsulation,
   booleanAttribute,
+  inject,
 } from '@angular/core';
 import {MatTabContent} from './tab-content';
 import {MAT_TAB, MatTabLabel} from './tab-label';
 import {TemplatePortal} from '@angular/cdk/portal';
 import {Subject} from 'rxjs';
+import {MatTabBody} from './tab-body';
+import {NgClass} from '@angular/common';
 
 /**
  * Used to provide a tab group to a tab without causing a circular dependency.
@@ -37,9 +41,6 @@ export const MAT_TAB_GROUP = new InjectionToken<any>('MAT_TAB_GROUP');
 
 @Component({
   selector: 'mat-tab',
-  // Note that usually we'd go through a bit more trouble and set up another class so that
-  // the inlined template of `MatTab` isn't duplicated, however the template is small enough
-  // that creating the extra class will generate more code than just duplicating the template.
   templateUrl: 'tab.html',
   // tslint:disable-next-line:validate-decorators
   changeDetection: ChangeDetectionStrategy.Default,
@@ -47,8 +48,11 @@ export const MAT_TAB_GROUP = new InjectionToken<any>('MAT_TAB_GROUP');
   exportAs: 'matTab',
   providers: [{provide: MAT_TAB, useExisting: MatTab}],
   standalone: true,
+  imports: [MatTabBody, NgClass],
 })
 export class MatTab implements OnInit, OnChanges, OnDestroy {
+  private _cdr = inject(ChangeDetectorRef);
+
   /** whether the tab is disabled. */
   @Input({transform: booleanAttribute})
   disabled: boolean = false;
@@ -112,13 +116,31 @@ export class MatTab implements OnInit, OnChanges, OnDestroy {
    * The relatively indexed position where 0 represents the center, negative is left, and positive
    * represents the right.
    */
-  position: number | null = null;
+  get position() {
+    return this._position;
+  }
+  set position(value: number | null) {
+    if (value !== this._position) {
+      this._position = value;
+      this._cdr.detectChanges();
+    }
+  }
+  private _position: number | null = null;
 
   /**
    * The initial relatively index origin of the tab if it was created and selected after there
    * was already a selected tab. Provides context of what position the tab should originate from.
    */
-  origin: number | null = null;
+  get origin() {
+    return this._origin;
+  }
+  set origin(value: number | null) {
+    if (value !== this._origin) {
+      this._origin = value;
+      this._cdr.detectChanges();
+    }
+  }
+  private _origin: number | null = null;
 
   /**
    * Whether the tab is currently active.

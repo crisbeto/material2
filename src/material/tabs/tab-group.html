@@ -55,7 +55,8 @@
   class="mat-mdc-tab-body-wrapper"
   [class._mat-animation-noopable]="_animationMode === 'NoopAnimations'"
   #tabBodyWrapper>
-  @for (tab of _tabs; track tab; let i = $index) {
+  <ng-content select="mat-tab"></ng-content>
+  <!-- @for (tab of _tabs; track tab; let i = $index) {
     <mat-tab-body role="tabpanel"
                  [id]="_getTabContentId(i)"
                  [attr.tabindex]="(contentTabIndex != null && selectedIndex === i) ? contentTabIndex : null"
@@ -71,5 +72,5 @@
                  (_onCentered)="_removeTabBodyWrapperHeight()"
                  (_onCentering)="_setTabBodyWrapperHeight($event)">
     </mat-tab-body>
-  }
+  } -->
 </div>

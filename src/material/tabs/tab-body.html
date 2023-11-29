@@ -1,4 +1,4 @@
-<div class="mat-mdc-tab-body-content" #content
+<div class="mat-mdc-tab-body-content"
      [@translateTab]="{
         value: _position,
         params: {animationDuration: animationDuration}
@@ -6,5 +6,5 @@
      (@translateTab.start)="_onTranslateTabStarted($event)"
      (@translateTab.done)="_translateTabComplete.next($event)"
      cdkScrollable>
-  <ng-template matTabBodyHost></ng-template>
+   <ng-content/>
 </div>

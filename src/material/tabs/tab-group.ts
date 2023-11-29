@@ -72,7 +72,7 @@ export type MatTabHeaderPosition = 'above' | 'below';
     },
   ],
   host: {
-    'ngSkipHydration': '',
+    // 'ngSkipHydration': '',
     'class': 'mat-mdc-tab-group',
     '[class]': '"mat-" + (color || "primary")',
     '[class.mat-mdc-tab-group-dynamic-height]': 'dynamicHeight',
@@ -305,6 +305,7 @@ export class MatTabGroup implements AfterContentInit, AfterContentChecked, OnDes
     // Setup the position for each tab and optionally setup an origin on the next selected tab.
     this._tabs.forEach((tab: MatTab, index: number) => {
       tab.position = index - indexToSelect;
+      // tab.index = index;
 
       // If there is already a selected tab, then set up an origin for the next selected tab
       // if it doesn't have one already.
