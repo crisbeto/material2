@@ -1,30 +1,31 @@
-<div mat-internal-form-field [labelPosition]="labelPosition" #formField>
-  <div class="mdc-radio" [class.mdc-radio--disabled]="disabled">
+<div mat-internal-form-field [labelPosition]="_internalLabelPosition()!" #formField>
+  <div class="mdc-radio" [class.mdc-radio--disabled]="_internalDisabled()">
     <!-- Render this element first so the input is on top. -->
     <div class="mat-mdc-radio-touch-target" (click)="_onTouchTargetClick($event)"></div>
     <input #input class="mdc-radio__native-control" type="radio"
-           [id]="inputId"
-           [checked]="checked"
-           [disabled]="disabled"
-           [attr.name]="name"
-           [attr.value]="value"
-           [required]="required"
-           [attr.aria-label]="ariaLabel"
-           [attr.aria-labelledby]="ariaLabelledby"
-           [attr.aria-describedby]="ariaDescribedby"
+           [id]="inputId()"
+           [checked]="_isChecked()"
+           [disabled]="_internalDisabled()"
+           [attr.name]="_internalName()"
+           [attr.value]="value()"
+           [required]="_internalRequired()"
+           [attr.aria-label]="ariaLabel()"
+           [attr.aria-labelledby]="ariaLabelledby()"
+           [attr.aria-describedby]="ariaDescribedby()"
+           [attr.tabindex]="_internalTabIndex()"
            (change)="_onInputInteraction($event)">
     <div class="mdc-radio__background">
       <div class="mdc-radio__outer-circle"></div>
       <div class="mdc-radio__inner-circle"></div>
     </div>
     <div mat-ripple class="mat-radio-ripple mat-mdc-focus-indicator"
-         [matRippleTrigger]="_rippleTrigger.nativeElement"
+         [matRippleTrigger]="_rippleTrigger().nativeElement"
          [matRippleDisabled]="_isRippleDisabled()"
          [matRippleCentered]="true">
       <div class="mat-ripple-element mat-radio-persistent-ripple"></div>
     </div>
   </div>
-  <label class="mdc-label" [for]="inputId">
+  <label class="mdc-label" [for]="inputId()">
     <ng-content></ng-content>
   </label>
 </div>
