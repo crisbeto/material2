@@ -319,6 +319,10 @@ export class SingleAxisSortStrategy<T extends DropListSortStrategyItem>
           ? a.clientRect.left - b.clientRect.left
           : a.clientRect.top - b.clientRect.top;
       });
+
+    // Above we do the sorting after the `map` call which creates a new array and means that the
+    // active draggables won't be re-sorted. We re-assign them here to ensure that they're sorted.
+    this._activeDraggables = this._itemPositions.map(current => current.drag);
   }
 
   /**
@@ -383,16 +387,21 @@ export class SingleAxisSortStrategy<T extends DropListSortStrategyItem>
    * @param pointerY Position of the user's pointer along the Y axis.
    */
   private _shouldEnterAsFirstChild(pointerX: number, pointerY: number) {
-    if (!this._activeDraggables.length) {
+    if (this._activeDraggables.length < 2) {
       return false;
     }
 
     const itemPositions = this._itemPositions;
     const isHorizontal = this.orientation === 'horizontal';
+    const documentPosition = itemPositions[1].drag
+      .getVisibleElement()
+      .compareDocumentPosition(itemPositions[0].drag.getVisibleElement());
 
-    // `itemPositions` are sorted by position while `activeDraggables` are sorted by child index
-    // check if container is using some sort of "reverse" ordering (eg: flex-direction: row-reverse)
-    const reversed = itemPositions[0].drag !== this._activeDraggables[0];
+    // `itemPositions` has the elements sorted based on their *visual* position.
+    // If first item from `itemPositions` is after the second one in the DOM,
+    // it means that the list is reversed (e.g. by `flex-direction`).
+    const reversed = documentPosition & Node.DOCUMENT_POSITION_FOLLOWING;
+
     if (reversed) {
       const lastItemRect = itemPositions[itemPositions.length - 1].clientRect;
       return isHorizontal ? pointerX >= lastItemRect.right : pointerY >= lastItemRect.bottom;

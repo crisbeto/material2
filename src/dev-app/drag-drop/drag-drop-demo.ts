@@ -16,6 +16,11 @@ import {
   transferArrayItem,
   Point,
   DragRef,
+  CdkDragStart,
+  CdkDragRelease,
+  CdkDrag,
+  CdkDropList,
+  CdkDragEnter,
 } from '@angular/cdk/drag-drop';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
@@ -41,46 +46,64 @@ import {MatSelectModule} from '@angular/material/select';
   ],
 })
 export class DragAndDropDemo {
-  axisLock: 'x' | 'y';
-  dragStartDelay = 0;
-  todo = ['Go out for Lunch', 'Make a cool app', 'Watch TV', 'Eat a healthy dinner', 'Go to sleep'];
-  done = ['Get up', 'Have breakfast', 'Brush teeth', 'Check reddit'];
+  cdkDragStart(event: CdkDragStart<string>, i: number) {
+    // console.log('DRAGSTART _dragRef: ' + event.source._dragRef);
+    // console.log('DRAGSTART Event source data: ' + event.source.data);
+    // console.log('DRAGSTART Index: ' + i);
+  }
+  cdkDragReleased(event: CdkDragRelease<string>, i: number) {
+    // console.log('DRAGRELEASE _dragRef: ' + event.source._dragRef);
+    // console.log('DRAGRELEASE Event source data: ' + event.source.data);
+    // console.log('DRAGSRELEASE Index: ' + i);
+  }
 
-  ages = ['Stone age', 'Bronze age', 'Iron age', 'Middle ages'];
-  preferredAges = ['Modern period', 'Renaissance'];
-
-  constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
-    iconRegistry.addSvgIconLiteral(
-      'dnd-move',
-      sanitizer.bypassSecurityTrustHtml(
-        `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5` +
-          `-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/>
-        <path d="M0 0h24v24H0z" fill="none"/>
-      </svg>
-    `,
-      ),
-    );
+  onDragEnter(event: CdkDragEnter<string[], any>) {
+    // console.log('Drag entered list:');
+    // You can add custom logic here, like highlighting the drop zone
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    /* the item can be put in at the correct index, but to showcase the error with the placeholder this was left out
+        if (event.previousContainer === event.container) {
+      // Card dropped back to its original list
+      event.container.data.splice(event.previousIndex, 0);
     } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
-    }
+    */
+
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex,
+    );
   }
 
-  constrainPosition({x, y}: Point, _dragRef: DragRef, _dimensions: DOMRect, pickup: Point): Point {
-    // Just returning the original top left corner to not modify position
-    x -= pickup.x;
-    y -= pickup.y;
-    return {x, y};
+  title = 'DEV || cdkDroplistsSortedToBottom';
+  movies1 = ['List1 - StartItem 1 ', 'List1 - StartItem 2', 'List1 - StartItem 3'];
+  movies2 = ['List2 - StartItem 1 ', 'List2 - StartItem 2', 'List2 - StartItem 3'];
+  movies3 = [
+    'List3 - StartItem 1',
+    'List3 - StartItem 2',
+    'List3 - StartItem 3',
+    'List3 - StartItem 4',
+  ];
+
+  CardPlaceablePredicate() {
+    return true;
+  }
+
+  /**
+   * Predicate so only allows sorting into last index
+   */
+  addToEndPredicate(index: number, item: CdkDrag<number>, itemList: CdkDropList) {
+    return index === itemList.data.length;
+  }
+
+  /**
+   * Predicate function that only allows even numbers to be
+   * sorted into even indices and odd numbers at odd indices.
+   */
+  sortPredicate(index: number, item: CdkDrag<number>) {
+    return (index + 1) % 2 === item.data % 2;
   }
 }
