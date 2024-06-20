@@ -1,0 +1,26 @@
+@use './src/material' as mat;
+
+mat.$theme-ignore-duplication-warnings: true;
+
+@for $i from 1 through 30 {
+  @include mat.core();
+
+  $theme: mat.define-theme((
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    density: (
+      scale: 0,
+    )
+  ));
+
+  html {
+    @include mat.all-component-themes($theme);
+  }
+
+  @include mat.color-variants-backwards-compatibility($theme);
+  @include mat.typography-hierarchy($theme);
+}
+
