@@ -7,7 +7,7 @@ import fs from 'fs';
 import glob from 'glob';
 import module from 'module';
 import {dirname, join, relative} from 'path';
-import sass from 'sass';
+import {compileAsync} from 'sass';
 import url from 'url';
 import tsNode from 'ts-node';
 
@@ -157,12 +157,10 @@ async function createEntryPointSpecFile() {
 
 /** Helper function to render a Sass file asynchronously using promises. */
 async function renderSassFileAsync(inputFile) {
-  return sass
-    .compileAsync(inputFile, {
-      loadPaths: [nodeModulesDir, projectDir],
-      importers: [localPackageSassImporter],
-    })
-    .then(result => result.css);
+  return compileAsync(inputFile, {
+    loadPaths: [nodeModulesDir, projectDir],
+    importers: [localPackageSassImporter],
+  }).then(result => result.css);
 }
 
 /**
