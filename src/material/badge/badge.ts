@@ -22,6 +22,7 @@ import {
   Renderer2,
   ViewEncapsulation,
   ANIMATION_MODULE_TYPE,
+  HOST_TAG_NAME,
 } from '@angular/core';
 import {ThemePalette} from '@angular/material/core';
 import {_CdkPrivateStyleLoader} from '@angular/cdk/private';
@@ -159,6 +160,8 @@ export class MatBadge implements OnInit, OnDestroy {
 
     if (typeof ngDevMode === 'undefined' || ngDevMode) {
       const nativeElement = this._elementRef.nativeElement;
+      const tagName = inject(HOST_TAG_NAME);
+
       if (nativeElement.nodeType !== nativeElement.ELEMENT_NODE) {
         throw Error('matBadge must be attached to an element node.');
       }
@@ -167,7 +170,7 @@ export class MatBadge implements OnInit, OnDestroy {
       // as it is aria-hidden by default docs mention this at:
       // https://material.angular.io/components/badge/overview#accessibility
       if (
-        nativeElement.tagName.toLowerCase() === 'mat-icon' &&
+        tagName.toLowerCase() === 'mat-icon' &&
         nativeElement.getAttribute('aria-hidden') === 'true'
       ) {
         console.warn(
