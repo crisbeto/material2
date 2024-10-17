@@ -79,15 +79,7 @@ import {
 } from '@angular/material/core';
 import {MAT_FORM_FIELD, MatFormField, MatFormFieldControl} from '@angular/material/form-field';
 import {defer, merge, Observable, Subject} from 'rxjs';
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  startWith,
-  switchMap,
-  take,
-  takeUntil,
-} from 'rxjs/operators';
+import {filter, map, startWith, switchMap, take, takeUntil} from 'rxjs/operators';
 import {matSelectAnimations} from './select-animations';
 import {
   getMatSelectDynamicMultipleError,
@@ -630,12 +622,8 @@ export class MatSelect
   ngOnInit() {
     this._selectionModel = new SelectionModel<MatOption>(this.multiple);
     this.stateChanges.next();
-
-    // We need `distinctUntilChanged` here, because some browsers will
-    // fire the animation end event twice for the same animation. See:
-    // https://github.com/angular/angular/issues/24084
     this._panelDoneAnimatingStream
-      .pipe(distinctUntilChanged(), takeUntil(this._destroy))
+      .pipe(takeUntil(this._destroy))
       .subscribe(() => this._panelDoneAnimating(this.panelOpen));
 
     this._viewportRuler
