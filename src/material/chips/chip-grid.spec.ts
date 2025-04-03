@@ -38,7 +38,7 @@ import {MatFormFieldModule} from '../form-field';
 import {MatInputModule} from '../input';
 import {By} from '@angular/platform-browser';
 import {MatChipEvent, MatChipGrid, MatChipInputEvent, MatChipRow, MatChipsModule} from './index';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {MATERIAL_ANIMATIONS} from '../core';
 
 describe('MatChipGrid', () => {
   let chipGridDebugElement: DebugElement;
@@ -1031,9 +1031,11 @@ describe('MatChipGrid', () => {
         MatChipsModule,
         MatFormFieldModule,
         MatInputModule,
-        NoopAnimationsModule,
       ],
-      providers: [{provide: Directionality, useValue: directionality}],
+      providers: [
+        {provide: Directionality, useValue: directionality},
+        {provide: MATERIAL_ANIMATIONS, useValue: {animationsDisabled: true}},
+      ],
       declarations: [component],
     });
 

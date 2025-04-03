@@ -14,7 +14,6 @@ import {
   waitForAsync,
 } from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {
   MAT_EXPANSION_PANEL_DEFAULT_OPTIONS,
   MatExpansionModule,
@@ -27,7 +26,6 @@ describe('MatExpansionPanel', () => {
     TestBed.configureTestingModule({
       imports: [
         MatExpansionModule,
-        NoopAnimationsModule,
         PanelWithContent,
         PanelWithContentInNgIf,
         PanelWithCustomMargin,
@@ -383,7 +381,7 @@ describe('MatExpansionPanel', () => {
 
   it('should be able to set the default options through the injection token', () => {
     TestBed.resetTestingModule().configureTestingModule({
-      imports: [MatExpansionModule, NoopAnimationsModule],
+      imports: [MatExpansionModule],
       providers: [
         {
           provide: MAT_EXPANSION_PANEL_DEFAULT_OPTIONS,
