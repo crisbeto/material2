@@ -7,7 +7,7 @@
  */
 
 import {_IdGenerator, AriaDescriber, InteractivityChecker} from '@angular/cdk/a11y';
-import {DOCUMENT} from '@angular/common';
+
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -21,6 +21,7 @@ import {
   OnInit,
   Renderer2,
   ViewEncapsulation,
+  DOCUMENT,
 } from '@angular/core';
 import {_animationsDisabled, ThemePalette} from '../core';
 import {_CdkPrivateStyleLoader, _VisuallyHiddenLoader} from '@angular/cdk/private';

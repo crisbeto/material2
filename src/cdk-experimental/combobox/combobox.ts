@@ -17,7 +17,7 @@ import {
 } from '@angular/cdk/overlay';
 import {_getEventTarget} from '@angular/cdk/platform';
 import {TemplatePortal} from '@angular/cdk/portal';
-import {DOCUMENT} from '@angular/common';
+
 import {
   ChangeDetectorRef,
   Directive,
@@ -31,6 +31,7 @@ import {
   TemplateRef,
   ViewContainerRef,
   inject,
+  DOCUMENT,
 } from '@angular/core';
 
 export type AriaHasPopupValue = 'false' | 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog';

@@ -1,7 +1,7 @@
 import {TAB} from '../../keycodes';
 import {Platform} from '../../platform';
-import {DOCUMENT} from '@angular/common';
-import {Component, ViewChild} from '@angular/core';
+
+import {Component, ViewChild, DOCUMENT} from '@angular/core';
 import {ComponentFixture, TestBed, fakeAsync, flush, inject, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {
