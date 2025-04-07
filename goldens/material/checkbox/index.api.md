@@ -8,7 +8,6 @@ import { AbstractControl } from '@angular/forms';
 import { AfterViewInit } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 import { ElementRef } from '@angular/core';
-import { EventEmitter } from '@angular/core';
 import { FocusableOption } from '@angular/cdk/a11y';
 import * as i0 from '@angular/core';
 import * as i1 from '@angular/cdk/bidi';
@@ -37,54 +36,68 @@ export class MatCheckbox implements AfterViewInit, OnChanges, ControlValueAccess
     };
     // (undocumented)
     protected _animationsDisabled: boolean;
-    ariaControls: string;
-    ariaDescribedby: string;
-    ariaExpanded: boolean;
-    ariaLabel: string;
-    ariaLabelledby: string | null;
-    ariaOwns: string;
-    readonly change: EventEmitter<MatCheckboxChange>;
-    get checked(): boolean;
-    set checked(value: boolean);
-    color: string | undefined;
+    // (undocumented)
+    readonly _ariaControls: i0.WritableSignal<string>;
+    ariaControlsInput: i0.InputSignal<string>;
+    // (undocumented)
+    readonly _ariaDescribedby: i0.WritableSignal<string>;
+    ariaDescribedbyInput: i0.InputSignal<string>;
+    // (undocumented)
+    readonly _ariaExpanded: i0.WritableSignal<boolean | undefined>;
+    ariaExpandedInput: i0.InputSignalWithTransform<boolean | undefined, boolean | undefined>;
+    // (undocumented)
+    readonly _ariaLabel: i0.WritableSignal<string>;
+    ariaLabelInput: i0.InputSignal<string>;
+    // (undocumented)
+    readonly _ariaLabelledby: i0.WritableSignal<string | null>;
+    ariaLabelledbyInput: i0.InputSignal<string | null>;
+    // (undocumented)
+    readonly _ariaOwns: i0.WritableSignal<string>;
+    ariaOwnsInput: i0.InputSignal<string>;
+    readonly change: i0.OutputEmitterRef<MatCheckboxChange>;
+    readonly checkedInput: i0.InputSignalWithTransform<boolean, unknown>;
+    // (undocumented)
+    readonly _color: i0.WritableSignal<string | undefined>;
+    colorInput: i0.InputSignal<string | undefined>;
     protected _createChangeEvent(isChecked: boolean): MatCheckboxChange;
-    get disabled(): boolean;
-    set disabled(value: boolean);
-    disabledInteractive: boolean;
-    disableRipple: boolean;
+    // (undocumented)
+    readonly _disabled: i0.WritableSignal<boolean>;
+    disabledInput: i0.InputSignalWithTransform<boolean, unknown>;
+    // (undocumented)
+    readonly _disabledInteractive: i0.WritableSignal<boolean>;
+    disabledInteractiveInput: i0.InputSignalWithTransform<boolean, unknown>;
+    // (undocumented)
+    readonly _disableRipple: i0.WritableSignal<boolean>;
+    disableRippleInput: i0.InputSignalWithTransform<boolean, unknown>;
     // (undocumented)
     _elementRef: ElementRef<HTMLElement>;
     focus(): void;
     protected _getAnimationTargetElement(): HTMLInputElement;
     // (undocumented)
     protected _handleInputClick(): void;
-    id: string;
+    // (undocumented)
+    readonly _id: i0.WritableSignal<string>;
+    idInput: i0.InputSignal<string>;
     get indeterminate(): boolean;
     set indeterminate(value: boolean);
-    readonly indeterminateChange: EventEmitter<boolean>;
+    readonly indeterminateChange: i0.OutputEmitterRef<boolean>;
     _inputElement: ElementRef<HTMLInputElement>;
-    get inputId(): string;
+    readonly inputId: i0.Signal<string>;
+    // (undocumented)
+    readonly _isChecked: i0.WritableSignal<boolean>;
+    // (undocumented)
+    readonly _isRequired: i0.WritableSignal<boolean>;
     // (undocumented)
     _isRippleDisabled(): boolean;
     _labelElement: ElementRef<HTMLInputElement>;
-    labelPosition: 'before' | 'after';
-    name: string | null;
     // (undocumented)
-    static ngAcceptInputType_ariaExpanded: unknown;
+    readonly _labelPosition: i0.WritableSignal<"before" | "after">;
+    labelPositionInput: i0.InputSignal<"before" | "after">;
     // (undocumented)
-    static ngAcceptInputType_checked: unknown;
-    // (undocumented)
-    static ngAcceptInputType_disabled: unknown;
-    // (undocumented)
-    static ngAcceptInputType_disabledInteractive: unknown;
-    // (undocumented)
-    static ngAcceptInputType_disableRipple: unknown;
+    readonly _name: i0.WritableSignal<string | null>;
+    nameInput: i0.InputSignal<string | null>;
     // (undocumented)
     static ngAcceptInputType_indeterminate: unknown;
-    // (undocumented)
-    static ngAcceptInputType_required: unknown;
-    // (undocumented)
-    static ngAcceptInputType_tabIndex: unknown;
     // (undocumented)
     ngAfterViewInit(): void;
     // (undocumented)
@@ -106,18 +119,22 @@ export class MatCheckbox implements AfterViewInit, OnChanges, ControlValueAccess
     registerOnTouched(fn: any): void;
     // (undocumented)
     registerOnValidatorChange(fn: () => void): void;
-    required: boolean;
+    requiredInput: i0.InputSignalWithTransform<boolean, unknown>;
     // (undocumented)
     setDisabledState(isDisabled: boolean): void;
-    tabIndex: number;
+    // (undocumented)
+    readonly _tabIndex: i0.WritableSignal<number | undefined>;
+    tabIndexInput: i0.InputSignalWithTransform<number | undefined, number | undefined>;
     toggle(): void;
     // (undocumented)
     validate(control: AbstractControl<boolean>): ValidationErrors | null;
-    value: string;
+    // (undocumented)
+    readonly _value: i0.WritableSignal<string>;
+    valueInput: i0.InputSignal<string>;
     // (undocumented)
     writeValue(value: any): void;
     // (undocumented)
-    static ɵcmp: i0.ɵɵComponentDeclaration<MatCheckbox, "mat-checkbox", ["matCheckbox"], { "ariaLabel": { "alias": "aria-label"; "required": false; }; "ariaLabelledby": { "alias": "aria-labelledby"; "required": false; }; "ariaDescribedby": { "alias": "aria-describedby"; "required": false; }; "ariaExpanded": { "alias": "aria-expanded"; "required": false; }; "ariaControls": { "alias": "aria-controls"; "required": false; }; "ariaOwns": { "alias": "aria-owns"; "required": false; }; "id": { "alias": "id"; "required": false; }; "required": { "alias": "required"; "required": false; }; "labelPosition": { "alias": "labelPosition"; "required": false; }; "name": { "alias": "name"; "required": false; }; "value": { "alias": "value"; "required": false; }; "disableRipple": { "alias": "disableRipple"; "required": false; }; "tabIndex": { "alias": "tabIndex"; "required": false; }; "color": { "alias": "color"; "required": false; }; "disabledInteractive": { "alias": "disabledInteractive"; "required": false; }; "checked": { "alias": "checked"; "required": false; }; "disabled": { "alias": "disabled"; "required": false; }; "indeterminate": { "alias": "indeterminate"; "required": false; }; }, { "change": "change"; "indeterminateChange": "indeterminateChange"; }, never, ["*"], true, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<MatCheckbox, "mat-checkbox", ["matCheckbox"], { "ariaLabelInput": { "alias": "aria-label"; "required": false; "isSignal": true; }; "ariaLabelledbyInput": { "alias": "aria-labelledby"; "required": false; "isSignal": true; }; "ariaDescribedbyInput": { "alias": "aria-describedby"; "required": false; "isSignal": true; }; "ariaExpandedInput": { "alias": "aria-expanded"; "required": false; "isSignal": true; }; "ariaControlsInput": { "alias": "aria-controls"; "required": false; "isSignal": true; }; "ariaOwnsInput": { "alias": "aria-owns"; "required": false; "isSignal": true; }; "idInput": { "alias": "id"; "required": false; "isSignal": true; }; "requiredInput": { "alias": "required"; "required": false; "isSignal": true; }; "labelPositionInput": { "alias": "labelPosition"; "required": false; "isSignal": true; }; "nameInput": { "alias": "name"; "required": false; "isSignal": true; }; "valueInput": { "alias": "value"; "required": false; "isSignal": true; }; "disableRippleInput": { "alias": "disableRipple"; "required": false; "isSignal": true; }; "tabIndexInput": { "alias": "tabIndex"; "required": false; "isSignal": true; }; "colorInput": { "alias": "color"; "required": false; "isSignal": true; }; "disabledInteractiveInput": { "alias": "disabledInteractive"; "required": false; "isSignal": true; }; "checkedInput": { "alias": "checked"; "required": false; "isSignal": true; }; "disabledInput": { "alias": "disabled"; "required": false; "isSignal": true; }; "indeterminate": { "alias": "indeterminate"; "required": false; }; }, { "change": "change"; "indeterminateChange": "indeterminateChange"; }, never, ["*"], true, never>;
     // (undocumented)
     static ɵfac: i0.ɵɵFactoryDeclaration<MatCheckbox, never>;
 }
@@ -136,6 +153,65 @@ export interface MatCheckboxDefaultOptions {
     clickAction?: MatCheckboxClickAction;
     color?: ThemePalette;
     disabledInteractive?: boolean;
+}
+
+// @public (undocumented)
+export class MatCheckboxFacade {
+    // (undocumented)
+    get ariaControls(): string;
+    set ariaControls(value: string);
+    // (undocumented)
+    get ariaDescribedby(): string | null;
+    set ariaDescribedby(value: string);
+    // (undocumented)
+    get ariaExpanded(): boolean | undefined;
+    set ariaExpanded(value: boolean);
+    // (undocumented)
+    get ariaLabel(): string;
+    set ariaLabel(value: string);
+    // (undocumented)
+    get ariaLabelledby(): string | null;
+    set ariaLabelledby(value: string);
+    // (undocumented)
+    get ariaOwns(): string;
+    set ariaOwns(value: string);
+    // (undocumented)
+    get checked(): boolean;
+    set checked(value: boolean);
+    // (undocumented)
+    get color(): string | undefined;
+    set color(value: string | undefined);
+    // (undocumented)
+    get disabled(): boolean;
+    set disabled(value: boolean);
+    // (undocumented)
+    get disabledInteractive(): boolean;
+    set disabledInteractive(value: boolean);
+    // (undocumented)
+    get disableRipple(): boolean;
+    set disableRipple(value: boolean);
+    // (undocumented)
+    get id(): string;
+    set id(value: string);
+    // (undocumented)
+    inputId(): i0.Signal<string>;
+    // (undocumented)
+    get labelPosition(): 'before' | 'after';
+    set labelPosition(value: 'before' | 'after');
+    // (undocumented)
+    get name(): string | null;
+    set name(value: string | null);
+    // (undocumented)
+    get required(): boolean;
+    set required(value: boolean);
+    // (undocumented)
+    get tabIndex(): number;
+    set tabIndex(value: number);
+    // (undocumented)
+    toggle(): void;
+    // (undocumented)
+    get value(): string;
+    set value(value: string);
 }
 
 // @public (undocumented)

@@ -13,25 +13,25 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   NgZone,
   OnChanges,
-  Output,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation,
   booleanAttribute,
-  forwardRef,
   numberAttribute,
   inject,
   HostAttributeToken,
+  input,
+  linkedSignal,
+  computed,
+  output,
 } from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR,
+  NgControl,
   ValidationErrors,
   Validator,
 } from '@angular/forms';
@@ -74,6 +74,155 @@ export class MatCheckboxChange {
 // Default checkbox configuration.
 const defaults = MAT_CHECKBOX_DEFAULT_OPTIONS_FACTORY();
 
+// Issues:
+// - doesn't work with `exportAs`
+// - circular DI error when CVA is provided. Need to use alternate syntax.
+// - circular DI error when validator is provided. No way around as of yet.
+// - there are some events that expose the MatCheckbox instance and won't be picked up by the facade.
+export class MatCheckboxFacade {
+  private _c = inject(MatCheckbox, {self: true});
+
+  get checked(): boolean {
+    return this._c._isChecked();
+  }
+  set checked(value: boolean) {
+    this._c._isChecked.set(value);
+  }
+
+  get ariaLabel() {
+    return this._c._ariaLabel();
+  }
+
+  set ariaLabel(value: string) {
+    this._c._ariaLabel.set(value);
+  }
+
+  get ariaLabelledby(): string | null {
+    return this._c._ariaLabelledby();
+  }
+
+  set ariaLabelledby(value: string) {
+    this._c._ariaLabelledby.set(value);
+  }
+
+  get ariaDescribedby(): string | null {
+    return this._c._ariaDescribedby();
+  }
+
+  set ariaDescribedby(value: string) {
+    this._c._ariaDescribedby.set(value);
+  }
+
+  get ariaExpanded(): boolean | undefined {
+    return this._c._ariaExpanded();
+  }
+
+  set ariaExpanded(value: boolean) {
+    this._c._ariaExpanded.set(value);
+  }
+
+  get ariaControls(): string {
+    return this._c._ariaControls();
+  }
+
+  set ariaControls(value: string) {
+    this._c._ariaControls.set(value);
+  }
+
+  get ariaOwns(): string {
+    return this._c._ariaOwns();
+  }
+
+  set ariaOwns(value: string) {
+    this._c._ariaOwns.set(value);
+  }
+
+  get id(): string {
+    return this._c._id();
+  }
+
+  set id(value: string) {
+    this._c._id.set(value);
+  }
+
+  get required(): boolean {
+    return this._c._isRequired();
+  }
+
+  set required(value: boolean) {
+    this._c._isRequired.set(value);
+  }
+
+  get labelPosition(): 'before' | 'after' {
+    return this._c._labelPosition();
+  }
+
+  set labelPosition(value: 'before' | 'after') {
+    this._c._labelPosition.set(value);
+  }
+
+  get name(): string | null {
+    return this._c._name();
+  }
+
+  set name(value: string | null) {
+    this._c._name.set(value);
+  }
+
+  get disableRipple(): boolean {
+    return this._c._disableRipple();
+  }
+  set disableRipple(value: boolean) {
+    this._c._disableRipple.set(value);
+  }
+
+  get value(): string {
+    return this._c._value();
+  }
+
+  set value(value: string) {
+    this._c._value.set(value);
+  }
+
+  get tabIndex(): number {
+    return this._c._tabIndex()!;
+  }
+
+  set tabIndex(value: number) {
+    this._c._tabIndex.set(value);
+  }
+
+  get color(): string | undefined {
+    return this._c._color();
+  }
+
+  set color(value: string | undefined) {
+    this._c._color.set(value);
+  }
+
+  get disabled(): boolean {
+    return this._c._disabled();
+  }
+  set disabled(value: boolean) {
+    this._c._disabled.set(value);
+  }
+
+  get disabledInteractive(): boolean {
+    return this._c._disabledInteractive();
+  }
+  set disabledInteractive(value: boolean) {
+    this._c._disabledInteractive.set(value);
+  }
+
+  toggle() {
+    this._c.toggle();
+  }
+
+  inputId() {
+    return this._c.inputId;
+  }
+}
+
 @Component({
   selector: 'mat-checkbox',
   templateUrl: 'checkbox.html',
@@ -84,24 +233,18 @@ const defaults = MAT_CHECKBOX_DEFAULT_OPTIONS_FACTORY();
     '[attr.aria-label]': 'null',
     '[attr.aria-labelledby]': 'null',
     '[class._mat-animation-noopable]': '_animationsDisabled',
-    '[class.mdc-checkbox--disabled]': 'disabled',
-    '[id]': 'id',
+    '[class.mdc-checkbox--disabled]': '_disabled()',
+    '[id]': '_id()',
     // Add classes that users can use to more easily target disabled or checked checkboxes.
-    '[class.mat-mdc-checkbox-disabled]': 'disabled',
-    '[class.mat-mdc-checkbox-checked]': 'checked',
-    '[class.mat-mdc-checkbox-disabled-interactive]': 'disabledInteractive',
-    '[class]': 'color ? "mat-" + color : "mat-accent"',
+    '[class.mat-mdc-checkbox-disabled]': '_disabled()',
+    '[class.mat-mdc-checkbox-checked]': '_isChecked()',
+    '[class.mat-mdc-checkbox-disabled-interactive]': '_disabledInteractive()',
+    '[class]': '_color() ? "mat-" + _color() : "mat-accent"',
   },
   providers: [
     {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MatCheckbox),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: MatCheckbox,
-      multi: true,
+      provide: MatCheckbox,
+      useClass: MatCheckboxFacade,
     },
   ],
   exportAs: 'matCheckbox',
@@ -112,6 +255,24 @@ const defaults = MAT_CHECKBOX_DEFAULT_OPTIONS_FACTORY();
 export class MatCheckbox
   implements AfterViewInit, OnChanges, ControlValueAccessor, Validator, FocusableOption
 {
+  readonly _isChecked = linkedSignal(() => this.checkedInput());
+  readonly _ariaLabel = linkedSignal(() => this.ariaLabelInput());
+  readonly _ariaLabelledby = linkedSignal(() => this.ariaLabelledbyInput());
+  readonly _ariaDescribedby = linkedSignal(() => this.ariaDescribedbyInput());
+  readonly _ariaExpanded = linkedSignal(() => this.ariaExpandedInput());
+  readonly _ariaControls = linkedSignal(() => this.ariaControlsInput());
+  readonly _ariaOwns = linkedSignal(() => this.ariaOwnsInput());
+  readonly _id = linkedSignal(() => this.idInput() || this._uniqueId);
+  readonly _isRequired = linkedSignal(() => this.requiredInput());
+  readonly _labelPosition = linkedSignal(() => this.labelPositionInput());
+  readonly _name = linkedSignal(() => this.nameInput());
+  readonly _disableRipple = linkedSignal(() => this.disableRippleInput());
+  readonly _value = linkedSignal(() => this.valueInput());
+  readonly _tabIndex = linkedSignal(() => this.tabIndexInput());
+  readonly _color = linkedSignal(() => this.colorInput());
+  readonly _disabled = linkedSignal(() => this.disabledInput());
+  readonly _disabledInteractive = linkedSignal(() => this.disabledInteractiveInput());
+
   _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private _changeDetectorRef = inject(ChangeDetectorRef);
   private _ngZone = inject(NgZone);
@@ -152,59 +313,60 @@ export class MatCheckbox
    * Attached to the aria-label attribute of the host element. In most cases, aria-labelledby will
    * take precedence so this may be omitted.
    */
-  @Input('aria-label') ariaLabel: string = '';
+  ariaLabelInput = input('', {alias: 'aria-label'});
 
   /**
    * Users can specify the `aria-labelledby` attribute which will be forwarded to the input element
    */
-  @Input('aria-labelledby') ariaLabelledby: string | null = null;
+  ariaLabelledbyInput = input<string | null>(null, {alias: 'aria-labelledby'});
 
   /** The 'aria-describedby' attribute is read after the element's label and field type. */
-  @Input('aria-describedby') ariaDescribedby: string;
+  ariaDescribedbyInput = input('', {alias: 'aria-describedby'});
 
   /**
    * Users can specify the `aria-expanded` attribute which will be forwarded to the input element
    */
-  @Input({alias: 'aria-expanded', transform: booleanAttribute}) ariaExpanded: boolean;
+  ariaExpandedInput = input<boolean | undefined, boolean | undefined>(undefined, {
+    alias: 'aria-expanded',
+    transform: booleanAttribute,
+  });
 
   /**
    * Users can specify the `aria-controls` attribute which will be forwarded to the input element
    */
-  @Input('aria-controls') ariaControls: string;
+  ariaControlsInput = input('', {alias: 'aria-controls'});
 
   /** Users can specify the `aria-owns` attribute which will be forwarded to the input element */
-  @Input('aria-owns') ariaOwns: string;
+  ariaOwnsInput = input('', {alias: 'aria-owns'});
+
+  /** A unique id for the checkbox input. If none is supplied, it will be auto-generated. */
+  idInput = input('', {alias: 'id'});
+
+  /** Returns the unique id for the visual hidden input. */
+  readonly inputId = computed(() => `${this._id()}-input`);
 
   private _uniqueId: string;
 
-  /** A unique id for the checkbox input. If none is supplied, it will be auto-generated. */
-  @Input() id: string;
-
-  /** Returns the unique id for the visual hidden input. */
-  get inputId(): string {
-    return `${this.id || this._uniqueId}-input`;
-  }
-
   /** Whether the checkbox is required. */
-  @Input({transform: booleanAttribute}) required: boolean;
+  requiredInput = input(false, {alias: 'required', transform: booleanAttribute});
 
   /** Whether the label should appear after or before the checkbox. Defaults to 'after' */
-  @Input() labelPosition: 'before' | 'after' = 'after';
+  labelPositionInput = input<'before' | 'after'>('after', {alias: 'labelPosition'});
 
   /** Name value will be applied to the input element if present */
-  @Input() name: string | null = null;
+  nameInput = input<string | null>(null, {alias: 'name'});
 
   /** Event emitted when the checkbox's `checked` value changes. */
-  @Output() readonly change = new EventEmitter<MatCheckboxChange>();
+  readonly change = output<MatCheckboxChange>();
 
   /** Event emitted when the checkbox's `indeterminate` value changes. */
-  @Output() readonly indeterminateChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+  readonly indeterminateChange = output<boolean>();
 
   /** The value attribute of the native input element */
-  @Input() value: string;
+  valueInput = input('', {alias: 'value'});
 
   /** Whether the checkbox has a ripple. */
-  @Input({transform: booleanAttribute}) disableRipple: boolean;
+  disableRippleInput = input(false, {alias: 'disableRipple', transform: booleanAttribute});
 
   /** The native `<input type="checkbox">` element */
   @ViewChild('input') _inputElement: ElementRef<HTMLInputElement>;
@@ -213,8 +375,10 @@ export class MatCheckbox
   @ViewChild('label') _labelElement: ElementRef<HTMLInputElement>;
 
   /** Tabindex for the checkbox. */
-  @Input({transform: (value: unknown) => (value == null ? undefined : numberAttribute(value))})
-  tabIndex: number;
+  tabIndexInput = input<number | undefined, number | undefined>(undefined, {
+    alias: 'tabIndex',
+    transform: (value: unknown) => (value == null ? undefined : numberAttribute(value)),
+  });
 
   // TODO(crisbeto): this should be a ThemePalette, but some internal apps were abusing
   // the lack of type checking previously and assigning random strings.
@@ -225,11 +389,13 @@ export class MatCheckbox
    * For information on applying color variants in M3, see
    * https://material.angular.io/guide/material-2-theming#optional-add-backwards-compatibility-styles-for-color-variants
    */
-  @Input() color: string | undefined;
+  colorInput = input<string | undefined>(undefined, {alias: 'color'});
 
   /** Whether the checkbox should remain interactive when it is disabled. */
-  @Input({transform: booleanAttribute})
-  disabledInteractive: boolean;
+  disabledInteractiveInput = input(false, {
+    alias: 'disabledInteractive',
+    transform: booleanAttribute,
+  });
 
   /**
    * Called when the checkbox is blurred. Needed to properly implement ControlValueAccessor.
@@ -247,11 +413,17 @@ export class MatCheckbox
   constructor() {
     inject(_CdkPrivateStyleLoader).load(_StructuralStylesLoader);
     const tabIndex = inject(new HostAttributeToken('tabindex'), {optional: true});
+    const ngControl = inject(NgControl, {optional: true});
+
+    if (ngControl) {
+      ngControl.valueAccessor = this;
+    }
+
     this._options = this._options || defaults;
-    this.color = this._options.color || defaults.color;
-    this.tabIndex = tabIndex == null ? 0 : parseInt(tabIndex) || 0;
-    this.id = this._uniqueId = inject(_IdGenerator).getId('mat-mdc-checkbox-');
-    this.disabledInteractive = this._options?.disabledInteractive ?? false;
+    this._color.set(this._options.color || defaults.color);
+    this._tabIndex.set(tabIndex == null ? 0 : parseInt(tabIndex) || 0);
+    this._uniqueId = inject(_IdGenerator).getId('mat-mdc-checkbox-');
+    this._disabledInteractive.set(this._options?.disabledInteractive ?? false);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -265,31 +437,13 @@ export class MatCheckbox
   }
 
   /** Whether the checkbox is checked. */
-  @Input({transform: booleanAttribute})
-  get checked(): boolean {
-    return this._checked;
-  }
-  set checked(value: boolean) {
-    if (value != this.checked) {
-      this._checked = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-  private _checked: boolean = false;
+  readonly checkedInput = input(false, {transform: booleanAttribute, alias: 'checked'});
 
   /** Whether the checkbox is disabled. */
-  @Input({transform: booleanAttribute})
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    if (value !== this.disabled) {
-      this._disabled = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-  private _disabled: boolean = false;
+  disabledInput = input(false, {alias: 'disabled', transform: booleanAttribute});
 
+  // TODO: this can be converted to signals too, but will
+  // need more refactors so leaving it out of the POC.
   /**
    * Whether the checkbox is indeterminate. This is also known as "mixed" mode and can be used to
    * represent a checkbox with three states, e.g. a checkbox that represents a nested list of
@@ -309,7 +463,7 @@ export class MatCheckbox
         this._transitionCheckState(TransitionCheckState.Indeterminate);
       } else {
         this._transitionCheckState(
-          this.checked ? TransitionCheckState.Checked : TransitionCheckState.Unchecked,
+          this._isChecked() ? TransitionCheckState.Checked : TransitionCheckState.Unchecked,
         );
       }
       this.indeterminateChange.emit(this._indeterminate);
@@ -320,7 +474,7 @@ export class MatCheckbox
   private _indeterminate: boolean = false;
 
   _isRippleDisabled() {
-    return this.disableRipple || this.disabled;
+    return this._disableRipple() || this._disabled();
   }
 
   /** Method being called whenever the label text changes. */
@@ -335,7 +489,7 @@ export class MatCheckbox
 
   // Implemented as part of ControlValueAccessor.
   writeValue(value: any) {
-    this.checked = !!value;
+    this._isChecked.set(!!value);
   }
 
   // Implemented as part of ControlValueAccessor.
@@ -350,12 +504,12 @@ export class MatCheckbox
 
   // Implemented as part of ControlValueAccessor.
   setDisabledState(isDisabled: boolean) {
-    this.disabled = isDisabled;
+    this._disabled.set(isDisabled);
   }
 
   // Implemented as a part of Validator.
   validate(control: AbstractControl<boolean>): ValidationErrors | null {
-    return this.required && control.value !== true ? {'required': true} : null;
+    return this._isRequired() && control.value !== true ? {'required': true} : null;
   }
 
   // Implemented as a part of Validator.
@@ -395,27 +549,27 @@ export class MatCheckbox
   }
 
   private _emitChangeEvent() {
-    this._controlValueAccessorChangeFn(this.checked);
-    this.change.emit(this._createChangeEvent(this.checked));
+    this._controlValueAccessorChangeFn(this._isChecked());
+    this.change.emit(this._createChangeEvent(this._isChecked()));
 
     // Assigning the value again here is redundant, but we have to do it in case it was
     // changed inside the `change` listener which will cause the input to be out of sync.
     if (this._inputElement) {
-      this._inputElement.nativeElement.checked = this.checked;
+      this._inputElement.nativeElement.checked = this._isChecked();
     }
   }
 
   /** Toggles the `checked` state of the checkbox. */
   toggle(): void {
-    this.checked = !this.checked;
-    this._controlValueAccessorChangeFn(this.checked);
+    this._isChecked.set(!this._isChecked());
+    this._controlValueAccessorChangeFn(this._isChecked());
   }
 
   protected _handleInputClick() {
     const clickAction = this._options?.clickAction;
 
     // If resetIndeterminate is false, and the current state is indeterminate, do nothing on click
-    if (!this.disabled && clickAction !== 'noop') {
+    if (!this._disabled() && clickAction !== 'noop') {
       // When user manually click on the checkbox, `indeterminate` is set to false.
       if (this.indeterminate && clickAction !== 'check') {
         Promise.resolve().then(() => {
@@ -424,9 +578,9 @@ export class MatCheckbox
         });
       }
 
-      this._checked = !this._checked;
+      this._isChecked.set(!this._isChecked());
       this._transitionCheckState(
-        this._checked ? TransitionCheckState.Checked : TransitionCheckState.Unchecked,
+        this._isChecked() ? TransitionCheckState.Checked : TransitionCheckState.Unchecked,
       );
 
       // Emit our custom change event if the native input emitted one.
@@ -434,12 +588,12 @@ export class MatCheckbox
       // we don't want to trigger a change event, when the `checked` variable changes for example.
       this._emitChangeEvent();
     } else if (
-      (this.disabled && this.disabledInteractive) ||
-      (!this.disabled && clickAction === 'noop')
+      (this._disabled() && this._disabledInteractive()) ||
+      (!this._disabled() && clickAction === 'noop')
     ) {
       // Reset native input when clicked with noop. The native checkbox becomes checked after
       // click, reset it to be align with `checked` value of `mat-checkbox`.
-      this._inputElement.nativeElement.checked = this.checked;
+      this._inputElement.nativeElement.checked = this._isChecked();
       this._inputElement.nativeElement.indeterminate = this.indeterminate;
     }
   }
@@ -479,7 +633,7 @@ export class MatCheckbox
         if (newState === TransitionCheckState.Checked) {
           return this._animationClasses.uncheckedToChecked;
         } else if (newState == TransitionCheckState.Indeterminate) {
-          return this._checked
+          return this._isChecked()
             ? this._animationClasses.checkedToIndeterminate
             : this._animationClasses.uncheckedToIndeterminate;
         }
@@ -524,7 +678,7 @@ export class MatCheckbox
   _onTouchTargetClick() {
     this._handleInputClick();
 
-    if (!this.disabled) {
+    if (!this._disabled()) {
       // Normally the input should be focused already, but if the click
       // comes from the touch target, then we might have to focus it ourselves.
       this._inputElement.nativeElement.focus();

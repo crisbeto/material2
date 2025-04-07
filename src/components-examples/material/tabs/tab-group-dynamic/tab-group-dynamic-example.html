@@ -6,7 +6,7 @@
 <div>
   <button matButton="elevated"
           class="example-add-tab-button"
-          (click)="addTab(selectAfterAdding.checked)">
+          (click)="addTab(selectAfterAdding._isChecked())">
     Add new tab
   </button>
   <mat-checkbox #selectAfterAdding> Select tab after adding </mat-checkbox>

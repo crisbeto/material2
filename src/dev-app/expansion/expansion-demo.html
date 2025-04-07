@@ -84,7 +84,7 @@
     <mat-expansion-panel #panel3>
       <mat-expansion-panel-header>Section 3</mat-expansion-panel-header>
       <mat-checkbox #showButtons>Reveal Buttons Below</mat-checkbox>
-      @if (showButtons.checked) {
+      @if (showButtons._isChecked()) {
         <mat-action-row>
           <button matButton (click)="panel2.expanded = true">OPEN SECTION 2</button>
           <button matButton (click)="panel3.expanded = false">CLOSE</button>
