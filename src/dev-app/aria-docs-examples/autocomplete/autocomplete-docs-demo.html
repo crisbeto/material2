@@ -1,14 +1,12 @@
 <div ngCombobox #combobox="ngCombobox">
   <input
-    #overlayOrigin
+    #origin
     ngComboboxInput
     placeholder="Search..."
     (input)="filter($event.target.value)"/>
 
   <ng-template
-    cdkConnectedOverlay
-    cdkConnectedOverlayAsPopover
-    [cdkConnectedOverlayOrigin]="overlayOrigin"
+    [cdkConnectedOverlay]="{origin, asPopover: true, matchWidth: true}"
     [cdkConnectedOverlayOpen]="combobox.expanded()">
     <div ngListbox class="example-listbox">
       @for (option of options(); track option) {
