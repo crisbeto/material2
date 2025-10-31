@@ -1,0 +1,25 @@
+<div ngCombobox #combobox="ngCombobox">
+  <input
+    #overlayOrigin
+    ngComboboxInput
+    placeholder="Search..."
+    (input)="filter($event.target.value)"/>
+
+  <ng-template
+    cdkConnectedOverlay
+    cdkConnectedOverlayAsPopover
+    [cdkConnectedOverlayOrigin]="overlayOrigin"
+    [cdkConnectedOverlayOpen]="combobox.expanded()">
+    <div ngListbox class="example-listbox">
+      @for (option of options(); track option) {
+        <div
+          ngOption
+          class="example-option example-selectable example-stateful"
+          [value]="option"
+          [label]="option">{{option}}</div>
+      } @empty {
+        No matching states.
+      }
+    </div>
+  </ng-template>
+</div>
