@@ -54,7 +54,7 @@ export function createOverlayRef(injector: Injector, config?: OverlayConfig): Ov
   const overlayConfig = new OverlayConfig(config);
 
   overlayConfig.direction = overlayConfig.direction || directionality.value;
-  overlayConfig.usePopover = !!overlayConfig?.usePopover && 'showPopover' in doc.body;
+  overlayConfig.usePopover = 'showPopover' in doc.body;
 
   const pane = doc.createElement('div');
   const host = doc.createElement('div');
