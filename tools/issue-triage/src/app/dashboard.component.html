@@ -1,0 +1,446 @@
+<div class="dashboard-container">
+  <!-- HEADER ZONE -->
+  <header class="dashboard-header glass-panel">
+    <div class="header-branding">
+      <!-- Combined Angular Shield + Search Icon SVG -->
+      <svg class="angular-logo" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M120 15L210 47V142C210 186.5 171.5 219.5 120 225C68.5 219.5 30 186.5 30 142V47L120 15Z" fill="#ff2a5f" fill-opacity="0.1" stroke="#ff2a5f" stroke-width="8"/>
+        <path d="M120 30L195 57V137C195 174.5 163 202.5 120 207C77 202.5 45 174.5 45 137V57L120 30Z" fill="#ff2a5f" fill-opacity="0.15" stroke="#ff2a5f" stroke-width="4"/>
+        <circle cx="120" cy="115" r="35" stroke="#ff2a5f" stroke-width="8" fill="none"/>
+        <path d="M145 140L175 170" stroke="#ff2a5f" stroke-width="8" stroke-linecap="round"/>
+      </svg>
+      <div class="header-titles">
+        <h1>ANGULAR COMPONENTS TRIAGE DESK</h1>
+        <p class="subtitle">Local issue intelligence queue & community action board</p>
+      </div>
+    </div>
+
+    <!-- STATS OVERVIEW PANEL -->
+    <div class="stats-overview" *ngIf="!isSystemLoading()">
+      <div class="stat-card" title="Total Cached Issues">
+        <span class="stat-value">{{ stats().total }}</span>
+        <span class="stat-label">Issues Cached</span>
+      </div>
+      <div class="stat-card stat-shielded" title="Protected by Community Shield">
+        <span class="stat-value">🛡️ {{ stats().shielded }}</span>
+        <span class="stat-label">Shielded</span>
+      </div>
+      <div class="stat-card stat-pending-close" title="Approved close candidates awaiting push to GitHub">
+        <span class="stat-value text-close">{{ stats().approved }}</span>
+        <span class="stat-label">Staged Close</span>
+      </div>
+      <div class="stat-card stat-approved" title="Issues already labeled on GitHub">
+        <span class="stat-value text-valid">✓ {{ stats().applied }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+    </div>
+
+    <!-- HEADER CONTROLS -->
+    <div class="header-actions" *ngIf="!isSystemLoading()">
+      <button class="btn btn-batch btn-primary-gradient" 
+              (click)="runBatchLabeling()" 
+              [disabled]="stats().approved === 0 || isBatchProcessing()"
+              title="Apply target close label to all currently approved (staged) close candidates">
+        <span class="btn-spinner" *ngIf="isBatchProcessing()"></span>
+        {{ isBatchProcessing() ? 'PROCESSING BATCH...' : 'BATCH APPLY LABELS (' + stats().approved + ')' }}
+      </button>
+      <button class="btn btn-refresh" (click)="loadData()" [disabled]="isBatchProcessing()" title="Reload cached items from local database">
+        🔄 RELOAD DATA
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN SPLIT WORKSPACE PANEL GRID -->
+  <main class="workspace-grid" *ngIf="!isSystemLoading(); else mainLoader">
+    
+    <!-- COLUMN 1: STATS & FILTER SIDEBAR -->
+    <aside class="workspace-sidebar glass-panel">
+      <!-- SIDEBAR FILTERS SECTION -->
+      <div class="sidebar-section">
+        <h3>TRIAGE REVIEW VIEWS</h3>
+        <div class="filter-list">
+          <button class="filter-option" [class.active]="activeStatusFilter() === 'pending'" (click)="filterByStatus('pending')">
+            <span class="indicator indicator-pending"></span>
+            <span class="filter-name">Pending Review</span>
+            <span class="filter-count badge">{{ issuesList().length - stats().approved - stats().skipped - stats().applied }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeStatusFilter() === 'approved'" (click)="filterByStatus('approved')">
+            <span class="indicator indicator-approved"></span>
+            <span class="filter-name">Approved for Close</span>
+            <span class="filter-count badge bg-valid">{{ stats().approved }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeStatusFilter() === 'applied'" (click)="filterByStatus('applied')">
+            <span class="indicator indicator-applied"></span>
+            <span class="filter-name">Labeled on GitHub</span>
+            <span class="filter-count badge bg-applied">{{ stats().applied }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeStatusFilter() === 'skipped'" (click)="filterByStatus('skipped')">
+            <span class="indicator indicator-skipped"></span>
+            <span class="filter-name">Skipped / Kept Active</span>
+            <span class="filter-count badge bg-skipped">{{ stats().skipped }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeStatusFilter() === 'all'" (click)="filterByStatus('all')">
+            <span class="indicator indicator-all"></span>
+            <span class="filter-name">All Triage States</span>
+            <span class="filter-count badge">{{ stats().total }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>LLM CATEGORIES</h3>
+        <div class="filter-list">
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'all'" (click)="filterByCategory('all')">
+            <span class="filter-name">All Classifications</span>
+            <span class="filter-count">{{ stats().total }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'no-longer-relevant'" (click)="filterByCategory('no-longer-relevant')">
+            <span class="category-indicator bg-close"></span>
+            <span class="filter-name">No Longer Relevant</span>
+            <span class="filter-count badge">{{ stats().categories['no-longer-relevant'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'needs-repro'" (click)="filterByCategory('needs-repro')">
+            <span class="category-indicator bg-repro"></span>
+            <span class="filter-name">Needs Reproduction</span>
+            <span class="filter-count badge">{{ stats().categories['needs-repro'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'support-question'" (click)="filterByCategory('support-question')">
+            <span class="category-indicator bg-question"></span>
+            <span class="filter-name">Support / Question</span>
+            <span class="filter-count badge">{{ stats().categories['support-question'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'valid-bug'" (click)="filterByCategory('valid-bug')">
+            <span class="category-indicator bg-valid"></span>
+            <span class="filter-name">Valid Active Bug</span>
+            <span class="filter-count badge">{{ stats().categories['valid-bug'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'duplicate'" (click)="filterByCategory('duplicate')">
+            <span class="category-indicator bg-duplicate"></span>
+            <span class="filter-name">Duplicate Reports</span>
+            <span class="filter-count badge">{{ stats().categories['duplicate'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'feature-request'" (click)="filterByCategory('feature-request')">
+            <span class="category-indicator bg-feature"></span>
+            <span class="filter-name">Feature Request</span>
+            <span class="filter-count badge">{{ stats().categories['feature-request'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'stale-p4-p5'" (click)="filterByCategory('stale-p4-p5')">
+            <span class="category-indicator bg-stale-p4-p5"></span>
+            <span class="filter-name">Stale P4/P5 Bugs</span>
+            <span class="filter-count badge">{{ stats().categories['stale-p4-p5'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'stale-feature'" (click)="filterByCategory('stale-feature')">
+            <span class="category-indicator bg-stale-feature"></span>
+            <span class="filter-name">Stale Features</span>
+            <span class="filter-count badge">{{ stats().categories['stale-feature'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'stale-repro'" (click)="filterByCategory('stale-repro')">
+            <span class="category-indicator bg-stale-repro"></span>
+            <span class="filter-name">Stale Repros Needed</span>
+            <span class="filter-count badge">{{ stats().categories['stale-repro'] }}</span>
+          </button>
+          <button class="filter-option" [class.active]="activeCategoryFilter() === 'stale-release'" (click)="filterByCategory('stale-release')">
+            <span class="category-indicator bg-stale-release"></span>
+            <span class="filter-name">Stale Legacy Releases</span>
+            <span class="filter-count badge">{{ stats().categories['stale-release'] }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KEYBOARD MANUAL INFO CARD -->
+      <div class="sidebar-section mt-auto">
+        <div class="keyboard-guide-card glass-card">
+          <h4>⌨️ KEYBOARD DESK ACCELERATORS</h4>
+          <div class="guide-row"><kbd>J</kbd> / <kbd>↓</kbd> <span>Next filtered issue</span></div>
+          <div class="guide-row"><kbd>K</kbd> / <kbd>↑</kbd> <span>Previous filtered issue</span></div>
+          <div class="guide-row"><kbd>C</kbd> <span>Approve close target</span></div>
+          <div class="guide-row"><kbd>S</kbd> <span>Skip / Keep active</span></div>
+          <div class="guide-row"><kbd>O</kbd> <span>Focus Category Override</span></div>
+          <div class="guide-row"><kbd>V</kbd> / <kbd>Enter</kbd> <span>Open in new tab</span></div>
+        </div>
+      </div>
+
+      <!-- SYSTEM METADATA STATS -->
+      <div class="sidebar-footer">
+        <p>Sync: {{ lastSyncTime() ? (lastSyncTime() | date:'yyyy-MM-dd HH:mm') : 'None' }}</p>
+        <p>Target label: <code class="label-tag">{{ config.triageLabel }}</code></p>
+      </div>
+    </aside>
+
+    <!-- COLUMN 2: ISSUE LIST VIEWPORT -->
+    <section class="workspace-list-panel glass-panel">
+      <!-- SEARCH CONTAINER -->
+      <div class="search-container">
+        <input type="text" 
+               placeholder="🔍 Search issue number, title or author..." 
+               class="search-input" 
+               [ngModel]="searchQuery()"
+               (ngModelChange)="searchQuery.set($event); autoSelectFirstFiltered()"/>
+        <span class="search-count badge">{{ filteredIssues().length }} match(es)</span>
+      </div>
+
+      <!-- SCROLL LIST CONTAINER -->
+      <div class="issues-list-scroll">
+        <div *ngIf="filteredIssues().length === 0" class="list-empty-placeholder">
+          <p>No issues match the selected search or filter criteria.</p>
+        </div>
+
+        <div *ngFor="let item of filteredIssues()" 
+             [id]="'issue-card-' + item.number"
+             class="issue-list-card"
+             [class.active]="selectedIssueId() === item.number"
+             [class.state-approved]="item.verdict.triage_status === 'approved'"
+             [class.state-skipped]="item.verdict.triage_status === 'skipped'"
+             (click)="selectIssue(item.number)">
+          
+          <!-- SELECTION BAR -->
+          <div class="selection-indicator"></div>
+
+          <div class="card-body">
+            <div class="card-header-row">
+              <span class="issue-number">#{{ item.number }}</span>
+              <span class="issue-author">&#64;{{ item.author }}</span>
+              <span class="issue-date">{{ item.updated_at | date:'yyyy-MM-dd' }}</span>
+            </div>
+            
+            <h4 class="issue-title-text">{{ item.title }}</h4>
+
+            <!-- DYNAMIC COLOR BADGES METADATA -->
+            <div class="card-meta-badges">
+              <!-- Category Pill -->
+              <span class="badge-category" [ngClass]="'border-' + item.verdict.category">
+                {{ formatCategory(item.verdict.category) | uppercase }}
+              </span>
+              
+              <!-- Confidence score bar -->
+              <span class="badge-confidence" 
+                    [style.color]="getConfidenceColor(item.verdict.confidence)" 
+                    *ngIf="item.verdict.confidence > 0">
+                {{ Math.round(item.verdict.confidence * 100) }}% match
+              </span>
+
+              <!-- Shield Badge -->
+              <span class="badge-shield" *ngIf="item.comments_count > 4 || item.upvotes_count > 4" title="Community Interaction Shield: Protected from auto-closure">
+                🛡️ SHIELDED
+              </span>
+
+              <!-- Upvote SVG count icon -->
+              <span class="meta-metric" title="Upvotes 👍 count">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                {{ item.upvotes_count }}
+              </span>
+
+              <!-- Comment SVG count icon -->
+              <span class="meta-metric" title="Comments count">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {{ item.comments_count }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLUMN 3: DETAILED INSPECTION WINDOW -->
+    <section class="workspace-inspect-panel glass-panel">
+      <!-- EMPTY SELECTION CARD -->
+      <div *ngIf="!selectedIssue()" class="inspect-empty-placeholder">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <h3>No Issue Selected</h3>
+        <p>Please click an issue card in the middle column or press <kbd>J</kbd> / <kbd>K</kbd> to begin triaging the queue.</p>
+      </div>
+
+      <!-- ACTIVE DETAIL VIEWS -->
+      <div *ngIf="selectedIssue()" class="inspect-view-container">
+        
+        <!-- INSPECT PANEL HEADER ACTIONS BAR -->
+        <header class="inspect-header">
+          <div class="inspect-title-section">
+            <h2>
+              <span class="accent-number">#{{ selectedIssue()!.number }}</span>
+              {{ selectedIssue()!.title }}
+            </h2>
+            <div class="inspect-author-line">
+              Reported by <span class="author-tag">&#64;{{ selectedIssue()!.author }}</span> on {{ selectedIssue()!.created_at | date:'yyyy-MM-dd HH:mm' }}
+              <a [href]="selectedIssue()!.html_url" target="_blank" rel="noopener noreferrer" class="btn-github-link">
+                ↗ VIEW ON GITHUB
+              </a>
+            </div>
+          </div>
+        </header>
+
+        <!-- SPLIT WORKSPACE BODY GRID -->
+        <div class="inspect-split-grid">
+          
+          <!-- LEFT SUB-PANE: HISTORICAL CONTENT -->
+          <div class="inspect-pane-left">
+            <!-- ORIGINAL DESCRIPTION CARD -->
+            <div class="content-card glass-card">
+              <div class="card-header">
+                <h3>Original Issue Description</h3>
+              </div>
+              <div class="card-body markdown-body scrollable-y" [innerHTML]="selectedIssue()!.body | safeMarkdown"></div>
+            </div>
+
+            <!-- COMMENTS THREAD -->
+            <div class="comments-section" *ngIf="selectedIssue()!.comments && selectedIssue()!.comments!.length > 0">
+              <h3>Discussion Thread Chronology</h3>
+              <div class="comment-card glass-card" *ngFor="let comment of selectedIssue()!.comments">
+                <div class="comment-header">
+                  <span class="comment-author">&#64;{{ comment.author }}</span>
+                  <span class="comment-date">{{ comment.created_at | date:'yyyy-MM-dd HH:mm' }}</span>
+                </div>
+                <div class="comment-body markdown-body" [innerHTML]="comment.body | safeMarkdown"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT SUB-PANE: GEMINI VERDICT CONSOLE -->
+          <div class="inspect-pane-right">
+            
+            <!-- CORE LLM CLASSIFICATION CARD -->
+            <div class="content-card glass-card border-glower animate-fade-in" [ngClass]="'border-' + selectedVerdict()!.category">
+              <div class="verdict-header">
+                <span class="badge-category-large" [ngClass]="'bg-' + selectedVerdict()!.category">
+                  {{ formatCategory(selectedVerdict()!.category) | uppercase }}
+                </span>
+                <div class="confidence-meter-box" *ngIf="selectedVerdict()!.confidence > 0">
+                  <span class="confidence-label">Confidence</span>
+                  <span class="confidence-value" [style.color]="getConfidenceColor(selectedVerdict()!.confidence)">
+                    {{ Math.round(selectedVerdict()!.confidence * 100) }}%
+                  </span>
+                </div>
+              </div>
+
+              <!-- PROGRAMMATIC INTERACTION SHIELD BANNER -->
+              <div class="shield-active-alert animate-fade-in" 
+                   [class.shield-bypassed]="selectedVerdict()!.is_shield_overridden"
+                   *ngIf="selectedIssue()!.comments_count > 8 || selectedIssue()!.upvotes_count > 8">
+                <div class="shield-icon">🛡️</div>
+                <div class="shield-text">
+                  <h4>{{ selectedVerdict()!.is_shield_overridden ? '🛡️ SHIELD BYPASSED' : 'COMMUNITY SHIELD ACTIVE' }}</h4>
+                  <p>{{ selectedVerdict()!.is_shield_overridden 
+                        ? 'This high-engagement issue has its close-protection lock manually bypassed. Automated actions are now enabled.' 
+                        : 'This high-engagement topic has ' + selectedIssue()!.comments_count + ' comments or ' + selectedIssue()!.upvotes_count + ' upvotes. Labeling action is programmatically locked.' }}</p>
+                  <button class="btn btn-override-shield" (click)="toggleShieldOverride()">
+                    {{ selectedVerdict()!.is_shield_overridden ? '🔒 Re-enable Shield Lock' : '🔓 Override Shield Lock' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="verdict-section" *ngIf="selectedVerdict()!.obsolescence_reason !== 'none'">
+                <span class="section-label text-close">Obsolescence Trigger</span>
+                <p class="obsolescence-reason-tag">{{ selectedVerdict()!.obsolescence_reason | uppercase }}</p>
+              </div>
+
+              <!-- SYSTEM EXPLANATIONS -->
+              <div class="verdict-section">
+                <span class="section-label">Heuristic Triage Reasoning</span>
+                <p class="reasoning-text">{{ selectedVerdict()!.reasoning }}</p>
+              </div>
+
+              <div class="verdict-section" *ngIf="selectedVerdict()!.suggested_action">
+                <span class="section-label">Suggested Core Action</span>
+                <p class="suggested-action-text">{{ selectedVerdict()!.suggested_action }}</p>
+              </div>
+
+              <!-- ERROR STATE LOGGER -->
+              <div class="verdict-section error-section animate-fade-in" *ngIf="selectedVerdict()!.error_message">
+                <span class="section-label text-close">❌ System Error Trace</span>
+                <p class="error-text">{{ selectedVerdict()!.error_message }}</p>
+              </div>
+            </div>
+
+            <!-- TRIAGE INTERACTION CONTROLS BAR -->
+            <div class="triage-action-bar glass-card animate-fade-in">
+              <h3>Triage Workspace Decision Panel</h3>
+              
+              <div class="action-buttons-box">
+                <!-- CONFIRM LABELS BUTTON (DISABLED IF COMMUNITY SHIELDED) -->
+                <button class="btn btn-action btn-close-gradient" 
+                        (click)="approveTriage()"
+                        [disabled]="isCommunityShielded() || selectedVerdict()!.triage_status === 'approved'"
+                        [title]="isCommunityShielded() ? 'Protected: High community engagement is locked' : 'Approve target to be labeled: ' + config.triageLabel">
+                  <span class="btn-icon">✓</span>
+                  APPROVE FOR CLOSE (C)
+                </button>
+
+                <!-- SKIP BUTTON -->
+                <button class="btn btn-action btn-skip" 
+                        (click)="skipIssue()"
+                        [disabled]="selectedVerdict()!.triage_status === 'skipped'"
+                        title="Skip this proposal and keep the issue active">
+                  <span class="btn-icon">→</span>
+                  KEEP ACTIVE / SKIP (S)
+                </button>
+              </div>
+
+              <!-- MANUAL OVERRIDE DROPDOWN -->
+              <div class="override-selector-box">
+                <label for="category-override-select">Manual Category Override (O)</label>
+                <select id="category-override-select" 
+                        class="form-select"
+                        [ngModel]="selectedVerdict()!.user_category || selectedVerdict()!.category"
+                        (ngModelChange)="overrideCategory($event)">
+                  <option value="valid-bug">Valid Active Bug</option>
+                  <option value="duplicate">Duplicate Report</option>
+                  <option value="no-longer-relevant">No Longer Relevant</option>
+                  <option value="support-question">Support / Question</option>
+                  <option value="needs-repro">Needs Reproduction</option>
+                  <option value="feature-request">Feature Request</option>
+                  <option value="stale-p4-p5">Stale P4/P5 Bug</option>
+                  <option value="stale-feature">Stale Feature Request</option>
+                  <option value="stale-repro">Stale Repro Needed</option>
+                  <option value="stale-release">Stale Legacy Release</option>
+                </select>
+              </div>
+
+              <!-- SELECTION STATUS FLAGS -->
+              <div class="card-status-info">
+                <span class="status-indicator-pill" [class]="'status-' + selectedVerdict()!.triage_status">
+                  Triage Status: {{ selectedVerdict()!.triage_status | uppercase }}
+                </span>
+                <span class="status-indicator-pill status-reviewed" *ngIf="selectedVerdict()!.is_reviewed">
+                  ✓ REVIEWED
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOADING SPINNER COVER PAGE -->
+  <ng-template #mainLoader>
+    <div class="dashboard-main-loader">
+      <div class="spinner"></div>
+      <h2>LOADING CACHE DATASETS</h2>
+      <p>Reading local physical flat files and mapping database indexes. Please stand by...</p>
+    </div>
+  </ng-template>
+
+  <!-- BATCH LOADING OVERLAY SHIELD -->
+  <div class="batch-loading-overlay animate-fade-in" *ngIf="isBatchProcessing()">
+    <div class="batch-progress-card glass-panel">
+      <div class="spinner"></div>
+      <h2>APPLYING LABELS BATCH QUEUE</h2>
+      <p class="batch-progress-status">Processing issue {{ batchProgressCurrent() }} of {{ batchProgressTotal() }}...</p>
+      
+      <!-- Dynamic progress bar loader -->
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" 
+             [style.width.%]="(batchProgressCurrent() / batchProgressTotal()) * 100">
+        </div>
+      </div>
+
+      <div class="progress-metrics-row">
+        <span>Current progress: {{ Math.round((batchProgressCurrent() / batchProgressTotal()) * 100) }}%</span>
+        <span class="text-close" *ngIf="batchProgressFailures() > 0">Failures: {{ batchProgressFailures() }}</span>
+      </div>
+      <p class="batch-warning-text">⚠️ Do not close your browser window or stop the backend process while operations are executing on GitHub.</p>
+    </div>
+  </div>
+</div>

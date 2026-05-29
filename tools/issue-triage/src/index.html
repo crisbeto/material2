@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Angular Component Triage Desk</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Modern premium typography load -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Prevent raw unstyled loading flicker */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #05070c;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <app-root>
+    <!-- Simple gorgeous initial visual loader -->
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #0b0f19 0%, #05070c 100%);">
+      <div style="width: 60px; height: 60px; border: 3px solid rgba(255, 42, 95, 0.1); border-top-color: #ff2a5f; border-radius: 50%; animation: spin 1s infinite linear;"></div>
+      <h2 style="font-family: 'Outfit', sans-serif; color: #f8fafc; margin-top: 24px; letter-spacing: 1px; font-weight: 600;">LOADING TRIAGE DESK</h2>
+      <p style="font-family: 'Inter', sans-serif; color: #64748b; font-size: 14px; margin-top: 8px;">Initializing dashboard interface and offline datasets...</p>
+    </div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </app-root>
+</body>
+</html>
