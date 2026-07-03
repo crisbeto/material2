@@ -19,6 +19,7 @@ export class Listbox<V> implements OnDestroy {
     readonly element: HTMLElement;
     readonly focusMode: _angular_core.InputSignal<"roving" | "activedescendant">;
     gotoFirst(): void;
+    gotoIndex(index: number): void;
     readonly id: _angular_core.InputSignal<string>;
     readonly multi: _angular_core.InputSignalWithTransform<boolean, unknown>;
     // (undocumented)
