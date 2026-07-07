@@ -41,6 +41,7 @@ import {MatStepHeader} from './step-header';
 import {MatStepLabel} from './step-label';
 import {MatStepperIcon, MatStepperIconContext} from './stepper-icon';
 import {MatStepContent} from './step-content';
+import type {Field} from '@angular/forms/signals';
 
 @Component({
   selector: 'mat-step',
@@ -110,6 +111,12 @@ export class MatStep extends CdkStep implements ErrorStateMatcher, AfterContentI
     // interacting with the current form.
     const customErrorState = !!(control && control.invalid && this.interacted);
 
+    return originalErrorState || customErrorState;
+  }
+
+  isSignalErrorState(field: Field<unknown> | null): boolean {
+    const originalErrorState = this._errorStateMatcher.isSignalErrorState?.(field) ?? false;
+    const customErrorState = !!(field && field().invalid() && this.interacted);
     return originalErrorState || customErrorState;
   }
 }
