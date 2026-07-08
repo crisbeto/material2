@@ -1,3 +1,16 @@
+<a name="22.1.0-next.3"></a>
+# 22.1.0-next.3 "flerovium-fountain" (2026-07-08)
+### aria
+| Commit | Type | Description |
+| -- | -- | -- |
+| [ee20441fa](https://github.com/angular/components/commit/ee20441fa76f419aadabb48f12cf2efe531f8ef3) | fix | **listbox:** allow navigation to specific index ([#33485](https://github.com/angular/components/pull/33485)) |
+### material
+| Commit | Type | Description |
+| -- | -- | -- |
+| [c5aa5486a](https://github.com/angular/components/commit/c5aa5486ac78c95d83f4de61c0efbc43071b6d4c) | fix | **core:** rework error state matcher to handle signal forms ([#33500](https://github.com/angular/components/pull/33500)) |
+
+<!-- CHANGELOG SPLIT MARKER -->
+
 <a name="22.0.4"></a>
 # 22.0.4 "flerovium-foundation" (2026-07-08)
 ### aria
