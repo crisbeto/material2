@@ -57,31 +57,21 @@ export class _ErrorStateTracker {
   /** Updates the error state based on the provided error state matcher. */
   updateErrorState() {
     const oldState = this.errorState;
-    const matcher = this.matcher || this._defaultMatcher;
-    let newState: boolean;
-
-    if (this.formField) {
-      if (
-        (typeof ngDevMode === 'undefined' || ngDevMode) &&
-        matcher &&
-        !matcher.isSignalErrorState
-      ) {
-        throw new Error(
-          'Current error state matcher does not support signal forms. ' +
-            'Please implement the `isSignalErrorState` method.',
-        );
-      }
-
-      newState = matcher?.isSignalErrorState?.(this.formField.field()) ?? false;
-    } else {
-      const parent = this._parentFormGroup || this._parentForm;
-      const control = this.ngControl ? (this.ngControl.control as AbstractControl) : null;
-      newState = matcher?.isErrorState(control, parent) ?? false;
-    }
+    const newState = this._getCurrentErrorState(this.matcher || this._defaultMatcher);
 
     if (newState !== oldState) {
       this.errorState = newState;
       this._stateChanges.next();
     }
+  }
+
+  private _getCurrentErrorState(matcher: ErrorStateMatcher | undefined): boolean {
+    if (this.formField && matcher?.isSignalErrorState) {
+      return matcher.isSignalErrorState(this.formField.field()) ?? false;
+    }
+
+    const parent = this._parentFormGroup || this._parentForm;
+    const control = this.ngControl ? (this.ngControl.control as AbstractControl) : null;
+    return matcher?.isErrorState(control, parent) ?? false;
   }
 }
