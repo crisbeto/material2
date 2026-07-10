@@ -59,6 +59,10 @@ describe('ComboboxPattern', () => {
     };
   }
 
+  function wait(milliseconds: number) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  }
+
   describe('Aria-autocomplete calculation', () => {
     it('should return "list" when only popup is present', () => {
       const {pattern} = setup();
@@ -119,7 +123,7 @@ describe('ComboboxPattern', () => {
       pattern.onFocusin();
       expect(pattern.isFocused()).toBe(true);
 
-      pattern.onFocusout(new FocusEvent('focusout'));
+      pattern.onFocusout();
       expect(pattern.isFocused()).toBe(false);
     });
   });
@@ -206,23 +210,27 @@ describe('ComboboxPattern', () => {
   });
 
   describe('Blur behavior', () => {
-    it('should close when focus leaves both combobox and popup', () => {
+    it('should close when focus leaves both combobox and popup', async () => {
       const {pattern, expanded} = setup();
       expanded.set(true);
       pattern.isFocused.set(false);
       pattern.inputs.popup()!.isFocused.set(false);
 
-      pattern.closePopupOnBlurEffect();
+      pattern.onFocusout();
+      await wait(100);
+
       expect(expanded()).toBe(false);
     });
 
-    it('should remain open if popup is focused', () => {
+    it('should remain open if popup is focused', async () => {
       const {pattern, expanded} = setup();
       expanded.set(true);
       pattern.isFocused.set(false);
       pattern.inputs.popup()!.isFocused.set(true);
 
-      pattern.closePopupOnBlurEffect();
+      pattern.onFocusout();
+      await wait(100);
+
       expect(expanded()).toBe(true);
     });
   });

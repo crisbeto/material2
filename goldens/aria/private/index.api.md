@@ -79,7 +79,6 @@ export class ComboboxPattern {
     readonly ariaReadonly: _angular_core.Signal<"true" | null>;
     readonly autocomplete: _angular_core.Signal<"none" | "inline" | "list" | "both">;
     click: _angular_core.Signal<ClickEventManager<PointerEvent>>;
-    closePopupOnBlurEffect(): void;
     readonly disabled: () => boolean;
     readonly element: () => HTMLElement;
     highlightEffect(): void;
@@ -97,7 +96,7 @@ export class ComboboxPattern {
     readonly nativeReadonly: _angular_core.Signal<"" | null>;
     onClick(event: PointerEvent): void;
     onFocusin(): void;
-    onFocusout(event: FocusEvent): void;
+    onFocusout(): void;
     onInput(event: Event): void;
     onKeydown(event: KeyboardEvent): void;
     readonly popupId: _angular_core.Signal<string | undefined>;
