@@ -162,7 +162,7 @@ export const MATERIAL_ANIMATIONS: InjectionToken<AnimationsConfig>;
 export class _MatInternalFormField {
     labelPosition: 'before' | 'after';
     // (undocumented)
-    static ɵcmp: i0.ɵɵComponentDeclaration<_MatInternalFormField, "div[mat-internal-form-field]", never, { "labelPosition": { "alias": "labelPosition"; "required": true; }; }, {}, never, ["*"], true, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<_MatInternalFormField, "[mat-internal-form-field]", never, { "labelPosition": { "alias": "labelPosition"; "required": true; }; }, {}, never, ["*"], true, never>;
     // (undocumented)
     static ɵfac: i0.ɵɵFactoryDeclaration<_MatInternalFormField, never>;
 }
